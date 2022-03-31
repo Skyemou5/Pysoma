@@ -1,0 +1,5 @@
+build
+testproj
+.venv
+.config
+env
