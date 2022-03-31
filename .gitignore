@@ -3,3 +3,5 @@ testproj
 .venv
 .config
 env
+.vscode
+Release
