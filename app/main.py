@@ -18,6 +18,7 @@ import glob
 import sys
 import json
 import lib.dotenv
+import tkinter as tk
 #import yaml
 import re
 # import logging
@@ -97,10 +98,12 @@ SHOT = ''
 
 # preset paths
 HOME = Path.home() # gets path for HOME variable
-REPO_ROOT = Path(__file__).parents[1]
 
-dirslist = glob.glob("%s/*/" % REPO_ROOT)
+# app path
+application_path = ''
 
+# name
+PROJECT_NAME = ''
 
 # paths to set
 PROJECT_ROOT = ''
@@ -119,11 +122,56 @@ REF = ''
 TEXTURE = ''
 
 #endregion
+#region fix compile issues
+if getattr(sys, 'frozen', False):
+    import sys, os
+    
+    # If the application is run as a bundle, the PyInstaller bootloader
+    # extends the sys module by a flag frozen=True and sets the app 
+    # path into variable _MEIPASS'.
+    application_path = sys._MEIPASS
+else:
+    application_path = os.path.dirname(os.path.abspath(__file__))
+
+REPO_ROOT = Path(application_path).parents[1]
+dirslist = glob.glob("%s/*/" % REPO_ROOT)
+
+#region ARGPARSE
+# create parser
+parser = argparse.ArgumentParser()
+
+# add args to parser
+# project choose args
+#parser.add_argument('-i','--init',dest='init', nargs='?',help='Forces initialization')
+
+
+# per project args
+parser.add_argument('-i','--init',dest='init', nargs='?',help='Forces initialization')
+parser.add_argument('-I','--init-only',dest='init_only', nargs='?',help='Forces ONLY the initialization step')
+parser.add_argument('-l','--load-last',dest='load_last', nargs='?',help='Load last opened file')
+parser.add_argument('-?','--info',dest='info', nargs='?',help='Shows another help file')
+
+
+# parse the args
+args = parser.parse_args()
+#endregion
+
 #region HELPER METHODS
 #region Directory Setup helper methods
 ###############################
 ####### DIRECTORY PATHS #######
 ###############################
+
+def unpack_dotenv(env_d):
+    import lib.flatdict as flatdict
+    result = flatdict.FlatDict(env_d,delimiter=':')
+    return result
+
+def add_dict_to_dict(sd,td):
+    for k, v in sd.items():
+        print(k)
+        td[k]=v
+
 
 def get_path(root,target):
     new_path = PurePath(root,target)
@@ -186,6 +234,13 @@ def create_dirs_from_list(currpath,dirlist) -> list:
             print('could not add child dir to list!')
     return newpathlist
 
+def env_from_file(path):
+    #env_file = pathlib.Path(pathlib.Path.cwd())/'.config/config.env'
+    dict_var = dotenv_values(path)
+    #print(dict_var)
+    return dict_var
+
+
 def add_dirlist_to_dict(dirlist,nameprefix):
     '''Add a list to a dictionary and add a prefix to key'''
 
@@ -228,12 +283,16 @@ def add_files_to_empty_folders(dirlist):
 
 # config stuff
 def create_config_dir():
-    global CONFIG
-    p = Path(Path.cwd())/'.config'
+    #global CONFIG
+    p = Path(env_dict['PROJECT_ROOT'])/'.config'
     if not Path.is_dir(p):
         Path.mkdir(p)
-        CONFIG = p
-    return p
+        add_var_to_dict('CONFIG_DIR',p)
+        return p
+        #CONFIG = p
+    else:
+        add_var_to_dict('CONFIG_DIR',p)
+        return p
 
 # check OS
 def check_os():
@@ -355,7 +414,7 @@ def convert_env_dict_to_path(env_d):
 def write_to_env_file(env_d):
     new_d = convert_env_dict_to_string()
     path_d = convert_env_dict_to_path(env_d)
-    pprint(path_d)
+    #pprint(path_d)
     fp = Path(path_d["CONFIG"]) / "config.env"
 
     with fp.open("w",encoding="utf-8") as f:
@@ -375,10 +434,17 @@ def write_to_json():
 #region Config setup
 
 def create_config_files(env_d):
-    path = CONFIG
-    print(path)
-    write_to_env_file(env_d)
-    #write_to_json()
+    path = env_d['CONFIG_DIR']
+    try:
+        if path.is_dir():
+            print(path)
+            write_to_env_file(env_d)
+            #write_to_json()
+        else:
+            raise FileNotFoundError
+    except FileNotFoundError:
+        input('Something went wrong finding the config folder')
+        quit()
 
 #endregion
 #region User data
@@ -492,6 +558,7 @@ def redshift_main():
 #region 3DELIGHT setup
 
 def delight_setup():
+    global DELIGHT
     if os.environ.get("DELIGHT") is not None:
         print("Congrats! You have 3Delight installed!")
         DELIGHT = os.environ.get("DELIGHT")
@@ -505,6 +572,7 @@ def delight_setup():
 #region ACES setup
 
 def aces_check():
+    global OCIO
     if os.environ.get("OCIO") is not None:
         print("Congrats! You have ACES configured correctly!")
         OCIO = os.environ.get("OCIO")
@@ -812,14 +880,16 @@ def create_shot():
     '''
     Check if first shot folder exists, if not, create it. If folders exists count them and create a new one incremented
     '''
+
     #ensure top-level 'shots' exists
     #top_level_shot = Path(Path(Path.cwd().parent)) / "Main_Project/shots"
-    top_level_shot = Path(PROJECT_ROOT) / "Main_Project/Shots"
+    #TODO fix this
+    top_level_shot = Path(env_dict['PROJECT_ROOT']) / "Shots"
     if not Path.is_dir(top_level_shot):
         Path.mkdir(top_level_shot)
 
     #case 1 - creating first shot directory
-    first_shot_n = Path("./Main_Project/Shots/shot_1")
+    first_shot_n = Path(top_level_shot)/'shot_1'
     if not Path.is_dir(first_shot_n):
         Path.mkdir(first_shot_n)
         shot_subfolders = create_shot_subfolders(first_shot_n)
@@ -869,7 +939,7 @@ def create_shot():
 def create_shot_subfolders(rootdir):
     dirlist = create_dirs_from_list(rootdir,shot_subdir_names)
     add_readme_file_to_dir(rootdir)
-
+    global global_src_dir_namelist,global_geo_dir_namelist,global_tex_dir_namelist
     subsubresdict = {
         'SRC':global_src_dir_namelist,
         'GEO':global_geo_dir_namelist,
@@ -888,7 +958,8 @@ def create_shot_subfolders(rootdir):
                 subsubdirlist = create_dirs_from_list(specresdict[k],v)
                 add_readme_file_to_dir(specresdict[k])
                 add_files_to_empty_folders(subsubdirlist)
-
+    
+    global pre_prod_dir_names, shot_post_dirnames, comp_app_list, shot_audio_dirnames, shot_comp_dirnames, shot_tex_post_dirnames
 
     #pre production
     shot_pre_dir = Path(rootdir)/'PRE_PRODUCTION'
@@ -1059,7 +1130,7 @@ def shot_decision():
     if they created a new shot, the shot folder number is automatically incrimented
     then they are asked which shot to open
     '''
-    shots_root = pathlib.Path(pathlib.Path.cwd())/'Main_Project/Shots'
+    shots_root = pathlib.Path(env_dict['PROJECT_ROOT'])/'Shots'
     shot_root_empty = no_subdirs(shots_root)
     shot_choice_path = ''
     shot_root = ''
@@ -1087,24 +1158,27 @@ def shot_decision():
                     shot_chosen = True
                     break
                 else:
-                    
-                    shotlist = subdir_list(shots_root)
-                    while True:
-                        try:
-                            shot_choice = choose_shot(shotlist)
-                            if (shot_choice[1] == False):
+                    if y_n_q('Do you want to open an existing shot?'):
+                        shotlist = subdir_list(shots_root)
+                        while True:
+                            try:
+                                shot_choice = choose_shot(shotlist)
+                                if (shot_choice[1] == False):
+                                    continue
+                                elif (shot_choice[1] == True):
+                                    print(f'shot choice:: {shot_choice[0]} ---')
+                                    shot_choice_path = shotlist[shot_choice[0]-1]
+                                    User_not_confirm = False
+                                    break
+                                else:
+                                    raise ValueError
+                            except ValueError:
                                 continue
-                            elif (shot_choice[1] == True):
-                                print(f'shot choice:: {shot_choice[0]} ---')
-                                shot_choice_path = shotlist[shot_choice[0]-1]
-                                User_not_confirm = False
-                                break
-                            else:
-                                raise ValueError
-                        except ValueError:
-                            continue
-                        # select shot
-                        # then houdini stuff
+                            # select shot
+                            # then houdini stuff
+                    else:
+                        print('you must choose a shot before opening houdini...')
+                        quit()
             # case 2
             elif user_choice == 2:
                 '''
@@ -1492,7 +1566,8 @@ hsite_names = [
 ]
 
 def hsite_setup():
-    hsite_root = pathlib.Path(REPO_ROOT)/'hsite'
+    #global REPO_ROOT, PROJECT_ROOT
+    hsite_root = pathlib.Path(env_dict['PROJECT_ROOT'])/'hsite'
     create_dir_if_not_present(hsite_root)
     add_readme_file_to_dir(hsite_root)
     add_to_dict_and_arr('HSITE',hsite_root)
@@ -1634,24 +1709,321 @@ def init_asset_post_production(path):
 
 #endregion
 #region Initialize
+#region Choose Project Dir
+
+def choose_proj_dir():
+    global env_dict
+    proj_name = env_dict['PROJECT_NAME']
+    print(proj_name)
+    #global PROJECT_ROOT
+    if(y_n_q('Do you want to use the current directory?')):
+        #PROJECT_ROOT = pathlib.Path(__file__)
+        new_path = pathlib.Path(application_path)/proj_name
+        PROJECT_ROOT = new_path
+        add_var_to_dict('PROJECT_ROOT',new_path)
+
+    else:
+        while True:
+            try:
+                user_input = input('Please type in desired path: ').lower()
+                input('Please note the name you chose will be appended to end of the path you set...')
+                new_path = pathlib.Path(user_input)/proj_name
+                print(new_path.is_dir())
+                if new_path.is_dir():
+                    if(y_n_q(f'Is {str(new_path)} the correct path?')):
+                        add_var_to_dict('PROJECT_ROOT',new_path)
+                        print(env_dict['PROJECT_ROOT'])
+                        #PROJECT_ROOT = new_path
+                        break
+                    else:
+                        continue
+                else:
+                    raise FileNotFoundError
+            except FileNotFoundError:
+                print('Directory is not valid! Please try again...')
+                continue
+    print(f'You have chosen {PROJECT_ROOT} as your main project directory')
+    input('Press Enter to continue...')
+
+#region check for projects
+
+#TODO show existing paths
+def check_for_existing_projects():
+    path = pathlib.Path(application_path)/'.temp.env'
+    while True:
+        try:
+            if(path.is_file()):
+                read_temp_file(path)
+                break
+            else:
+                raise FileNotFoundError
+        except FileNotFoundError:
+            print('Creating proj data file...')
+            open(path,'a').close()
+            continue
+
+def read_temp_file(path):
+    with open(str(path), "r+") as help_file:
+        contents = help_file.read()
+        print(contents)
+
+    help_file.close()
+
+def clear_temp_file():
+    path = pathlib.Path(application_path)/'.temp.env'
+    if path.is_file():
+        path.unlink()
+
+def add_line_to_temp(content):
+    #print(f'content: {content}')
+    '''
+    if file is empty write
+    if it is not, check each line,
+    if there are duplicates don't write
+    '''
+    path = pathlib.Path(application_path)/'.temp.env'
+    if not path.stat().st_size == 0:
+        with path.open("r") as f2:
+            lineset = set(f2)
+            
+        with path.open('w') as f2:
+            with path.open('r') as f1:
+                for line in f1:
+                    if not line in lineset:
+                        f2.write(content)
+    else:
+        with path.open("w") as f:
+            f.write(content)
+
+
+def check_if_line_exists_in_file():
+    pass
+
+def check_if_temp_exists():
+    path = pathlib.Path(application_path)/'.temp.env'
+    if not path.is_file():
+        path.open('a').close()
+
+def write_temp(d):
+    check_if_temp_exists()
+    '''
+    incomming dict must be converted from pathlib to string first
+    '''
+    for k, v in d.items():
+        l = str('%s="%s"\n' % (k, v))
+        add_line_to_temp(l)
+
+
+
+def check_for_projects_in_folder(path):
+    result = {}
+
+    inner_proj_dirs = [
+        ".config",
+        "assets",
+        "hsite",
+        "packages",
+        "Pre_Production",
+        "Shots",
+    ]
+
+    for p in path.iterdir():
+        # print(p)
+        curr_dir = p
+        subdir_list = []
+        try:
+            for j in p.iterdir():
+                # print(j)
+                # curr_dir = j
+                for name in inner_proj_dirs:
+                    if j.name == name:
+                        # print(j)
+                        subdir_list.append(j.name)
+                        #result[p.name]=p
+                subdir_list.sort()
+                inner_proj_dirs.sort()
+                if(subdir_list == inner_proj_dirs):
+                    # print(f'Project:: {curr_dir}')
+                    result[p.name]=p
+                    #print(p)
+        except NotADirectoryError:
+            continue
+    if len(result)==0:
+        print('No projects in directory...')
+    else:
+        pprint(f'Project folders:: {result}')
+        return result
+
+# GUI? #read text file list? terminal input?
+from tkinter import filedialog
+from tkinter import *
+
+def choose_dir_gui():
+    root = tk.Tk()
+    root.withdraw()
+    folder_selected = tk.filedialog.askdirectory()
+    folder_path = pathlib.Path(folder_selected)
+    return folder_path
+
+def read_text_list_of_dirs():
+    pass
+
+def type_path_of_dir():
+    result = input('Please type path of directory to scan: ')
+    p = pathlib.Path(result)
+    #2print(type(p))
+    while True:
+        try:
+            if p.is_dir():
+                print(f'{p} is a directory!')
+                break
+            else:
+                raise NotADirectoryError
+        except NotADirectoryError:
+            print(f'{p} is not a directory...')
+            continue
+    return p
+
+#TODO scan or open existing projects
+# if no temp or temp is empty bring up below options
+# otherwise ask to open currently cached projects or do the below
+
+def choose_folder_to_scan_for_projects():
+    options = {
+        1:'default: Scan current directory',
+        2:'type in path to scan',
+        3:'open gui choose path to scan'
+    }
+    op_nums = []
+    choice = 0
+    for k, v in options.items():
+        print(f'{k} : {v}')
+        op_nums.append(k)
+
+
+    while True:
+        try:
+            user_input = int(input('select a number to choose one of the options: '))
+
+            if user_input in op_nums:
+                print(f'You chose: {options[user_input]}')
+                if user_input == 1:
+                    choice = user_input
+                elif user_input == 2:
+                    choice = user_input
+                elif user_input == 3:
+                    choice = user_input
+                else:
+                    raise ValueError
+                break
+            else:
+                raise ValueError
+        except ValueError:
+            print('Please enter a valid choice...')
+            continue
+    #print(choice)
+    return choice
+
+def choose_scan_method(choice):
+    app_root = pathlib.Path(application_path)
+    result = {}
+    try:
+        if choice == 1:
+            result = check_for_projects_in_folder(app_root)
+        elif choice == 2:
+            result = check_for_projects_in_folder(type_path_of_dir())
+        elif choice == 3:
+            result = check_for_projects_in_folder(choose_dir_gui())
+        else:
+            raise ValueError
+    except ValueError:
+        print('couldn\'t choose scan method quitting...')
+        quit()
+    return result
+
+
+#region project init main
+# CLI 
+# -p - input path to scan directories
+# -u - use GUI to choose path
+# -lp - list cached projects
+# -rs - rescan saved directories for project
+
+
+#!!! Per project config
+# so we need to choose the project
+# default behavior -> once initialized open last project
+
+def projects_init_main():
+    # args
+
+    app_root = pathlib.Path(application_path)
+    temp_path = pathlib.Path(application_path)/'.temp.env'
+    # check if 
+    if not (temp_path.exists()):
+        print('First time setup')
+        choice = choose_folder_to_scan_for_projects()
+        p_list = choose_scan_method(choice)
+        write_temp(p_list)
+    else:
+        read_temp_file(temp_path)
+
+    #print(p_list)
+    # p_list = check_for_projects_in_folder(app_root)
+    # str_list = convert_env_dict_to_string(p_list)
+
+
+projects_init_main()
+
+#endregion
+#endregion
+
+#region Project name
+
+def check_for_space_in_string(s):
+    result = 0
+    for a in s:
+        if (a.isspace()==True):
+            result += 1
+    return result
+
+def set_project_name():
+    user_confirm = True
+    user_choice = ''
+    while True:
+        try:
+            user_choice = input('Please enter the name of the project: ').lower()
+            if(check_for_space_in_string(user_choice)>0):
+                print('White space characters not allowed...')
+                raise ValueError
+            else:
+                while user_confirm:
+                    try:
+                        if y_n_q(f'Is {user_choice} correct?'):
+                            user_confirm = False
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        continue
+            if(user_confirm == False):
+                break
+            else:
+                raise ValueError
+        except ValueError:
+            print('Please enter a valid choice...')
+            continue
+    return user_choice
+
+def project_name_setup():
+    global PROJECT_NAME
+    name = set_project_name()
+    PROJECT_NAME = name
+    add_var_to_dict('PROJECT_NAME',name)
+
+#endregion
+#endregion
 #region CLI stuff
-switches = [
-    '-h',
-    '--help',
-]
 
-args_kwargs = [
-    '--setup',
-    '--open-shot',
-    '--new-shot',
-    '--info',
-]
-
-def cli_check(switches,args_kwargs):
-    #print(switches)
-    args_kwargs.pop(0)
-    #print(args_kwargs)
-    
 
 #endregion
 ##############################################
@@ -1664,7 +2036,7 @@ def get_initial_paths():
     global CONFIG
     global HOME
     global HOU_ROOT
-    global PROJECT_ROOT
+    #global PROJECT_ROOT
     global ASSETS_GLOBAL_ROOT
     global SHOTS_ROOT
     #TODO add option to set project root at cwd?
@@ -1706,12 +2078,16 @@ def get_initial_paths():
     hou_root_path = pathlib.Path(hou_root_str)
     HOU_ROOT = hou_root_path
     add_to_dict_and_arr("HOU_ROOT",HOU_ROOT)
-    # Repo Root
+    
+    # Repo Root 
     add_to_dict_and_arr("REPO_ROOT",REPO_ROOT)
+    
     # Project Root
-    create_dir_if_not_present(pathlib.Path(REPO_ROOT,"Main_Project"))
-    PROJECT_ROOT = pathlib.Path(REPO_ROOT,"Main_Project")
-    add_to_dict_and_arr("PROJECT_ROOT",PROJECT_ROOT)
+    #print(env_dict['PROJECT_ROOT'])
+    PROJECT_ROOT = env_dict['PROJECT_ROOT']
+    create_dir_if_not_present(PROJECT_ROOT)
+    # allready added to env   
+    #add_to_dict_and_arr("PROJECT_ROOT",PROJECT_ROOT)
 
     #persistent config
     pers_config_dir = pathlib.Path(PROJECT_ROOT)/'.config'
@@ -1815,21 +2191,17 @@ def get_initial_paths():
 
 #             yield k, v
 
-def env_from_file(path):
-    #env_file = pathlib.Path(pathlib.Path.cwd())/'.config/config.env'
-    dict_var = dotenv_values(path)
-    #print(dict_var)
-    return dict_var
 
 
 def check_init(env_path) -> bool:
-    
+    global env_dict
+    input(f'ENV PATH::: {env_path}')
     result = False
     config = ''
     if(env_path.is_file()):
         config = dotenv_values(env_path)
         env_dict = config
-        pprint(config)
+        #pprint(config)
         result = True
     else:
         result = False
@@ -1867,73 +2239,31 @@ def check_init(env_path) -> bool:
 #     else:
 #         return count
 
-def unpack_dotenv(env_d):
-    import lib.flatdict as flatdict
-    result = flatdict.FlatDict(env_d,delimiter=':')
-    return result
-
-def add_dict_to_dict(sd,td):
-    for k, v in sd.items():
-        print(k)
-        td[k]=v
-#region ARGPARSE
-# create parser
-parser = argparse.ArgumentParser()
-
-# add args to parser
-parser.add_argument('-i','--init',dest='init', nargs='?',help='Forces initialization')
-parser.add_argument('-I','--init-only',dest='init_only', nargs='?',help='Forces ONLY the initialization step')
-parser.add_argument('-l','--load-last',dest='load_last', nargs='?',help='Load last opened file')
-parser.add_argument('-?','--info',dest='info', nargs='?',help='Shows another help file')
 
 
-# parse the args
-args = parser.parse_args()
-#endregion
-#region Choose Project Dir
 
-def choose_proj_dir():
-    global env_dict
-    global PROJECT_ROOT
-    if(y_n_q('Do you want to use the apps current directory?')):
-        #PROJECT_ROOT = pathlib.Path(__file__)
-        PROJECT_ROOT = pathlib.Path.cwd()
-    else:
-        while True:
-            try:
-                user_input = pathlib.Path(input('Please type in desired path: ').lower()).absolute()
-                new_path = user_input
-                print(new_path.is_dir())
-                if new_path.is_dir():
-                    if(y_n_q(f'Is {str(new_path)} the correct path?')):
-                        PROJECT_ROOT = new_path
-                        break
-                    else:
-                        continue
-                else:
-                    raise FileNotFoundError
-            except FileNotFoundError:
-                print('Directory is not valid! Please try again...')
-                continue
-    print(f'You have chosen {PROJECT_ROOT} as your main project directory')
-    input('Press Enter to continue...')
 
 #endregion
 #endregion
+#region MAIN
 def main():
-    global env_dict
+    # global env_dict
     global parser
 
-    env_path = pathlib.Path(pathlib.Path.cwd())/'.config/config.env'
+    #projects_init_main()
+    # fix app dir for compile
+    #env_path = pathlib.Path()/'.config/config.env'
     # CLI stuff
     # switches = [i for i in sys.argv if re.match(r'^-[A-Za-z]+$',i)]
     # args_kwargs = [i for i in sys.argv if not re.match(r'^-[A-Za-z]+$', i)]
     # cli_check(switches,args_kwargs)
-    print(f'root dir:: {pathlib.Path.root}')
+    #print(f'root dir:: {pathlib.Path.root}')
     # get the arguments value
     if args.init:
+
         print('Forcing Initialization')
         # 3rd party software
+        project_name_setup()
         choose_proj_dir()
 
         indie_check()
@@ -1950,7 +2280,9 @@ def main():
         # open houdini
         houdini_main()
     elif args.init_only:
+
         print('Forcing Initialization, not opening Houdini...')
+        project_name_setup()
         choose_proj_dir()
         # 3rd party software
         indie_check()
@@ -1965,6 +2297,7 @@ def main():
         create_config_files(env_dict)
 
     elif args.load_last:
+
         print('Loading last opened file')
         env_vars = env_from_file(env_path)
         #result = [list(unpack(x)) for x in env_vars]
@@ -1974,10 +2307,10 @@ def main():
         
         add_dict_to_dict(result,env_dict)
         
-        pprint(result)
+        #pprint(result)
         houdini_main()
     elif args.info:
-        
+    
         # from rich.console import Console
         # from rich.markdown import Markdown
         # print('man page')
@@ -1992,8 +2325,8 @@ def main():
         help_file.close()
         quit()
     else:
-
         if not (check_init(env_path)):
+            project_name_setup()
             choose_proj_dir()
             # 3rd party software
             indie_check()
@@ -2019,7 +2352,7 @@ def main():
             
             add_dict_to_dict(dotenvdict,env_dict)
             
-            pprint(env_dict)
+            #pprint(env_dict)
 
             # Shot stuff
             shot_decision()
@@ -2032,6 +2365,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-
+    #main()
+    pass
+#endregion
 #endregion

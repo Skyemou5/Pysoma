@@ -9,4 +9,8 @@ This was developed for my needs during my senior project using Houdini with a sm
 - Refactor main file into a library to clean up code
 - Build standalone app for each platform
 
+# Future goals
+- add support for game projects with unity and unreal and possibly godot
+
+
 

@@ -5,3 +5,4 @@ testproj
 env
 .vscode
 Release
+.temp.env
