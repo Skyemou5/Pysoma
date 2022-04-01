@@ -136,25 +136,6 @@ else:
 REPO_ROOT = Path(application_path).parents[1]
 dirslist = glob.glob("%s/*/" % REPO_ROOT)
 
-#region ARGPARSE
-# create parser
-parser = argparse.ArgumentParser()
-
-# add args to parser
-# project choose args
-#parser.add_argument('-i','--init',dest='init', nargs='?',help='Forces initialization')
-
-
-# per project args
-parser.add_argument('-i','--init',dest='init', nargs='?',help='Forces initialization')
-parser.add_argument('-I','--init-only',dest='init_only', nargs='?',help='Forces ONLY the initialization step')
-parser.add_argument('-l','--load-last',dest='load_last', nargs='?',help='Load last opened file')
-parser.add_argument('-?','--info',dest='info', nargs='?',help='Shows another help file')
-
-
-# parse the args
-args = parser.parse_args()
-#endregion
 
 #region HELPER METHODS
 #region Directory Setup helper methods
@@ -1888,7 +1869,7 @@ def type_path_of_dir():
 # if no temp or temp is empty bring up below options
 # otherwise ask to open currently cached projects or do the below
 
-def choose_folder_to_scan_for_projects():
+def user_choose_folder_methods():
     options = {
         1:'default: Scan current directory',
         2:'type in path to scan',
@@ -1899,7 +1880,6 @@ def choose_folder_to_scan_for_projects():
     for k, v in options.items():
         print(f'{k} : {v}')
         op_nums.append(k)
-
 
     while True:
         try:
@@ -1924,6 +1904,23 @@ def choose_folder_to_scan_for_projects():
     #print(choice)
     return choice
 
+def choose_folder_method(choice):
+    app_root = pathlib.Path(application_path)
+    result = ''
+    try:
+        if choice == 1:
+            result = app_root
+        elif choice == 2:
+            result = type_path_of_dir()
+        elif choice == 3:
+            result = choose_dir_gui()
+        else:
+            raise ValueError
+    except ValueError:
+        print('couldn\'t choose scan method quitting...')
+        quit()
+    return result
+
 def choose_scan_method(choice):
     app_root = pathlib.Path(application_path)
     result = {}
@@ -1941,8 +1938,76 @@ def choose_scan_method(choice):
         quit()
     return result
 
+def check_for_project_init():
+    pass
 
+def list_projects(env_path):
+    temp_file = lib.dotenv.dotenv_values(env_path)
+    dotenvdict = dict(unpack_dotenv(temp_file))
+    return dotenvdict
+
+def choose_project(p_dict):
+    amount = 0
+    choice_list = []
+    key_list = []
+    for k,v in p_dict.items():
+        amount+=1
+        k_pair = (amount,k)
+        key_list.append(k_pair)
+        choice_list.append(amount)
+    values = p_dict.values()
+    values_list = list(values)
+    keys = p_dict.keys()
+    keys_list = list(keys)
+    # print(values_list)
+    # print(keys_list)
+    print(amount)
+    while True:
+        try:
+            choice = int(input('Please type a corresponding number to open desired project: '))
+            if choice in choice_list:
+                f_choice = choice - 1
+                #get_choice = key_list[0]
+                #print(get_choice)
+                get_name = keys_list[f_choice]
+                get_path = values_list[f_choice]
+                #print(f'You chose: {p_dict[]}')
+                project_data = (get_name,get_path)
+                print(project_data)
+                
+                break
+        except ValueError:
+            print('please try again with a valid input...')
+            continue
+
+
+#region ARGPARSE
+# create parser
+#TODO let user choose default behavior with args
+parser = argparse.ArgumentParser()
+
+# add args to parser
+# project choose args
+parser.add_argument('-pn','--path-project',dest='path_project',action="extend",nargs=1,help='create new project at input path')
+parser.add_argument('-un','--gui-project',dest='gui_project',nargs='?',help='create new project at location with gui ')
+parser.add_argument('-cn','--current-dir-project',dest='current_dir_project',nargs='?',help='create new project at current path')
+parser.add_argument('-pl','--list-projects',dest='list_projects',nargs='?',help='List currently cached projects')
+parser.add_argument('-rs','--rescan-folders',dest='rescan_dirs',nargs='?',help='rescan cached directories')
+parser.add_argument('-cp','--clear-project-cache',dest='clear_cache',nargs='?',help='clear project cache')
+
+
+# per project args
+parser.add_argument('-i','--init',dest='init', nargs='?',help='Forces initialization')
+parser.add_argument('-I','--init-only',dest='init_only', nargs='?',help='Forces ONLY the initialization step')
+parser.add_argument('-l','--load-last',dest='load_last', nargs='?',help='Load last opened file')
+parser.add_argument('-?','--info',dest='info', nargs='?',help='Shows another help file')
+
+
+# parse the args
+args = parser.parse_args()
+#endregion
 #region project init main
+
 # CLI 
 # -p - input path to scan directories
 # -u - use GUI to choose path
@@ -1956,28 +2021,43 @@ def choose_scan_method(choice):
 
 def projects_init_main():
     # args
-
+    
+    temp_dict = {}
     app_root = pathlib.Path(application_path)
     temp_path = pathlib.Path(application_path)/'.temp.env'
-    # check if 
+    # check if
+    #if args.init:
     if not (temp_path.exists()):
         print('First time setup')
-        choice = choose_folder_to_scan_for_projects()
+        choice = user_choose_folder_methods()
         p_list = choose_scan_method(choice)
         write_temp(p_list)
     else:
+        print('The following projects exist...')
         read_temp_file(temp_path)
+        if y_n_q('Would you like to open an existing project?'):
+            project_list = list_projects(temp_path)
+            pprint(project_list)
+            choose_project(project_list)
+        else:
+            print('Create new project')
+            print('Choose directory to create project in...')
+            choose_folder = user_choose_folder_methods()
+            parent_path = choose_folder_method(choose_folder)
+            print(parent_path)
+            #project_name_setup()
+
+
 
     #print(p_list)
     # p_list = check_for_projects_in_folder(app_root)
     # str_list = convert_env_dict_to_string(p_list)
 
 
-projects_init_main()
+
 
 #endregion
 #endregion
-
 #region Project name
 
 def check_for_space_in_string(s):
@@ -2246,7 +2326,7 @@ def check_init(env_path) -> bool:
 #endregion
 #endregion
 #region MAIN
-def main():
+def main(project_data):
     # global env_dict
     global parser
 
@@ -2263,7 +2343,7 @@ def main():
 
         print('Forcing Initialization')
         # 3rd party software
-        project_name_setup()
+        #project_name_setup()
         choose_proj_dir()
 
         indie_check()
@@ -2282,7 +2362,7 @@ def main():
     elif args.init_only:
 
         print('Forcing Initialization, not opening Houdini...')
-        project_name_setup()
+        #project_name_setup()
         choose_proj_dir()
         # 3rd party software
         indie_check()
@@ -2326,7 +2406,7 @@ def main():
         quit()
     else:
         if not (check_init(env_path)):
-            project_name_setup()
+
             choose_proj_dir()
             # 3rd party software
             indie_check()
@@ -2365,7 +2445,9 @@ def main():
 
 
 if __name__ == "__main__":
-    #main()
-    pass
+    projects_init_main()
+    main()
+    #pass
+
 #endregion
 #endregion
