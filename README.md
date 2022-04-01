@@ -1,7 +1,9 @@
 # Pysoma
 
 
-![Pyrosome](https://github.com/benshurts/Pysoma/blob/main/icon.jpg?raw=true)
+[comment]: <> ![Pyrosome](https://github.com/benshurts/Pysoma/blob/main/icon.jpg?raw=true)
+
+![Pyrosome](./icon.jpeg?raw=true "Pyrosome")
 
 # Houdini Pipeline Tool
 
