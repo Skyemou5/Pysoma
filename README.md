@@ -23,3 +23,65 @@ This was developed for my needs during my senior project using Houdini with a sm
 
 
 - possible branch project name pyrasoma?
+
+
+---
+
+# How to use the tool
+
+1. Run it as a python script from the cloned repo.
+2. Integrate it into you're system on UNIX systems.
+3. Use the compiled versions and rus as an executable.
+
+
+## There are command line arguments
+```bash
+usage: main.py [-h] [-pn PATH_PROJECT] [-un [GUI_PROJECT]] [-cn [CURRENT_DIR_PROJECT]] [-pl [LIST_PROJECTS]] [-rs [RESCAN_DIRS]]
+               [-cp [CLEAR_CACHE]] [-i [INIT]] [-I [INIT_ONLY]] [-l [LOAD_LAST]] [-? [INFO]]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -pn PATH_PROJECT, --path-project PATH_PROJECT
+                        create new project at input path
+  -un [GUI_PROJECT], --gui-project [GUI_PROJECT]
+                        create new project at location with gui
+  -cn [CURRENT_DIR_PROJECT], --current-dir-project [CURRENT_DIR_PROJECT]
+                        create new project at current path
+  -pl [LIST_PROJECTS], --list-projects [LIST_PROJECTS]
+                        List currently cached projects
+  -rs [RESCAN_DIRS], --rescan-folders [RESCAN_DIRS]
+                        rescan cached directories
+  -cp [CLEAR_CACHE], --clear-project-cache [CLEAR_CACHE]
+                        clear project cache
+  -i [INIT], --init [INIT]
+                        Forces initialization
+  -I [INIT_ONLY], --init-only [INIT_ONLY]
+                        Forces ONLY the initialization step
+  -l [LOAD_LAST], --load-last [LOAD_LAST]
+                        Load last opened file
+  -? [INFO], --info [INFO]
+                        Shows another help file
+```
+
+---
+
+# How it works
+
+## Default behavior
+
+1. Checks if there are any projects in the current directory of the script/app
+2. If there are none it creates one after asking for a name
+3. Asks user to create or open a shot
+4. sources houdini, sets enviornment variables, opens houdini
+
+## Things to note
+
+You can customize this behavior, for example you can add directories for the tool to scan for existing projects.
+
+It saves a list of the existing projects in a hidden temp.env file in the same directory as the script or executable.
+
+Each project will have an env file that shouldn't be pushed to a project repo as it will hold that users paths.
+
+---
+
+Hope this helps someone else, If you have questions send me a message.
