@@ -1,7 +1,7 @@
 # Pysoma
 
 
-![Pyrosome](https://github.com/benshurts/Pysoma/icon.jpg?raw=true)
+![Pyrosome](https://github.com/benshurts/blob/main/Pysoma/icon.jpg?raw=true)
 
 # Houdini Pipeline Tool
 
@@ -17,3 +17,4 @@ This was developed for my needs during my senior project using Houdini with a sm
 
 
 
+- possible branch project name pyrasoma?
