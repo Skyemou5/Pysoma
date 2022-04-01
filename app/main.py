@@ -1776,9 +1776,20 @@ def add_line_to_temp(content):
         with path.open("w") as f:
             f.write(content)
 
+def should_remove_line(line,stop_words):
+    return any([word in line for word in stop_words])
 
-def check_if_line_exists_in_file():
-    pass
+def overwrite_line(key,content):
+    stop_words = key
+    path = pathlib.Path(application_path)/'.temp.env'
+    if not path.stat().st_size == 0:
+        with path.open('r') as f1:
+            with path.open('w') as f2:
+                for line in f1:
+                    if not should_remove_line(line,stop_words):
+                        f2.write(line)
+    add_line_to_temp(content)
+
 
 def check_if_temp_exists():
     path = pathlib.Path(application_path)/'.temp.env'
@@ -1834,6 +1845,8 @@ def check_for_projects_in_folder(path):
     else:
         pprint(f'Project folders:: {result}')
         return result
+
+
 
 # GUI? #read text file list? terminal input?
 from tkinter import filedialog
@@ -1904,6 +1917,8 @@ def user_choose_folder_methods():
     #print(choice)
     return choice
 
+
+
 def choose_folder_method(choice):
     app_root = pathlib.Path(application_path)
     result = ''
@@ -1973,7 +1988,9 @@ def choose_project(p_dict):
                 get_path = values_list[f_choice]
                 #print(f'You chose: {p_dict[]}')
                 project_data = (get_name,get_path)
-                print(project_data)
+                #str_opened = convert_env_dict_to_string(p_dict[get_name])
+                str_opened = {'LAST_OPENED'}
+                print(type(get_path))
                 
                 break
         except ValueError:

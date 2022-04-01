@@ -20,10 +20,10 @@ This was developed for my needs during my senior project using Houdini with a sm
 
 # Future goals
 - add support for game projects with unity and unreal and possibly godot
-
-
-
 - possible branch project name pyrasoma?
+- possibly rewrite in rust
+
+
 
 
 ---
