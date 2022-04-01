@@ -1,9 +1,9 @@
 # Pysoma
 
 
-[comment]: <> ![Pyrosome](https://github.com/benshurts/Pysoma/blob/main/icon.jpg?raw=true)
-
 ![Pyrosome](./icon.jpeg?raw=true "Pyrosome")
+
+Pyrsomes are actually colonies of small jellyfish creating a whole. I thought that was a fun way to think about group creative projects. In a way this tool helps multiple people be part of a whole, and because it's houdini, life, mathematics and growth are common insterests of houdini artists.
 
 # Houdini Pipeline Tool
 
