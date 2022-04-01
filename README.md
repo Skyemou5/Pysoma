@@ -84,4 +84,18 @@ Each project will have an env file that shouldn't be pushed to a project repo as
 
 ---
 
+# Contributing
+
+Make sure and set up a python virtual env - I used venv - using the requirements.txt
+
+
+---
+
+# Other
+
+I'm no python expert and would love input, and fixes, especially in development workflows, and deployment systems and such. I'm still learning, but I hope this is useful.
+
+
+---
+
 Hope this helps someone else, If you have questions send me a message.
