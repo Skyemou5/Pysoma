@@ -1790,6 +1790,15 @@ def overwrite_line(key,content):
                         f2.write(line)
     add_line_to_temp(content)
 
+def check_if_temp_empty():
+    result = ''
+    path = pathlib.Path(application_path)/'.temp.env'
+    if path.stat().st_size == 0:
+        result = True
+    else:
+        result = False
+    print(f'Temp file is empty: {result}')
+    return result
 
 def check_if_temp_exists():
     path = pathlib.Path(application_path)/'.temp.env'
@@ -1804,8 +1813,6 @@ def write_temp(d):
     for k, v in d.items():
         l = str('%s="%s"\n' % (k, v))
         add_line_to_temp(l)
-
-
 
 def check_for_projects_in_folder(path):
     result = {}
@@ -1829,15 +1836,15 @@ def check_for_projects_in_folder(path):
                 # curr_dir = j
                 for name in inner_proj_dirs:
                     if j.name == name:
-                        # print(j)
+                        print(j)
                         subdir_list.append(j.name)
-                        #result[p.name]=p
+                        result[p.name]=p
                 subdir_list.sort()
                 inner_proj_dirs.sort()
                 if(subdir_list == inner_proj_dirs):
-                    # print(f'Project:: {curr_dir}')
+                    print(f'Project:: {curr_dir}')
                     result[p.name]=p
-                    #print(p)
+                    print(p)
         except NotADirectoryError:
             continue
     if len(result)==0:
@@ -1989,13 +1996,22 @@ def choose_project(p_dict):
                 #print(f'You chose: {p_dict[]}')
                 project_data = (get_name,get_path)
                 #str_opened = convert_env_dict_to_string(p_dict[get_name])
-                str_opened = {'LAST_OPENED'}
-                print(type(get_path))
+                path_from_str = pathlib.Path(get_path)
+                str_opened = {'LAST_OPENED':get_path}
+                overwrite_line('LAST_OPENED',str_opened)
+                #print(type(path_from_str))
                 
                 break
         except ValueError:
             print('please try again with a valid input...')
             continue
+
+def write_to_second_temp(d_content):
+    path = pathlib.Path(application_path)/'.config.env'
+    for k, v in d_content.items():
+        l = str('%s="%s"\n' % (k, v))
+        with path.open('w') as f:
+            f.write(l)
 
 
 #region ARGPARSE
@@ -2053,9 +2069,13 @@ def projects_init_main():
         print('The following projects exist...')
         read_temp_file(temp_path)
         if y_n_q('Would you like to open an existing project?'):
-            project_list = list_projects(temp_path)
-            pprint(project_list)
-            choose_project(project_list)
+            if check_if_temp_empty():
+                print('No projects saved...')
+                print('Scan for projects or create a new one...')
+            else:
+                project_list = list_projects(temp_path)
+                pprint(project_list)
+                choose_project(project_list)
         else:
             print('Create new project')
             print('Choose directory to create project in...')
@@ -2463,7 +2483,7 @@ def main(project_data):
 
 if __name__ == "__main__":
     projects_init_main()
-    main()
+    #main()
     #pass
 
 #endregion
