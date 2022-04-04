@@ -2140,8 +2140,6 @@ def project_name_setup():
 #endregion
 #endregion
 #region CLI stuff
-
-
 #endregion
 ##############################################
 ############## Get Initialized ###############
