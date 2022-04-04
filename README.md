@@ -22,6 +22,10 @@ This was developed for my needs during my senior project using Houdini with a sm
 - add support for game projects with unity and unreal and possibly godot
 - possible branch project name pyrasoma?
 - possibly rewrite in rust
+- add support for houdini package management
+- refactor data to json
+- add data manager to edit json defaults
+- use yaml for configuration
 
 
 

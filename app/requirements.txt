@@ -1,6 +1,0 @@
-click==8.1.2
-commonmark==0.9.1
-ipython==8.2.0
-Pygments==2.11.2
-setproctitle==1.2.2
-six==1.16.0

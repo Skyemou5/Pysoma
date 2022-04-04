@@ -2,10 +2,47 @@
     "root": [
         {
         "type":"folder",
-        "name":"",
-        "children":{
-            
-        }
+        "name":"new_project",
+        "env":"PROJECT_ROOT",
+        "children":[
+            {
+            "type":"directory",
+            "name":"assets",
+            "env":"GLOBAL_ASSET_ROOT"
+            },
+            {
+                "type":"directory",
+                "name":"hsite",
+                "env":"HSITE_ROOT",
+                "h_env":"HSITE"
+            },
+            {
+                "type":"directory",
+                "name":"packages",
+                "env":"GLOBAL_PACKAGES",
+                "h_env":"HOUDINI_PACAKGE_DIR"
+            },
+            {
+                "type":"directory",
+                "name":"pre_production",
+                "env":"PRE_PRODUCTION"
+            },
+            {
+                "type":"directory",
+                "name":"post_production",
+                "env":"POST_RPODUCTION"
+            },
+            {
+                "type":"directory",
+                "name":"shots",
+                "env":"SHOTS_ROOT"
+            },
+            {
+                "type":"directory",
+                "name":"deliverables",
+                "env":"DELIVER"
+            }
+        ]
         }
     ]
 }

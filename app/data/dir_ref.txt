@@ -1,0 +1,196 @@
+'''project root global asset directories'''
+global_asset_child_dir_namelist = [
+    'SRC',
+    'GEO',
+    'BLEND',
+    'TEXTURE',
+    'HDA',
+    'OTHER',
+    'PDG',
+    'USD',
+    'POST_PRODUCTION',
+]
+
+
+###### POST stuff
+global_asset_post_dir_namelist = [
+    'Audio',
+    'Compositing',
+    'Reference',
+    'Texture',
+    'Project_Files',
+    'Nuke',
+    'Other',
+    'Export'
+
+]
+
+post_comp_dir_namelist = [
+    'LUTs',
+    'Color_Scripts',
+    'Project_Files',
+    'Other'
+    'Export'
+]
+
+post_audio_dir_namelist = [
+    'SFX',
+    'Music',
+    'Reference',
+    'Project_Files',
+    'Other'
+]
+
+post_tex_dir_namelist = [
+    'Data_Textures',
+    'Alphas',
+    'Masks',
+    'PBR',
+    'Grunge',
+    'Substance'
+    'Project_Files'
+    'Other'
+]
+
+# Global Post folder
+
+global_post_dir_namelist = [
+    'Audio',
+    'Compositing',
+    'Reference',
+    'Texture',
+    'Project_Files',
+    'Nuke',
+    'Render',
+    'Shots',
+    'Scenes',
+    'Other',
+    'Export'
+]
+
+post_app_list = [
+    'Fusion',
+    'Nuke',
+    'Resolve',
+    'Adobe'
+]
+
+tex_app_list = [
+    'Affinity',
+    'Adobe',
+    'Krita',
+    'Gimp',
+    'Other'
+]
+
+audio_app_list = [
+    'Pro_Tools',
+    'Ableton',
+    'Bitwig',
+    'Reaper',
+    'Reason',
+    'Other'
+]
+
+comp_app_list = [
+    'Fusion',
+    'Resolve',
+    'Nuke',
+    'Adobe'
+]
+
+######## CG stuff
+'''global src subdirectories'''
+global_src_dir_namelist = [
+    'Blender',
+    'Maya',
+    'ZBrush',
+    'Substance',
+    'Other'
+]
+'''global geo subdirectories'''
+global_geo_dir_namelist = [
+    'FBX',
+    'OBJ',
+    'Houdini',
+    'USD',
+    'Cache',
+    'Other'
+]
+'''global texture subdirectories'''
+global_tex_dir_namelist = [
+    'HDRI',
+    'Imperfections',
+    'PBR',
+    'Data_Textures',
+    'Decals',
+    'Substance',
+    'Alphas',
+    'Masks',
+    'Grunge',
+    'OTHER',
+]
+
+'''shot subdirectories'''
+shot_subdir_names = [
+    "GEO",
+    "SRC",
+    "HIP",
+    "RENDER",
+    "TEXTURE",
+    "BLEND",
+    "ASSETS",
+    "HDA",
+    "PDG",
+    "USD",
+    "REFERENCE",
+    "RESEARCH_AND_DEVELOPMENT",
+    "LOOKDEV",
+    "POST_PRODUCTION",
+    "PRE_PRODUCTION",
+    "FINAL",
+    'SCRIPTS',
+    "CLIPS",
+    "VEX",
+    "OTHER",
+]
+
+# Post fx shot stuff
+shot_post_dirnames = [
+    'Audio',
+    'Compositing',
+    'Editing',
+    'Texture',
+    'Project_Files',
+    'Export',
+]
+
+shot_audio_dirnames = [
+    'SFX',
+    'Music',
+    'Reference',
+    'Project_Files',
+]
+
+shot_comp_dirnames = [
+    'LUTs',
+    'Color_Scripts',
+    'Project_Files',
+    'Fusion',
+    'Nuke',
+    'Adobe',
+    'Other',
+    'Export',
+]
+
+
+shot_tex_post_dirnames = [
+    'Data_Textures',
+    'Alphas',
+    'Masks',
+    'PBR',
+    'Grunge',
+    'Substance',
+    'Project_Files',
+    'Other',
+]
