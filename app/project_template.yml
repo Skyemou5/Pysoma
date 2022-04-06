@@ -1,5 +1,5 @@
 # project dirs
-project_dir_data:
+0:
   post_app_subdir_data: &post_app_subdir_data
     - fusion_dir:
       name: Fusion

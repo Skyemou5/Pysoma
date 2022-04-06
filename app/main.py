@@ -4,26 +4,21 @@
 
 import contextlib
 from importlib.resources import path
-#from msilib.schema import File
-# from importlib.resources import path
-# from lzma import _PathOrFile
-# from operator import add
 import os
 import pathlib
 import string
-# import subprocess
 import argparse
 import fnmatch
 import glob
 import sys
 import json
+from unicodedata import name
 import lib.dotenv
 import tkinter as tk
-#import yaml
+import yaml
 import re
-# import logging
-# import shlex
 import argparse
+import pprint
 
 #########################################
 #########################################
@@ -121,25 +116,6 @@ RENDER = ''
 REF = ''
 TEXTURE = ''
 
-#region data classes
-
-class project_data:
-    def __init__(self,name,path) -> None:
-        self.name = name
-        self.path = path
-
-class projects_data:
-    def __init__(self,projects,scan_dirs) -> None:
-        self.projects = projects
-        self.scan_dirs = scan_dirs
-
-class project_dirs:
-    def __init__(self,project_dir_data) -> None:
-        self.project_dir_data = project_dir_data
-
-
-
-#endregion
 #endregion
 #region fix compile issues
 if getattr(sys, 'frozen', False):
@@ -154,8 +130,83 @@ else:
 
 REPO_ROOT = Path(application_path).parents[1]
 dirslist = glob.glob("%s/*/" % REPO_ROOT)
+#endregion
+#region data classes
+
+class config_data(object):
+
+    def __init__(self,config) -> None:
+        self.config = config
+        self.data = {}
+        self.get_file()
+    
+    def get_file(self):
+        with self.config.open() as f:
+            self.config = yaml.load_all(f,Loader=yaml.FullLoader)
+            for self.d in self.config:
+                for self.k, self.v in self.d.items():
+                    self.data[self.k]=self.v
+    @classmethod
+    def data_class(cls,data):
+        pass
 
 
+configfile = pathlib.Path(application_path)/'project_template.yml'
+test = config_data(configfile)
+# pprint(test.data['project_dir_data']['project_root'])
+#pprint(test.data[0]['project_root'].keys())
+
+class project_dir_obj(object):
+
+    def __init__(self,data) -> None:
+        #self.keys_path = keys_path
+        self.data = data
+        self.dir_data = {}
+        self.project_data = {}
+        self.dir_keys = []
+        self.get_keys()
+        self.get_proj_data()
+        self.set_values(self.project_data)
+    def get_keys(self):
+        self.dir_keys = self.data[0]['project_root'].keys()
+    def get_proj_data(self):
+        self.project_data = self.data[0]['project_root']
+    def set_values(self,d):
+        stack = list(d.items())
+        visited = set()
+        while stack:
+            k, v = stack.pop()
+            if isinstance(v,dict):
+                if k not in visited:
+                    stack.extend(v.items())
+            else:
+                print("%s: %s" % (k,v))
+            visited.add()
+        # for self.k, self.v in d.items():
+        #     if isinstance(self.v,dict):
+        #         self.set_values(self.v)
+        #     else:
+        #         pass
+        #         #print(self.k,self.v)
+
+d = project_dir_obj(test.data)
+pprint(d.project_data)
+
+class project_data(object):
+    def __init__(self,name,path) -> None:
+        self.name = name
+        self.path = path
+
+class projects_data(object):
+    def __init__(self,projects,scan_dirs) -> None:
+        self.projects = projects
+        self.scan_dirs = scan_dirs
+
+class project_dirs(object):
+    def __init__(self,project_dir_data) -> None:
+        self.project_dir_data = project_dir_data
+
+#endregion
 #region HELPER METHODS
 #region Directory Setup helper methods
 ###############################
