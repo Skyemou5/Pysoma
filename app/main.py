@@ -121,6 +121,25 @@ RENDER = ''
 REF = ''
 TEXTURE = ''
 
+#region data classes
+
+class project_data:
+    def __init__(self,name,path) -> None:
+        self.name = name
+        self.path = path
+
+class projects_data:
+    def __init__(self,projects,scan_dirs) -> None:
+        self.projects = projects
+        self.scan_dirs = scan_dirs
+
+class project_dirs:
+    def __init__(self,project_dir_data) -> None:
+        self.project_dir_data = project_dir_data
+
+
+
+#endregion
 #endregion
 #region fix compile issues
 if getattr(sys, 'frozen', False):
