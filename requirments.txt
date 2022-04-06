@@ -6,9 +6,12 @@ filelock==3.6.0
 idna==3.3
 pipenv==2022.3.28
 pipreqs==0.4.11
+pkg_resources==0.0.0
 platformdirs==2.5.1
 PyYAML==6.0
 requests==2.27.1
+ruamel.yaml==0.17.21
+ruamel.yaml.clib==0.2.6
 six==1.16.0
 urllib3==1.26.9
 virtualenv==20.14.0

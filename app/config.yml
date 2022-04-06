@@ -28,3 +28,11 @@ projects:
     initialized: no
     
 
+---
+renderers:
+  - OCIO:
+    env:
+    path:
+  -redshift:
+    env:
+    path:

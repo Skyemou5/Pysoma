@@ -1,0 +1,1292 @@
+{
+    "project_root": {
+        "name": "project_name",
+        "type": "directory",
+        "path": null,
+        "env": "PROJECT_ROOT",
+        "h_env": null,
+        "files": "README.md",
+        "gitkeep": true,
+        "children": {
+            "assets_dir": {
+                "name": "assets",
+                "type": "directory",
+                "path": null,
+                "env": "GLOBAL_ASSETS_ROOT",
+                "h_env": null,
+                "files": "README.md",
+                "gitkeep": true,
+                "children": null
+            },
+            "hsite_dir": {
+                "name": "hsite",
+                "type": "directory",
+                "path": null,
+                "env": "HSITE_ROOT",
+                "h_env": "HSITE",
+                "files": "README.md",
+                "gitkeep": false,
+                "children": null
+            },
+            "packages_dir": {
+                "name": "packages",
+                "type": "directory",
+                "path": null,
+                "env": "GLOBAL_PACKAGES",
+                "h_env": "HOUDINI_PACKAGE_DIR",
+                "files": "README.md",
+                "gitkeep": true,
+                "children": null
+            },
+            "pre_pro_dir": {
+                "name": "pre_production",
+                "type": "directory",
+                "path": null,
+                "env": "PRE_PRO",
+                "h_env": null,
+                "files": "README.md",
+                "gitkeep": true,
+                "children": null
+            },
+            "post_pro_dir": {
+                "name": "post_production",
+                "type": "directory",
+                "path": null,
+                "env": "POST_PRODUCTION",
+                "h_env": null,
+                "files": "README.md",
+                "gitkeep": true,
+                "children": null
+            },
+            "shots_dir": {
+                "name": "shots",
+                "type": "directory",
+                "path": null,
+                "env": "SHOTS_ROOT",
+                "h_env": null,
+                "files": "README.md",
+                "gitkeep": true,
+                "children": null
+            },
+            "delivery_dir": {
+                "name": "deliverables",
+                "type": "directory",
+                "path": null,
+                "env": "DELIVER",
+                "h_env": null,
+                "files": "README.md",
+                "gitkeep": true,
+                "children": null
+            },
+            "hda_dir": {
+                "name": "HDA",
+                "type": "directory",
+                "path": null,
+                "env": null,
+                "h_env": null,
+                "files": "README.md",
+                "gitkeep": true,
+                "children": null
+            }
+        }
+    },
+    "assets_subdir_data": [
+        {
+            "src_dir": null,
+            "name": "SRC",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "geo_dir": null,
+            "name": "GEO",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "blend_dir": null,
+            "name": "Blend",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "texture_dir": null,
+            "name": "Texture",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "hda_dir": null,
+            "name": "HDA",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "pdg_dir": null,
+            "name": "PDG",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "usd_dir": null,
+            "name": "USD",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "post_pro_subdir_data": [
+        {
+            "audio_dir": null,
+            "name": "Audio",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": "README.md",
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "comp_dir": null,
+            "name": "Compositing",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": "README.md",
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "editing_dir": null,
+            "name": "Editing",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": "README.md",
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "ref_dir": null,
+            "name": "Reference",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "proj_files_dir": null,
+            "name": "Project_Files",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": "README.md",
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "nuke_dir": null,
+            "name": "Nuke",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "export_dir": null,
+            "name": "Export",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "pre_pro_subdir_data": [
+        {
+            "concept_art_dir": null,
+            "name": "Concept_Art",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "storyboard_dir": null,
+            "name": "Storyboard",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "color_scripts_dir": null,
+            "name": "Color_Scripts",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "animatic_dir": null,
+            "name": "Animatic",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "reference_dir": null,
+            "name": "Reference",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "Other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "edit_subdir_data": [
+        {
+            "project_files_dir": null,
+            "name": "Project_Files",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": "README.md",
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "export_dir": null,
+            "name": "export",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "edit_app_data": [
+        {
+            "resolve_dir": null,
+            "name": "resolve",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "adobe_dir": null,
+            "name": "adobe",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "comp_subdir_data": [
+        {
+            "luts_dir": null,
+            "name": "LUTS",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "color_scripts_dir": null,
+            "name": "Color_Scripts",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "project_files_dir": null,
+            "name": "Project_Files",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "export_dir": null,
+            "name": "export",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "audio_subdir_data": [
+        {
+            "sfx_dir": null,
+            "name": "SFX",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "music_dir": null,
+            "name": "Music",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "reference_dir": null,
+            "name": "reference",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "project_files_dir": null,
+            "name": "SFX",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": "README.md",
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "post_tex_subdir_data": [
+        {
+            "data_tex_dir": null,
+            "name": "Data_Textures",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "alphas_dir": null,
+            "name": "Alphas",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "masks_dir": null,
+            "name": "Masks",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "pbr_dir": null,
+            "name": "PBR",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "pbr_dir": null,
+            "name": "PBR",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "grunge_dir": null,
+            "name": "Grunge",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "substance_dir": null,
+            "name": "Substance",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": [
+                {
+                    "sbr_dir": null,
+                    "name": "sbr",
+                    "type": "directory",
+                    "path": null,
+                    "env": null,
+                    "h_env": null,
+                    "files": null,
+                    "gitkeep": true,
+                    "children": null
+                }
+            ]
+        },
+        {
+            "project_files_dir": null,
+            "name": "Project_Files",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "post_app_subdir_data": [
+        {
+            "fusion_dir": null,
+            "name": "Fusion",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "nuke_dir": null,
+            "name": "Nuke",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "resolve_dir": null,
+            "name": "Resolve",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "adobe_dir": null,
+            "name": "Adobe",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "tex_app_subdir_data": [
+        {
+            "affinity_dir": null,
+            "name": "Affinity",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "adobe_dir": null,
+            "name": "Adobe",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "krita_dir": null,
+            "name": "krita",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "gimp_dir": null,
+            "name": "Gimp",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "substance_dir": null,
+            "name": "Substance",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "audio_app_subdir_data": [
+        {
+            "pro_tools_dir": null,
+            "name": "Pro_Tools",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "ableton_dir": null,
+            "name": "Ableton",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "bitwig_dir": null,
+            "name": "Bitwig",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "reaper_dir": null,
+            "name": "Reaper",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "reason_dir": null,
+            "name": "Reason",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "comp_app_subdir_data": [
+        {
+            "fusion_dir": null,
+            "name": "Fusion",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "resolve_dir": null,
+            "name": "Resolve",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "nuke_dir": null,
+            "name": "Nuke",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "adobe_dir": null,
+            "name": "Adobe",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "src_subdir_data": [
+        {
+            "blender_dir": null,
+            "name": "Blender",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "maya_dir": null,
+            "name": "Maya",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "zbrush_dir": null,
+            "name": "ZBrush",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "substance_dir": null,
+            "name": "Substance",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "geo_subdir_data": [
+        {
+            "fbx_dir": null,
+            "name": "FBX",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "obj_dir": null,
+            "name": "OBJ",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "houdini_dir": null,
+            "name": "Houdini",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "usd_dir": null,
+            "name": "USD",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "cache_dir": null,
+            "name": "cache",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "tex_subdir_data": [
+        {
+            "hdri_dir": null,
+            "name": "HDRI",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "imperfections_dir": null,
+            "name": "Imperfections",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "pbr_dir": null,
+            "name": "PBR",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "data_tex_dir": null,
+            "name": "Data_Textures",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "decals_dir": null,
+            "name": "Decals",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "substance_dir": null,
+            "name": "Substance",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "alphas_dir": null,
+            "name": "Alphas",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "masks_dir": null,
+            "name": "Masks",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "grunge_dir": null,
+            "name": "Grunge",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "Other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ],
+    "shot_subdir_data": [
+        {
+            "geo_dir": null,
+            "name": "geo",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "src_dir": null,
+            "name": "src",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "hip_dir": null,
+            "name": "hip",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "render_dir": null,
+            "name": "render",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "texture_dir": null,
+            "name": "texture",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "blend_dir": null,
+            "name": "blend",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "assets_dir": null,
+            "name": "assets",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "hda_dir": null,
+            "name": "HDA",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "reference_dir": null,
+            "name": "reference",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "research_and_development_dir": null,
+            "name": "reserach_and_development",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "lookdev_dir": null,
+            "name": "lookdev",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "post_production_dir": null,
+            "name": "post_production",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "pre_production_dir": null,
+            "name": "pre_production",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "final_dir": null,
+            "name": "final",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "scripts_dir": null,
+            "name": "scripts",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "clips_dir": null,
+            "name": "clips",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "vex_dir": null,
+            "name": "vex",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        },
+        {
+            "other_dir": null,
+            "name": "other",
+            "type": "directory",
+            "path": null,
+            "env": null,
+            "h_env": null,
+            "files": null,
+            "gitkeep": true,
+            "children": null
+        }
+    ]
+}

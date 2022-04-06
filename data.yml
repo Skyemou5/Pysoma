@@ -1,0 +1,1052 @@
+dir_data:
+  assets_subdir_data: &id007
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: SRC
+    path: null
+    src_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    geo_dir: null
+    gitkeep: true
+    h_env: null
+    name: GEO
+    path: null
+    type: directory
+  - blend_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Blend
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Texture
+    path: null
+    texture_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    hda_dir: null
+    name: HDA
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: PDG
+    path: null
+    pdg_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: USD
+    path: null
+    type: directory
+    usd_dir: null
+  audio_app_subdir_data: &id001
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Pro_Tools
+    path: null
+    pro_tools_dir: null
+    type: directory
+  - ableton_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Ableton
+    path: null
+    type: directory
+  - bitwig_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Bitwig
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Reaper
+    path: null
+    reaper_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Reason
+    path: null
+    reason_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  audio_subdir_data: &id003
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: SFX
+    path: null
+    sfx_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    music_dir: null
+    name: Music
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: reference
+    path: null
+    reference_dir: null
+    type: directory
+  - children: *id001
+    env: null
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: SFX
+    path: null
+    project_files_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  comp_app_subdir_data:
+  - children: null
+    env: null
+    files: null
+    fusion_dir: null
+    gitkeep: true
+    h_env: null
+    name: Fusion
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Resolve
+    path: null
+    resolve_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Nuke
+    nuke_dir: null
+    path: null
+    type: directory
+  - adobe_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Adobe
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  comp_subdir_data: &id004
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    luts_dir: null
+    name: LUTS
+    path: null
+    type: directory
+  - children: null
+    color_scripts_dir: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Color_Scripts
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Project_Files
+    path: null
+    project_files_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  - children: null
+    env: null
+    export_dir: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: export
+    path: null
+    type: directory
+  edit_app_data: &id002
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: resolve
+    path: null
+    resolve_dir: null
+    type: directory
+  - adobe_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: adobe
+    path: null
+    type: directory
+  edit_subdir_data: &id005
+  - children: *id002
+    env: null
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: Project_Files
+    path: null
+    project_files_dir: null
+    type: directory
+  - children: null
+    env: null
+    export_dir: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: export
+    path: null
+    type: directory
+  geo_subdir_data: &id010
+  - children: null
+    env: null
+    fbx_dir: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: FBX
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: OBJ
+    obj_dir: null
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    houdini_dir: null
+    name: Houdini
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: USD
+    path: null
+    type: directory
+    usd_dir: null
+  - cache_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: cache
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  post_app_subdir_data: &id006
+  - children: null
+    env: null
+    files: null
+    fusion_dir: null
+    gitkeep: true
+    h_env: null
+    name: Fusion
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Nuke
+    nuke_dir: null
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Resolve
+    path: null
+    resolve_dir: null
+    type: directory
+  - adobe_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Adobe
+    path: null
+    type: directory
+  post_pro_subdir_data: &id008
+  - audio_dir: null
+    children: *id003
+    env: null
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: Audio
+    path: null
+    type: directory
+  - children: *id004
+    comp_dir: null
+    env: null
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: Compositing
+    path: null
+    type: directory
+  - children: *id005
+    editing_dir: null
+    env: null
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: Editing
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Reference
+    path: null
+    ref_dir: null
+    type: directory
+  - children: *id006
+    env: null
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: Project_Files
+    path: null
+    proj_files_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Nuke
+    nuke_dir: null
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  - children: null
+    env: null
+    export_dir: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Export
+    path: null
+    type: directory
+  post_tex_subdir_data:
+  - children: null
+    data_tex_dir: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Data_Textures
+    path: null
+    type: directory
+  - alphas_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Alphas
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    masks_dir: null
+    name: Masks
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: PBR
+    path: null
+    pbr_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: PBR
+    path: null
+    pbr_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    grunge_dir: null
+    h_env: null
+    name: Grunge
+    path: null
+    type: directory
+  - children:
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: sbr
+      path: null
+      sbr_dir: null
+      type: directory
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Substance
+    path: null
+    substance_dir: null
+    type: directory
+  - children: *id006
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Project_Files
+    path: null
+    project_files_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  pre_pro_subdir_data: &id009
+  - children: null
+    concept_art_dir: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Concept_Art
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Storyboard
+    path: null
+    storyboard_dir: null
+    type: directory
+  - children: null
+    color_scripts_dir: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Color_Scripts
+    path: null
+    type: directory
+  - animatic_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Animatic
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Reference
+    path: null
+    reference_dir: null
+    type: directory
+  - Other_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    path: null
+    type: directory
+  project_root:
+    children:
+      assets_dir:
+        children: *id007
+        env: GLOBAL_ASSETS_ROOT
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: assets
+        path: null
+        type: directory
+      delivery_dir:
+        children: null
+        env: DELIVER
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: deliverables
+        path: null
+        type: directory
+      hda_dir:
+        children: null
+        env: null
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: HDA
+        path: null
+        type: directory
+      hsite_dir:
+        children: null
+        env: HSITE_ROOT
+        files: README.md
+        gitkeep: false
+        h_env: HSITE
+        name: hsite
+        path: null
+        type: directory
+      packages_dir:
+        children: null
+        env: GLOBAL_PACKAGES
+        files: README.md
+        gitkeep: true
+        h_env: HOUDINI_PACKAGE_DIR
+        name: packages
+        path: null
+        type: directory
+      post_pro_dir:
+        children: *id008
+        env: POST_PRODUCTION
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: post_production
+        path: null
+        type: directory
+      pre_pro_dir:
+        children: *id009
+        env: PRE_PRO
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: pre_production
+        path: null
+        type: directory
+      shots_dir:
+        children: null
+        env: SHOTS_ROOT
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: shots
+        path: null
+        type: directory
+    env: PROJECT_ROOT
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: project_name
+    path: null
+    type: directory
+  shot_subdir_data:
+  - children: *id010
+    env: null
+    files: null
+    geo_dir: null
+    gitkeep: true
+    h_env: null
+    name: geo
+    path: null
+    type: directory
+  - children: &id011
+    - blender_dir: null
+      children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: Blender
+      path: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      maya_dir: null
+      name: Maya
+      path: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: ZBrush
+      path: null
+      type: directory
+      zbrush_dir: null
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: Substance
+      path: null
+      substance_dir: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: Other
+      other_dir: null
+      path: null
+      type: directory
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: src
+    path: null
+    src_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    hip_dir: null
+    name: hip
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: render
+    path: null
+    render_dir: null
+    type: directory
+  - children: &id012
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      hdri_dir: null
+      name: HDRI
+      path: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      imperfections_dir: null
+      name: Imperfections
+      path: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: PBR
+      path: null
+      pbr_dir: null
+      type: directory
+    - children: null
+      data_tex_dir: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: Data_Textures
+      path: null
+      type: directory
+    - children: null
+      decals_dir: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: Decals
+      path: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: Substance
+      path: null
+      substance_dir: null
+      type: directory
+    - alphas_dir: null
+      children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: Alphas
+      path: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      masks_dir: null
+      name: Masks
+      path: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      grunge_dir: null
+      h_env: null
+      name: Grunge
+      path: null
+      type: directory
+    - children: null
+      env: null
+      files: null
+      gitkeep: true
+      h_env: null
+      name: Other
+      other_dir: null
+      path: null
+      type: directory
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: texture
+    path: null
+    texture_dir: null
+    type: directory
+  - blend_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: blend
+    path: null
+    type: directory
+  - assets_dir: null
+    children: *id007
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: assets
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    hda_dir: null
+    name: HDA
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: reference
+    path: null
+    reference_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: reserach_and_development
+    path: null
+    research_and_development_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    lookdev_dir: null
+    name: lookdev
+    path: null
+    type: directory
+  - children: *id008
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: post_production
+    path: null
+    post_production_dir: null
+    type: directory
+  - children: *id009
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: pre_production
+    path: null
+    pre_production_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    final_dir: null
+    gitkeep: true
+    h_env: null
+    name: final
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: scripts
+    path: null
+    scripts_dir: null
+    type: directory
+  - children: null
+    clips_dir: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: clips
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: vex
+    path: null
+    type: directory
+    vex_dir: null
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: other
+    other_dir: null
+    path: null
+    type: directory
+  src_subdir_data: *id011
+  tex_app_subdir_data:
+  - affinity_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Affinity
+    path: null
+    type: directory
+  - adobe_dir: null
+    children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Adobe
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    krita_dir: null
+    name: krita
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gimp_dir: null
+    gitkeep: true
+    h_env: null
+    name: Gimp
+    path: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Substance
+    path: null
+    substance_dir: null
+    type: directory
+  - children: null
+    env: null
+    files: null
+    gitkeep: true
+    h_env: null
+    name: Other
+    other_dir: null
+    path: null
+    type: directory
+  tex_subdir_data: *id012
