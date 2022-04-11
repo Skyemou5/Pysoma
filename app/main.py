@@ -3,7 +3,6 @@
 #region HEADER
 
 import contextlib
-from importlib.resources import path
 import os
 import pathlib
 import string
@@ -19,6 +18,8 @@ import yaml
 import re
 import argparse
 import pprint
+import collections
+from ruamel.yaml import YAML
 
 #########################################
 #########################################
@@ -133,44 +134,42 @@ dirslist = glob.glob("%s/*/" % REPO_ROOT)
 #endregion
 #region data classes
 
-class config_data(object):
-
+class ConfigData(object):
     def __init__(self,config) -> None:
         self.config = config
-        self.data = {}
-        self.get_file()
-    
-    def get_file(self):
+        self.data = self.read_file()
+    def read_file(self):
+        result = {}
         with self.config.open() as f:
-            self.config = yaml.load_all(f,Loader=yaml.FullLoader)
-            for self.d in self.config:
-                for self.k, self.v in self.d.items():
-                    self.data[self.k]=self.v
-    @classmethod
-    def data_class(cls,data):
-        pass
+            #self.config = yaml.load_all(f,Loader=yaml.FullLoader)
+            self.config = yaml.safe_load_all(f)
+            for d in self.config:
+                for k, v in d.items():
+                    result[k]=v
+        return result
+    def write_file(self):
+        # with self.config.open('r') as f:
+        #     data = yaml.safe_load_add(f)
+        #     f.close()
+        with self.config.open('w') as f:
+            data = yaml.dump()
 
-
-configfile = pathlib.Path(application_path)/'project_template.yml'
-test = config_data(configfile)
-# pprint(test.data['project_dir_data']['project_root'])
-#pprint(test.data[0]['project_root'].keys())
 
 class project_dir_obj(object):
-
-    def __init__(self,data) -> None:
+    def __init__(self) -> None:
         #self.keys_path = keys_path
-        self.data = data
-        self.dir_data = {}
+        # self.data = data
+        self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
+        self.template_data = ConfigData(self.project_temp_file).data
         self.project_data = {}
         self.dir_keys = []
         self.get_keys()
         self.get_proj_data()
         self.set_values(self.project_data)
     def get_keys(self):
-        self.dir_keys = self.data[0]['project_root'].keys()
+        self.dir_keys = self.template_data[0]['project_root'].keys()
     def get_proj_data(self):
-        self.project_data = self.data[0]['project_root']
+        self.project_data = self.template_data[0]['project_root']
     def set_values(self,d):
         stack = list(d.items())
         visited = set()
@@ -181,30 +180,53 @@ class project_dir_obj(object):
                     stack.extend(v.items())
             else:
                 print("%s: %s" % (k,v))
-            visited.add()
+                pass
+            visited.add(k)
         # for self.k, self.v in d.items():
         #     if isinstance(self.v,dict):
         #         self.set_values(self.v)
         #     else:
         #         pass
         #         #print(self.k,self.v)
+    def set_new_project_info(self,data):
+        pass
 
-d = project_dir_obj(test.data)
-pprint(d.project_data)
+class AppData(object):
+    def __init__(self,configdataobj) -> None:
+        self.configdataobj = configdataobj
+        self.data = configdataobj.data
+
+class Dict2Class(object):
+    def __init__(self,my_dict) -> None:
+        for k in my_dict:
+            setattr(self,k,my_dict[k])
 
 class project_data(object):
-    def __init__(self,name,path) -> None:
+    def __init__(self,name,path,default_args,initialized) -> None:
         self.name = name
         self.path = path
+        self.default_args = default_args
+        self.initialized = initialized
 
-class projects_data(object):
-    def __init__(self,projects,scan_dirs) -> None:
-        self.projects = projects
-        self.scan_dirs = scan_dirs
+class create_project(object):
+    def __init__(self) -> None:
+        pass
 
-class project_dirs(object):
-    def __init__(self,project_dir_data) -> None:
-        self.project_dir_data = project_dir_data
+
+main_config_file = pathlib.Path(application_path)/'main_config.yml'
+project_config_file = pathlib.Path(application_path)/'project_config.yml'
+project_template_file = pathlib.Path(application_path)/'project_template.yml'
+
+
+project_template = ConfigData(project_template_file)
+main_config = ConfigData(main_config_file)
+project_config = ConfigData(project_config_file)
+
+
+pprint(project_dir_obj())
+#pprint(Dict2Class(project_dir_obj(project_template.data).data))
+#pprint(AppData(main_config).data)
+#pprint(Dict2Class(main_config.data).projects)
 
 #endregion
 #region HELPER METHODS

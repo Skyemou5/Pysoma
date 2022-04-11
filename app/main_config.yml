@@ -1,0 +1,20 @@
+#on windows please enter a double escaped path otherwise the program will throw an error when parsing
+houdini_paths:
+  linux: /opt/hfs18.5.759
+  mac: /Applications/Houdini18.5.759
+  win: C:\\Program\ Files\\Side\ Effects\ Software\\Houdini\ 18.5.759
+project_scan_dirs:
+  - path:
+projects:
+  - project_temp:
+    name:
+    path:
+    default_args:
+    initialized: no
+renderers:
+  - OCIO:
+    env:
+    path:
+  - redshift:
+    env:
+    path:
