@@ -19,6 +19,7 @@ This was developed for my needs during my senior project using Houdini with a sm
 - add support for choosing houdini versions - currently 18.5.759 is hardcoded in for my project
 - refactor to properly serialize data with yaml and only use env files for enviornments
 - Implement unit testing
+- Implement project scanning
 
 # Future goals
 - add support for game projects with unity and unreal and possibly godot

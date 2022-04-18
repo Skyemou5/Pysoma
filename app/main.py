@@ -49,7 +49,7 @@ import lib.flatdict as flatdict
 # mac houdini terminal             #
 # win houdini command line tools   #
 ####################################
-
+yaml = YAML()
 
 hou_18_paths = {
     "linux":"/opt/hfs18.5.759",
@@ -134,10 +134,10 @@ else:
 
 REPO_ROOT = Path(application_path).parents[1]
 dirslist = glob.glob("%s/*/" % REPO_ROOT)
+
 #endregion
 #region data classes
 # classes
-
 
 class ConfigData(object):
     def __init__(self,config) -> None:
@@ -157,8 +157,12 @@ class ConfigData(object):
                     result[k]=v
         return result
     def write_file(self):
-        with self.config_file.open('w') as f:
-            f.write(str(self.yaml.dump(self.data,self.config_file)))
+        print('dump dump dump')
+        self.yaml.dump(self.data,self.config_file)
+        # with self.config_file.open('w') as f:
+        #     #print(f)
+        #     f.write(self.yaml.dump(self.data,self.config_file))
+        #     #f.write(str(self.yaml.dump(self.data,self.config_file)))
     def refresh(self):
         self.data = self.load_file()
     def update(self):
@@ -202,7 +206,6 @@ class ProjectData(object):
     def get_shot_template(self):
         self.shot_temp = self.data[0]['shot_subdir_data']
     def set_values(self,d):
-
         stack = list(d.items())
         visited = set()
         while stack:
@@ -236,7 +239,7 @@ class MainConfig(object):
         self.config_path = pathlib.Path(pathlib.Path(application_path)/'main_config.yml')
         self.config = ConfigData(self.config_path)
         self.project_template = self.config.data['None']['templates']['project_template']
-        self.new_project_config = self.config.data['None']['templates']['project_config']
+        self.new_project_config = self.config.data['None']['templates']['project_template']['project_config']
         self.houdini_paths = self.config.data['None']['houdini_paths']
         self.config.data['None']['project_scan_dirs']=[None]
         self.config.data['None']['projects']=[]
@@ -266,14 +269,10 @@ class MainConfig(object):
         '''
         Insert a list of tuples and match the keys and it will update the values
         '''
-        print('update project')
-        
+        # print('update project')
         for item in data:
             found=False
             for config_item in self.new_project_config.items():
-                #print(config_item)
-                # print(f'{item[0]} : {config_item}')
-                # print(item[0]==config_item[0])
                 if item[0]==config_item[0]:
                     n = item[1]
                     self.new_project_config[item[0]]=n
@@ -283,9 +282,8 @@ class MainConfig(object):
         #pprint(self.new_project_config)
     def add_scan_path(self,data):
         self.config['None']['project_scan_dirs'].append(data)
-    # implement remove scan path
+    # TODO: implement remove scan path
     def add_project(self,data):
-        
         for item in self.config.data['None']['projects']:
             print(item)
             for k,v in data.items():
@@ -293,11 +291,8 @@ class MainConfig(object):
         self.config.data['None']['projects'].append(data)
     def remove_project(self,name):
         print('remove project...')
-        #pprint(self.config.data['None']['projects'])
         if not self.config.data['None']['projects']==None:
             for project in self.config.data['None']['projects']:
-                # for item in project.items():
-                #     print(item[])
                 for k,v in project.items():
                     if k == 'name' and v == name:
                         self.config.data['None']['projects'].remove(project)
@@ -311,6 +306,8 @@ class MainConfig(object):
         self.config.refresh()
     def write_config(self):
         self.config.update()
+    def write_project_config():
+        pass
 
 # project config stuff
 class ProjectConfig(object):
@@ -338,6 +335,7 @@ main_config_file = pathlib.Path(application_path)/'main_config.yml'
 
 project_template_file = pathlib.Path(application_path)/'project_template.yml'
 
+# config classes
 
 project_data = ProjectData()
 main_config = MainConfig()
@@ -376,7 +374,6 @@ def get_path(root,target):
 
 
 def add_var_to_dict(k,v):
-
     env_dict[k]=v
 
 
@@ -1946,8 +1943,8 @@ def choose_proj_dir():
     print(f'You have chosen {PROJECT_ROOT} as your main project directory')
     input('Press Enter to continue...')
 
-#region check for projects
 
+#region check for projects
 #TODO show existing paths
 def check_for_existing_projects():
     path = pathlib.Path(application_path)/'.temp.env'
@@ -2040,7 +2037,7 @@ def get_level(dct, level):
     else:
         yield from ((kk, vv) for v in dct.values() if isinstance(v, dict) for kk, vv in get_level(v, level-1))
 
-def parse_dict(data):
+def parse_nested_dict(data):
     result = {}
     stack = list(data.items())
     visited = set()
@@ -2052,7 +2049,7 @@ def parse_dict(data):
         else:
             if k == 'name':
                 result[k]=v
-                print("%s: %s" % (k,v))
+                #print("%s: %s" % (k,v))
             #self.new_data[k]=v
             #print("%s: %s" % (k,v))
             pass
@@ -2064,11 +2061,19 @@ def flatten_dict(data):
     result = flatdict.FlatDict(data,delimiter=':')
     return result
 
-def check_for_projects_in_folder(path):
-    result = {}
-    dataclass = project_data
+def add_project_to_list(path):
+    pass
 
-    template = dict(dataclass.project_data)
+def check_for_projects_in_folder(path):
+    # TODO: Fix directory scanning
+    
+    result = {}
+    #dataclass = project_data
+    # pprint(dataclass.project_data)
+    # template = dict(dataclass.project_data)
+    
+
+
     #print(template)
 
     # pprint(flatten(template))
@@ -2081,7 +2086,7 @@ def check_for_projects_in_folder(path):
     # pprint(flattendict)
     
 
-    names_dict = parse_dict(template)
+    #names_dict = parse_dict(template)
     # for i in names_dict.items():
     #     print(i)
     #pprint(names_dict)
@@ -2177,6 +2182,38 @@ def type_path_of_dir():
 #TODO scan or open existing projects
 # if no temp or temp is empty bring up below options
 # otherwise ask to open currently cached projects or do the below
+def user_choose_folder_methods_noscan() -> int:
+    options = {
+        1:'default: Open gui to choose path',
+        2:'type in path to scan',
+    }
+    op_nums = []
+    choice = 0
+    for k, v in options.items():
+        print(f'{k} : {v}')
+        op_nums.append(k)
+
+    while True:
+        try:
+            user_input = int(input('select a number to choose one of the options: '))
+
+            if user_input in op_nums:
+                print(f'You chose: {options[user_input]}')
+                if user_input == 1:
+                    choice = user_input
+                elif user_input == 2:
+                    choice = user_input
+                else:
+                    raise ValueError
+                break
+            else:
+                raise ValueError
+        except ValueError:
+            print('Please enter a valid choice...')
+            continue
+    #print(choice)
+    return choice
+
 
 def user_choose_folder_methods():
     options = {
@@ -2215,7 +2252,24 @@ def user_choose_folder_methods():
 
 
 
-def choose_folder_method(choice):
+def choose_folder_method(choice: int):
+    app_root = pathlib.Path(application_path)
+    result = ''
+    print(f'your choice:: {choice}')
+    try:
+        if choice == 1:
+            print('open gui')
+            result = choose_dir_gui()
+        elif choice == 2:
+            result = type_path_of_dir()
+        else:
+            raise ValueError
+    except ValueError:
+        print('couldn\'t choose scan method quitting...')
+        quit()
+    return result
+
+def choose_folder_scan_method(choice):
     app_root = pathlib.Path(application_path)
     result = ''
     try:
@@ -2228,7 +2282,7 @@ def choose_folder_method(choice):
         else:
             raise ValueError
     except ValueError:
-        print('couldn\'t choose scan method quitting...')
+        print('couldn\'t choose folder method method quitting...')
         quit()
     return result
 
@@ -2344,34 +2398,31 @@ args = parser.parse_args()
 # TODO:convert to yaml from config
 def projects_init_main():
     # args
-    # pprint(vars(config_data_class))
-    # print(config_data_class.appdata['initialized'])
 
-    #pprint(project_data.shot_temp)
 
     app_root = pathlib.Path(application_path)
     temp_path = pathlib.Path(application_path)/'.temp.env'
 
-    #pprint(project_data.project_data)
-    # check if
-    #if args.init:
-    #if not (temp_path.exists()):
-
-    print(main_config.config.data['None']['appdata']['initialized'])
     if not (main_config.config.data['None']['appdata']['initialized']):
         print('First time setup')
-        choice = user_choose_folder_methods()
-        p_list = choose_scan_method(choice)
-        #write_temp(p_list)
-    else:
+        if y_n_q('Would you like to open an existing project?'):
+            print('opening project')
+        else:
+            choice = user_choose_folder_methods_noscan()
+            path = choose_folder_method(choice)
+            main_config.update_new_project_data([('path',path),('name',path.name)])
+            pprint(main_config.config.data)
+            main_config.config.write_file()
+
+    else:   
         print('The following projects exist...')
         read_temp_file(temp_path)
         if y_n_q('Would you like to open an existing project?'):
             if check_if_temp_empty():
                 print('No projects saved...')
                 print('Scan for projects or create a new one...')
-                choice = user_choose_folder_methods()
-                p_list = choose_scan_method(choice)
+                choice = user_choose_folder_methods_noscan()
+                p_list = choose_folder_method(choice)
             else:
                 project_list = list_projects(temp_path)
                 pprint(project_list)
@@ -2379,7 +2430,7 @@ def projects_init_main():
         else:
             print('Create new project')
             print('Choose directory to create project in...')
-            choose_folder = user_choose_folder_methods()
+            choose_folder = user_choose_folder_methods_noscan()
             parent_path = choose_folder_method(choose_folder)
             print(parent_path)
             #project_name_setup()
