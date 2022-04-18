@@ -11,6 +11,7 @@ import fnmatch
 import glob
 import sys
 import json
+from typing import OrderedDict
 from unicodedata import name
 import lib.dotenv
 import tkinter as tk
@@ -21,6 +22,7 @@ import pprint
 import collections
 from ruamel.yaml import YAML
 
+
 #########################################
 #########################################
 #########################################
@@ -30,6 +32,7 @@ from pathlib import Path, PurePath
 from sys import platform, stderr, stdout
 #from simple_term_menu import TerminalMenu
 from lib.dotenv import dotenv_values, load_dotenv
+import lib.flatdict as flatdict
 
 ##########################################
 ##########################################
@@ -133,44 +136,73 @@ REPO_ROOT = Path(application_path).parents[1]
 dirslist = glob.glob("%s/*/" % REPO_ROOT)
 #endregion
 #region data classes
+# classes
+
 
 class ConfigData(object):
     def __init__(self,config) -> None:
+        self.yaml = YAML()
         self.config = config
-        self.data = self.read_file()
-    def read_file(self):
+        self.config_file = pathlib.Path(self.config)
+        self.data = self.load_file()
+        self.new_data = {}
+        self.parse_dict()
+        #self.new_data = self.load_file()
+    def load_file(self):
         result = {}
-        with self.config.open() as f:
-            #self.config = yaml.load_all(f,Loader=yaml.FullLoader)
-            self.config = yaml.safe_load_all(f)
-            for d in self.config:
-                for k, v in d.items():
+        with self.config_file.open() as f:
+            conf = self.yaml.load_all(f)
+            for d in conf:
+                for k,v in d.items():
                     result[k]=v
         return result
     def write_file(self):
-        # with self.config.open('r') as f:
-        #     data = yaml.safe_load_add(f)
-        #     f.close()
-        with self.config.open('w') as f:
-            data = yaml.dump()
+        with self.config_file.open('w') as f:
+            f.write(str(self.yaml.dump(self.data,self.config_file)))
+    def refresh(self):
+        self.data = self.load_file()
+    def update(self):
+        print('Updating File....')
+        self.write_file()
+    def print_data(self):
+        print('printing config data...... ')
+        pprint(self.data)
+    def parse_dict(self):
+        stack = list(self.data.items())
+        visited = set()
+        while stack:
+            k, v = stack.pop()
+            if isinstance(v,dict):
+                if k not in visited:
+                    stack.extend(v.items())
+            else:
+                self.new_data[k]=v
+                #print("%s: %s" % (k,v))
+                pass
+            visited.add(k)
 
 
-class project_dir_obj(object):
+class ProjectData(object):
     def __init__(self) -> None:
         #self.keys_path = keys_path
         # self.data = data
         self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
-        self.template_data = ConfigData(self.project_temp_file).data
+        self.data = ConfigData(self.project_temp_file).data
         self.project_data = {}
+        self.new_data = {}
         self.dir_keys = []
         self.get_keys()
+        self.shot_temp = {}
         self.get_proj_data()
         self.set_values(self.project_data)
     def get_keys(self):
-        self.dir_keys = self.template_data[0]['project_root'].keys()
+        self.dir_keys = self.data[0]['project_root'].keys()
     def get_proj_data(self):
-        self.project_data = self.template_data[0]['project_root']
+        self.project_data = self.data[0]['project_root']
+    def get_shot_template(self):
+        self.shot_temp = self.data[0]['shot_subdir_data']
     def set_values(self,d):
+
         stack = list(d.items())
         visited = set()
         while stack:
@@ -179,66 +211,158 @@ class project_dir_obj(object):
                 if k not in visited:
                     stack.extend(v.items())
             else:
-                print("%s: %s" % (k,v))
+                self.new_data[k]=v
+                #print("%s: %s" % (k,v))
                 pass
             visited.add(k)
-        # for self.k, self.v in d.items():
-        #     if isinstance(self.v,dict):
-        #         self.set_values(self.v)
-        #     else:
-        #         pass
-        #         #print(self.k,self.v)
     def set_new_project_info(self,data):
         pass
+
 
 class AppData(object):
     def __init__(self,configdataobj) -> None:
         self.configdataobj = configdataobj
         self.data = configdataobj.data
 
+
 class Dict2Class(object):
     def __init__(self,my_dict) -> None:
         for k in my_dict:
             setattr(self,k,my_dict[k])
 
-class project_data(object):
-    def __init__(self,name,path,default_args,initialized) -> None:
-        self.name = name
-        self.path = path
-        self.default_args = default_args
-        self.initialized = initialized
+
+class MainConfig(object):
+    def __init__(self) -> None:
+        self.config_path = pathlib.Path(pathlib.Path(application_path)/'main_config.yml')
+        self.config = ConfigData(self.config_path)
+        self.project_template = self.config.data['None']['templates']['project_template']
+        self.new_project_config = self.config.data['None']['templates']['project_config']
+        self.houdini_paths = self.config.data['None']['houdini_paths']
+        self.config.data['None']['project_scan_dirs']=[None]
+        self.config.data['None']['projects']=[]
+    def update_new_project_data(self,data: list):
+        '''
+        insert list of tuples and match keys from yaml
+        '''
+        result = []
+        data_copy = {}
+        for k,v in self.project_template.items():
+            data_copy[k]=v
+        for item in data:
+            found=False
+            for config_item in data_copy.items():
+                #print(config_item)
+                # print(f'{item[0]} : {config_item}')
+                # print(item[0]==config_item[0])
+                if item[0]==config_item[0]:
+                    n = item[1]
+                    data_copy[item[0]]=n
+                    found=True
+            if not found:
+                print(f'{item} not a field in project config...')
+        self.add_project(data_copy)
+        #pprint(self.new_project_config)
+    def update_new_project_config(self,data: list):
+        '''
+        Insert a list of tuples and match the keys and it will update the values
+        '''
+        print('update project')
+        
+        for item in data:
+            found=False
+            for config_item in self.new_project_config.items():
+                #print(config_item)
+                # print(f'{item[0]} : {config_item}')
+                # print(item[0]==config_item[0])
+                if item[0]==config_item[0]:
+                    n = item[1]
+                    self.new_project_config[item[0]]=n
+                    found=True
+            if not found:
+                print(f'{item} not a field in project config... ')
+        #pprint(self.new_project_config)
+    def add_scan_path(self,data):
+        self.config['None']['project_scan_dirs'].append(data)
+    # implement remove scan path
+    def add_project(self,data):
+        
+        for item in self.config.data['None']['projects']:
+            print(item)
+            for k,v in data.items():
+                print(f'{k} :: {v}')
+        self.config.data['None']['projects'].append(data)
+    def remove_project(self,name):
+        print('remove project...')
+        #pprint(self.config.data['None']['projects'])
+        if not self.config.data['None']['projects']==None:
+            for project in self.config.data['None']['projects']:
+                # for item in project.items():
+                #     print(item[])
+                for k,v in project.items():
+                    if k == 'name' and v == name:
+                        self.config.data['None']['projects'].remove(project)
+        else:
+            print('no projects exist')
+    def add_project_list(self,data):
+        self.config['None']['projects'].append(data)
+    def toggle_initialize(self):
+        self.config['None']['appdata']['initialized'] = not self.config['None']['appdata']['initialized']
+    def read_config(self):
+        self.config.refresh()
+    def write_config(self):
+        self.config.update()
+
+# project config stuff
+class ProjectConfig(object):
+    def __init__(self) -> None:
+        pass
+
+
+class shot_data(object):
+    def __init__(self) -> None:
+        pass
+
 
 class create_project(object):
     def __init__(self) -> None:
         pass
 
 
+def none_replace(ls):
+    p = None
+    return [p:=e if e is not None else p for e in ls]
+
+
+# actual yaml data setup
 main_config_file = pathlib.Path(application_path)/'main_config.yml'
-project_config_file = pathlib.Path(application_path)/'project_config.yml'
+
 project_template_file = pathlib.Path(application_path)/'project_template.yml'
 
 
-project_template = ConfigData(project_template_file)
-main_config = ConfigData(main_config_file)
-project_config = ConfigData(project_config_file)
+project_data = ProjectData()
+main_config = MainConfig()
 
 
-pprint(project_dir_obj())
-#pprint(Dict2Class(project_dir_obj(project_template.data).data))
-#pprint(AppData(main_config).data)
-#pprint(Dict2Class(main_config.data).projects)
+#main_config.update_new_project_data([('name','test project')])
+#main_config.remove_project('test project')
+#main_config.write_config()
+#pprint(main_config.config.data)
+
 
 #endregion
 #region HELPER METHODS
 #region Directory Setup helper methods
+
 ###############################
 ####### DIRECTORY PATHS #######
 ###############################
+
 
 def unpack_dotenv(env_d):
     import lib.flatdict as flatdict
     result = flatdict.FlatDict(env_d,delimiter=':')
     return result
+
 
 def add_dict_to_dict(sd,td):
     for k, v in sd.items():
@@ -250,16 +374,20 @@ def get_path(root,target):
     new_path = PurePath(root,target)
     return new_path
 
+
 def add_var_to_dict(k,v):
 
     env_dict[k]=v
 
+
 def add_to_arr(obj):
     path_list.append(obj)
+
 
 def add_to_dict_and_arr(k,v):
     add_var_to_dict(k,v)
     add_to_arr(v)
+
 
 def add_dirlist_to_return_dict(list):
 
@@ -277,6 +405,7 @@ def add_dirlist_to_return_dict(list):
             continue
     return dict
 
+
 def create_dir_if_not_present(dirpath):
 
     if not dirpath.exists():
@@ -285,7 +414,6 @@ def create_dir_if_not_present(dirpath):
     else:
         print(f'!!!--------------Directory {dirpath.name} in {dirpath.parent} exists! Skipping...')
 
-    
 
 def create_dirs_from_list(currpath,dirlist) -> list:
     """
@@ -307,6 +435,7 @@ def create_dirs_from_list(currpath,dirlist) -> list:
             print('could not add child dir to list!')
     return newpathlist
 
+
 def env_from_file(path):
     #env_file = pathlib.Path(pathlib.Path.cwd())/'.config/config.env'
     dict_var = dotenv_values(path)
@@ -322,14 +451,17 @@ def add_dirlist_to_dict(dirlist,nameprefix):
 
         add_to_dict_and_arr(k,d)
 
+
 def is_empty(folder: Path) -> bool:
     return not any(folder.iterdir())
+
 
 # create empty file in empty dir for git
 def add_file_to_empty_folder(path):
     if is_empty(path):
         fp = pathlib.Path(path)/'.gitkeep'
         fp.open("w",encoding="utf-8")
+
 
 def add_readme_file_to_dir(path):
     #check if git file exists
@@ -340,6 +472,7 @@ def add_readme_file_to_dir(path):
     print(f'+f/...................................................................creating README file in {path.name}...')
     fp = pathlib.Path(path)/'README.md'
     fp.open("w",encoding="utf-8")
+
 
 def add_files_to_empty_folders(dirlist):
     for d in dirlist:
@@ -354,6 +487,7 @@ def add_files_to_empty_folders(dirlist):
 ####### Dir & Config Stuff ########
 ###################################
 
+
 # config stuff
 def create_config_dir():
     #global CONFIG
@@ -366,6 +500,7 @@ def create_config_dir():
     else:
         add_var_to_dict('CONFIG_DIR',p)
         return p
+
 
 # check OS
 def check_os():
@@ -397,9 +532,11 @@ def check_os():
         pass
     return platform
 
+
 def subdirList(rootDir):
     rootdirlist = glob.glob("%s/*/" % rootDir)
     return rootdirlist
+
 
 def initDirList(list):
     for item in list:
@@ -407,6 +544,7 @@ def initDirList(list):
         pathname = "G_" + pp.name
         #print(pathname)
         add_to_dict_and_arr(pathname,item)
+
 
 def no_subdirs(rootdir) -> bool:
     checklist=[]
@@ -417,12 +555,14 @@ def no_subdirs(rootdir) -> bool:
     else:
         return True
 
+
 def count_subdirs(rootdir):
     total = ''
     subdirlist = []
     total = len(os.walk(rootdir).next()[1])
     #print(total)
     return total
+
 
 #endregion
 #region User Input Helper funcs
@@ -455,33 +595,23 @@ def y_n_q(q) -> bool:
 #region config files
 
 def convert_env_dict_to_string():
-
     new_d = {}
-
     for k, v in env_dict.items():
-
         new_d[k]=v
         if v is not isinstance(v, str):
-
             new_v = str(v)
             new_d[k]=new_v
-
     return(new_d)
 
 
 def convert_env_dict_to_path(env_d):
     new_d = {}
     for k, v in env_d.items():
-
         if isinstance(v, str):
-
             new_v = pathlib.Path(v)
-
             new_d[k]=new_v
         else:
-
             new_d[k]=v
-
     return new_d
 
 def write_to_env_file(env_d):
@@ -489,7 +619,6 @@ def write_to_env_file(env_d):
     path_d = convert_env_dict_to_path(env_d)
     #pprint(path_d)
     fp = Path(path_d["CONFIG"]) / "config.env"
-
     with fp.open("w",encoding="utf-8") as f:
         for key, value in path_d.items():
             f.write('%s="%s"\n' % (key, value))
@@ -658,7 +787,6 @@ def aces_check():
 
 #endregion
 #endregion
-
 #region Directory Definitions
 
 ###########################################
@@ -1783,7 +1911,7 @@ def init_asset_post_production(path):
 #endregion
 #region Initialize
 #region Choose Project Dir
-
+# Project stuff
 def choose_proj_dir():
     global env_dict
     proj_name = env_dict['PROJECT_NAME']
@@ -1906,8 +2034,77 @@ def write_temp(d):
         l = str('%s="%s"\n' % (k, v))
         add_line_to_temp(l)
 
+def get_level(dct, level):
+    if level == 0:
+        yield from ((k, v) for k, v in dct.items() if not isinstance(v, dict))
+    else:
+        yield from ((kk, vv) for v in dct.values() if isinstance(v, dict) for kk, vv in get_level(v, level-1))
+
+def parse_dict(data):
+    result = {}
+    stack = list(data.items())
+    visited = set()
+    while stack:
+        k, v = stack.pop()
+        if isinstance(v,dict):
+            if k not in visited:
+                stack.extend(v.items())
+        else:
+            if k == 'name':
+                result[k]=v
+                print("%s: %s" % (k,v))
+            #self.new_data[k]=v
+            #print("%s: %s" % (k,v))
+            pass
+        visited.add(k)
+    return result
+
+def flatten_dict(data):
+    import lib.flatdict as flatdict
+    result = flatdict.FlatDict(data,delimiter=':')
+    return result
+
 def check_for_projects_in_folder(path):
     result = {}
+    dataclass = project_data
+
+    template = dict(dataclass.project_data)
+    #print(template)
+
+    # pprint(flatten(template))
+    # pprint(unflatten(template))
+
+    # flattendict = dict(flatten_dict(template))
+    # for k,v in flattendict.items():
+    #     if k == 'name':
+    #         print(k)
+    # pprint(flattendict)
+    
+
+    names_dict = parse_dict(template)
+    # for i in names_dict.items():
+    #     print(i)
+    #pprint(names_dict)
+    #pprint(parse_dict(template,))
+
+    # names = dict.fromkeys(template, 'name')
+    # names = {key: None for key in template}
+    # pprint(names)
+    #parse_dict(template)
+    # for k,v in template.items():
+    #     if k == 'name':
+    #         print(f'{k} : {v}')
+
+    #pprint(dataclass.project_data['children'])
+
+    #scan_dirs = dict(get_level(dataclass.project_data,1))
+
+
+    # filtered_names = list(filter(lambda x: x['name'], dataclass.items()))
+    # pprint(filtered_names)
+
+    # pprint({k:v for k,v in dataclass.project_data.items() if 'name' in k})
+
 
     inner_proj_dirs = [
         ".config",
@@ -2144,19 +2341,28 @@ args = parser.parse_args()
 # so we need to choose the project
 # default behavior -> once initialized open last project
 
+# TODO:convert to yaml from config
 def projects_init_main():
     # args
-    
-    temp_dict = {}
+    # pprint(vars(config_data_class))
+    # print(config_data_class.appdata['initialized'])
+
+    #pprint(project_data.shot_temp)
+
     app_root = pathlib.Path(application_path)
     temp_path = pathlib.Path(application_path)/'.temp.env'
+
+    #pprint(project_data.project_data)
     # check if
     #if args.init:
-    if not (temp_path.exists()):
+    #if not (temp_path.exists()):
+
+    print(main_config.config.data['None']['appdata']['initialized'])
+    if not (main_config.config.data['None']['appdata']['initialized']):
         print('First time setup')
         choice = user_choose_folder_methods()
         p_list = choose_scan_method(choice)
-        write_temp(p_list)
+        #write_temp(p_list)
     else:
         print('The following projects exist...')
         read_temp_file(temp_path)
@@ -2164,6 +2370,8 @@ def projects_init_main():
             if check_if_temp_empty():
                 print('No projects saved...')
                 print('Scan for projects or create a new one...')
+                choice = user_choose_folder_methods()
+                p_list = choose_scan_method(choice)
             else:
                 project_list = list_projects(temp_path)
                 pprint(project_list)
@@ -2181,8 +2389,6 @@ def projects_init_main():
     #print(p_list)
     # p_list = check_for_projects_in_folder(app_root)
     # str_list = convert_env_dict_to_string(p_list)
-
-
 
 
 #endregion

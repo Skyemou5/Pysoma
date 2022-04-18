@@ -18,6 +18,7 @@ This was developed for my needs during my senior project using Houdini with a sm
 - Build standalone app for each platform
 - add support for choosing houdini versions - currently 18.5.759 is hardcoded in for my project
 - refactor to properly serialize data with yaml and only use env files for enviornments
+- Implement unit testing
 
 # Future goals
 - add support for game projects with unity and unreal and possibly godot

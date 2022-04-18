@@ -807,7 +807,16 @@
       files:
       gitkeep: yes
       children:
-  shot_subdir_data: &shot_subdir_data
+  shot_subdir_data:
+    - shot_config_dir:
+      name: .config
+      type: directory
+      path:
+      env:
+      h_env:
+      files: README.md
+      gitkeep: yes
+      children: *geo_subdir_data
     - geo_dir:
       name: geo
       type: directory
@@ -1044,6 +1053,15 @@
         children: 
       hda_dir:
         name: HDA
+        type: directory
+        path:
+        env:
+        h_env:
+        files: README.md
+        gitkeep: yes
+        children:
+      config_dir:
+        name: .config
         type: directory
         path:
         env:
