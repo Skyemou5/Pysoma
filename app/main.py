@@ -2,7 +2,10 @@
 
 #region HEADER
 
+from array import ArrayType
+import array
 import contextlib
+from curses import nonl
 import os
 import pathlib
 import string
@@ -13,14 +16,17 @@ import sys
 import json
 from typing import OrderedDict
 from unicodedata import name
+
+from yaml import Dumper
 import lib.dotenv
 import tkinter as tk
-import yaml
+# import yaml
 import re
 import argparse
 import pprint
 import collections
-from ruamel.yaml import YAML
+import ruamel.yaml
+from ruamel.yaml import YAML, yaml_object
 
 
 #########################################
@@ -138,10 +144,107 @@ dirslist = glob.glob("%s/*/" % REPO_ROOT)
 #endregion
 #region data classes
 # classes
+# class NoAliasDumper(yaml.SafeDumper):
+#     def ignore_aliases(self, data):
+#         return True
+
+# def none_replace(ls):
+#     p = None
+#     return [p:=e if e is not None else p for e in ls]
+
+# fixing yaml dumping with aliases
+class NonAliasingRTRepresenter(ruamel.yaml.representer.RoundTripRepresenter):
+    def ignore_aliases(self, data):
+        return True
+
+
+
+#yaml.representer = NonAliasingRTRepresenter
+
+
+# serialized object as class
+class config(object):
+    pass
+
+# @yaml_object(yaml)
+# class User:
+#     yaml_tag = u'!main'
+
+#     def __init__(self, name, age):
+#         self.name = name
+#         self.age = age
+
+#     @classmethod
+#     def to_yaml(cls, representer, node):
+#         return representer.represent_scalar(cls.yaml_tag,
+#                                             u'{.name}-{.age}'.format(node, node))
+
+#     @classmethod
+#     def from_yaml(cls, constructor, node):
+#         return cls(*node.value.split('-'))
+
+
+
+
+
+
+class ParseTemplateYaml(object):
+    def __init__(self) -> None:
+        pass
+
+
+class ParseYamlLoad(object):
+    '''
+    Parse yaml from load
+    '''
+    def __init__(self,data) -> None:
+        self.data = data
+        self.return_data = self.parse_data(self.data)
+        
+    # def __repr__(self) -> dict:
+    #     return repr(self.return_data)
+
+    def parse_data(self,data):
+        result = {}
+        #pprint(data['project_root'])
+        #jdata = json.dumps(data)
+
+        for document in data:
+        #     stack = list(document.items())
+        #     visited = set()
+        #     while stack:
+        #         k, v = stack.pop()
+        #         if isinstance(v,dict):
+        #             if k not in visited:
+        #                 stack.extend(v.items())
+        #         elif isinstance(v,list):
+        #             for i in v:
+        #                 if isinstance(v,dict):
+        #                     if i not in visited:
+        #                         stack.extend(v.items())
+        #         else:
+        #             print("%s: %s" % (k,v))
+        #             result[k]=v
+        #             pass
+        #         visited.add(k)
+
+            for k,v in document.items():
+                if isinstance(v,list):
+                    self.parse_data(v)
+                else:
+                    result[k]=v
+        #pprint(result)
+        jdata = json.dumps(result)
+        result = json.loads(jdata)
+        #pprint(result)
+        return result
 
 class ConfigData(object):
+    '''
+    Base class for the config object handles general yaml reading and writing
+    '''
     def __init__(self,config) -> None:
-        self.yaml = YAML()
+        self.yaml = ruamel.yaml.YAML(typ="rt",pure=True)
         self.config = config
         self.config_file = pathlib.Path(self.config)
         self.data = self.load_file()
@@ -150,19 +253,28 @@ class ConfigData(object):
         #self.new_data = self.load_file()
     def load_file(self):
         result = {}
-        with self.config_file.open() as f:
-            conf = self.yaml.load_all(f)
-            for d in conf:
-                for k,v in d.items():
-                    result[k]=v
+        with self.config_file.open('r') as f:
+            try:
+                conf = self.yaml.load_all(f)
+                cd = ParseYamlLoad(conf).return_data
+                #print('dictionary stuff::: ')
+                # json_string = json.dumps(cd)
+                # from_json = json.loads(json_string)
+                #pprint(from_json)
+                return cd
+            except yaml.YAMLError as exc:
+                print(exc)
+
         return result
+
     def write_file(self):
-        print('dump dump dump')
-        self.yaml.dump(self.data,self.config_file)
-        # with self.config_file.open('w') as f:
-        #     #print(f)
-        #     f.write(self.yaml.dump(self.data,self.config_file))
-        #     #f.write(str(self.yaml.dump(self.data,self.config_file)))
+        # monkey patch:
+        ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+        #pprint(self.data)
+        with self.config_file.open('w') as f:
+            self.yaml.default_flow_style = False
+            self.yaml.dump(dict(self.data),f)
+            # f.write(str(self.yaml.dump(dict(self.data),self.config_file,default_flow_style=False)))
     def refresh(self):
         self.data = self.load_file()
     def update(self):
@@ -185,8 +297,58 @@ class ConfigData(object):
                 pass
             visited.add(k)
 
+class DirTree(object):
+    '''
+    Generic tree node
+    '''
+    def create_node(self,data):
+        return DirNode(data)
 
-class ProjectData(object):
+
+
+class DirNode(object):
+    def __init__(self, data) -> None:
+        self.name = None
+        self.type = None
+        self.path = None
+        self.env = None
+        self.h_env = None
+        self.gitkeep = None
+        self.children = None
+        self.setup_data(data)
+    def setup_data(self, data):
+        for k,v in data.items():
+            if k == 'name':
+                self.name = v
+            elif k == 'type':
+                self.type = v
+            elif k == 'path':
+                self.path = v
+            elif k == 'env':
+                self.env = v
+            elif k == 'h_env':
+                self.h_env = v
+            elif k == 'files':
+                self.files = v
+            elif k == 'gitkeep':
+                self.gitkeep = v
+            elif k == 'children':
+                self.children = v
+    def __repr__(self) -> str:
+        return self.name
+    def add_child(self,node):
+        assert isinstance(node,DirTree)
+        self.children.append(node)
+
+def recurseProject(func):
+    def wrapper(*args):
+        print(func)
+
+def generate_project_dec(func):
+    def inner(*args):
+        pass
+
+class ProjectSetup(object):
     def __init__(self) -> None:
         #self.keys_path = keys_path
         # self.data = data
@@ -195,16 +357,8 @@ class ProjectData(object):
         self.project_data = {}
         self.new_data = {}
         self.dir_keys = []
-        self.get_keys()
-        self.shot_temp = {}
-        self.get_proj_data()
         self.set_values(self.project_data)
-    def get_keys(self):
-        self.dir_keys = self.data[0]['project_root'].keys()
-    def get_proj_data(self):
-        self.project_data = self.data[0]['project_root']
-    def get_shot_template(self):
-        self.shot_temp = self.data[0]['shot_subdir_data']
+        self.process_data(self.data)
     def set_values(self,d):
         stack = list(d.items())
         visited = set()
@@ -220,12 +374,180 @@ class ProjectData(object):
             visited.add(k)
     def set_new_project_info(self,data):
         pass
+    #@recurseProject
+    def process_data(self,data):
+        
+        ddata = dict(data)
+        #pprint(data)
+        listd = []
+        result = {}
+        ldata = list(data)
+        print(ldata)
+        level = 0
+        def inner(data):
+            nonlocal level
+            innerdata = {}
+            for k,v in data.items():
+                if isinstance(v,dict):
+                    inner(v)
+                if isinstance(v,list):
+                    for item in v:
+                        inner(item)
+                else:
+                    innerdata[k]=v
+                    #print(f'{type(k)} - {k} :: {type(v)} - {v}')
+            level += 1
+            #print(level)
+            result[k]=v
+            #pprint(innerdata)
+        #print(level)
+        inner(data)
+        ldata.append(result)
+        return result
+    def create_paths(self):
+        newdata = self.data['None']['project_root']
+        #pprint(type(newdata))
+        rootpath = pathlib.Path(application_path)/'test_project'
+        pathlist = [rootpath]
+        result = {}
+        lastpath = ''
+        parent_obj = {}
+        
+        flat = flatdict.FlatterDict(newdata)
+        #pprint(flat.keys())
+        namelist = []
+        pathlist = []
+        for k,v in flat.items():
+            #print(type(k))
+            if k.endswith('name'):
+                namelist.append(str(f'{k}:{v}'))
+                #print(f'{k} :: {v}')
+        #pprint(namelist)
+        prevname = ''
+        for i in range(len(namelist)):
+            #print(i)
+            root = namelist[0].split(':')
+            print(root[1])
+            #print(namelist[i])
+            #pattern = re.compile(r'(?<=name:)(.*$)')
+            name = re.compile(r'(?<=name:)(.*$)').findall(namelist[i])
+            #print(re.compile(r'(children:)(\d)').findall(namelist[i]))
+            if not name == None:
+                prevname = name
+                print(prevname)
+
+            fixpaths = re.compile(r'(:)')
+            newpaths = re.sub(fixpaths,'/',namelist[i])
+            #names = re.match(r'(name)',namelist[i])
+            print(newpaths)
+
+            #add_root = re.sub('None:',root,namelist[i])
+            #print(add_root)
+            result = re.sub('children:','',namelist[i])
+            remove_nums = re.sub(r'\d+:','',result)
 
 
-class AppData(object):
-    def __init__(self,configdataobj) -> None:
-        self.configdataobj = configdataobj
-        self.data = configdataobj.data
+
+
+        parent_name = ''
+        def inner(data):
+            nonlocal parent_obj
+            nonlocal pathlist
+            nonlocal parent_name
+            #nonlocal prev_data
+            prev_data = {}
+            #pprint(prev_data)
+            innerdata = {}
+            newpath = ''
+            prevpath = ''
+            prevname = ''
+            #print(prevname)
+            #print(type(data))
+            for k,v in data.items():
+                if isinstance(v,dict):
+                    #print('dict----->')
+                    parent_name = k
+                    #print(pathlist.count)
+                    if pathlist.count == 0:
+                        print('sdf none')
+                        #prevpath = pathlib.Path(rootpath).joinpath(k)
+                        #pathlist.append(prevpath)
+                    #print(k)
+                    inner(v)
+                if isinstance(v,list):
+                    #print('list------>')
+                    #print(k)
+                    #prevname = v
+                    for item in v:
+                        inner(item)
+                else:
+                    #parent_obj = data
+                    #pprint(parent_obj)
+                    innerdata[k]=v
+                    #print(f'{type(k)} - {k} :: {type(v)} - {v}')
+                    #print(parent_name)
+                    # print(k,v)
+                    # if k == 'name':
+                    #     newpath = pathlib.Path(pathlist[-1]).joinpath(parent_name)
+                    #     pathlist.append(newpath)
+                    #result[k]=v
+        inner(newdata)
+        #pprint(parent_obj)
+        pprint(pathlist)
+
+test = ProjectSetup().create_paths()
+#pprint(ProjectSetup().data['None']['project_root'])
+
+
+class ShotData(object):
+    def __init__(self) -> None:
+        self.yaml = ruamel.yaml.YAML()
+        self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
+        self.config_file = pathlib.Path(application_path)/'test.yml'
+        self.project_data = ConfigData(self.project_temp_file).data
+        self.all_data = self.read_yaml()
+        self.data = self.shot_data_setup()
+        #self.read_yaml()
+        #pprint(project_data)
+    def shot_data_setup(self):
+        return self.project_data['None']['shot_subdir_data']
+    def write_file(self):
+        # monkey patch:
+        ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+        #pprint(self.data)
+        with self.config_file.open('w') as f:
+            self.yaml.default_flow_style = False
+            self.yaml.dump(dict(self.data),f)
+    def read_yaml(self):
+        result = {}
+        with self.project_temp_file.open('r') as f:
+            try:
+                conf = self.yaml.load_all(f)
+                for d in conf:
+                    stack = list(d.items())
+                    visited = set()
+                    while stack:
+                        k, v = stack.pop()
+                        if isinstance(v,dict):
+                            if k not in visited:
+                                stack.extend(v.items())
+                        else:
+                            #self.new_data[k]=v
+                            #result[k]=v
+                            #pprint("%s: %s" % (k,v))
+                            pass
+                        visited.add(k)
+            except yaml.YAMLError as exc:
+                print(exc)
+        return result
+
+
+def tree_traverse(tree, key):
+    if key in tree:
+        return tree[key]
+    for v in filter(dict.__instancecheck__, tree.values()):
+        if (found := tree_traverse(v, key)) is not None:  
+            return found
 
 
 class Dict2Class(object):
@@ -239,7 +561,7 @@ class MainConfig(object):
         self.config_path = pathlib.Path(pathlib.Path(application_path)/'main_config.yml')
         self.config = ConfigData(self.config_path)
         self.project_template = self.config.data['None']['templates']['project_template']
-        self.new_project_config = self.config.data['None']['templates']['project_template']['project_config']
+        self.new_project_config = self.project_template['project_config']
         self.houdini_paths = self.config.data['None']['houdini_paths']
         self.config.data['None']['project_scan_dirs']=[None]
         self.config.data['None']['projects']=[]
@@ -247,6 +569,7 @@ class MainConfig(object):
         '''
         insert list of tuples and match keys from yaml
         '''
+        pprint(self.project_template)
         result = []
         data_copy = {}
         for k,v in self.project_template.items():
@@ -270,6 +593,7 @@ class MainConfig(object):
         Insert a list of tuples and match the keys and it will update the values
         '''
         # print('update project')
+        data_copy = {}
         for item in data:
             found=False
             for config_item in self.new_project_config.items():
@@ -309,25 +633,53 @@ class MainConfig(object):
     def write_project_config():
         pass
 
-# project config stuff
-class ProjectConfig(object):
+
+@yaml_object(yaml)
+class ProjectListData(object):
     def __init__(self) -> None:
-        pass
+        self.name = None
+        self.path = None
+        self.default_args = None
+        self.initialized = None
+        self.config = None
+
+    @classmethod
+    def to_yaml(cls,representer,node):
+        return representer.represent_scalar(cls.yaml_tag,u'{.name}-{.age}'.format(node,node))
+
+    @classmethod
+    def from_yaml(cls,constructor,node):
+        return cls(*node.value.split('-'))
 
 
-class shot_data(object):
-    def __init__(self) -> None:
-        pass
+@yaml_object(yaml)
+class ProjectData:
+    yaml_tag = u'!project'
+    def __init__(self, initialized,users,init_date,houdini_version,houdini_install_path,project_name,project_root,env,path) -> None:
+        self.initialized = initialized
+        self.users = users
+        self.init_date = init_date
+        self.houdini_version = houdini_version
+        self.houdini_install_path = houdini_install_path
+        self.project_name = project_name
+        self.project_root = project_root
+        self.env = env
+        self.path = path
+
+    @classmethod
+    def to_yaml(cls,representer,node):
+        return representer.represent_scalar(cls.yaml_tag,u'{.name}-{.age}'.format(node,node))
+
+    @classmethod
+    def from_yaml(cls,constructor,node):
+        return cls(*node.value.split('-'))
+
+
 
 
 class create_project(object):
     def __init__(self) -> None:
         pass
-
-
-def none_replace(ls):
-    p = None
-    return [p:=e if e is not None else p for e in ls]
 
 
 # actual yaml data setup
@@ -337,10 +689,92 @@ project_template_file = pathlib.Path(application_path)/'project_template.yml'
 
 # config classes
 
-project_data = ProjectData()
+project_data = ProjectSetup()
 main_config = MainConfig()
+#shot_1 = ShotData()
+#shot_1.write_file()
+
+pd = ProjectData(True,'ben',None,None,None,'test_project',None,None,None)
+# pprint(vars(pd))
+
+def tree_traverse(tree, key):
+    if key in tree:
+        return tree[key]
+    for v in filter(dict.__instancecheck__, tree.values()):
+        if (found := tree_traverse(v, key)) is not None:  
+            return found
 
 
+def nest_iterate(d):
+    stack = list(d)
+    visited = set()
+    while stack:
+        k, v = stack.pop()
+        if (k == 'children' and not v == None):
+            if k not in visited:
+                stack.extend(v.items())
+        else:
+            #self.new_data[k]=v
+            #result[k]=v
+            pprint("%s: %s" % (k,v))
+            pass
+        visited.add(k)
+
+
+def nest_iter_rec(d):
+    l = list(d)
+    result = {}
+    for i in l:
+        sub = {}
+        for k,v in i.items():
+            if isinstance(v,dict):
+                nest_iter_rec(v)
+            else:
+                sub[k]=v
+                #print(f'{k} : {v}')
+    result.append(sub)
+    return result
+
+
+def iter_children_decorator(func):
+    def inner(k,d):
+        pass
+
+
+def iter_though_children(d):
+    l = list(d)
+    result = []
+    for i in l:
+        sub_item = {}
+        for k,v in i.items():
+            if (k == 'children' and not v == None):
+                pprint(list(v))
+                iter_though_children(v)
+            else:
+                sub_item[k]=v
+                #print(type(v))
+                #print(f'{k} : {v}')
+        result.append(sub_item)
+    return result
+
+
+# testing
+shotdata_1 = project_data.data['None']['shot_subdir_data']
+
+#listdata = list(shotdata_1)
+#print(type(shotdata_1))
+#pprint(nest_iterate(shotdata_1))
+#pprint(iter_though_children(shotdata_1))
+
+#pprint(listdata[0]['children'])
+#pprint(nest_iter_rec(shotdata_1))
+
+# for i in shotdata_1:
+#     for k,v in i.items():
+#         print(f'{k}:{v}')
+#pprint(type(shotdata_1))
+
+#nest_iterate(project_data.data)
 #main_config.update_new_project_data([('name','test project')])
 #main_config.remove_project('test project')
 #main_config.write_config()
@@ -2084,7 +2518,7 @@ def check_for_projects_in_folder(path):
     #     if k == 'name':
     #         print(k)
     # pprint(flattendict)
-    
+
 
     #names_dict = parse_dict(template)
     # for i in names_dict.items():
@@ -2410,8 +2844,8 @@ def projects_init_main():
         else:
             choice = user_choose_folder_methods_noscan()
             path = choose_folder_method(choice)
-            main_config.update_new_project_data([('path',path),('name',path.name)])
-            pprint(main_config.config.data)
+            main_config.update_new_project_data([('path',str(path)),('name',path.name)])
+            #pprint(main_config.config.data)
             main_config.config.write_file()
 
     else:   

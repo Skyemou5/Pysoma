@@ -1,5 +1,5 @@
 # project dirs
-0:
+None:
   post_app_subdir_data: &post_app_subdir_data
     - fusion_dir:
       name: Fusion
@@ -8,7 +8,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - nuke_dir:
       name: Nuke
@@ -17,7 +17,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - resolve_dir:
       name: Resolve
@@ -26,7 +26,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - adobe_dir:
       name: Adobe
@@ -35,7 +35,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   tex_app_subdir_data: &tex_app_subdir_data
     - affinity_dir:
@@ -45,7 +45,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - adobe_dir:
       name: Adobe
@@ -54,7 +54,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - krita_dir:
       name: krita
@@ -63,7 +63,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - gimp_dir:
       name: Gimp
@@ -72,7 +72,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - substance_dir:
       name: Substance
@@ -81,7 +81,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -90,7 +90,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   audio_app_subdir_data: &audio_app_subdir_data
     - pro_tools_dir:
@@ -100,7 +100,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - ableton_dir:
       name: Ableton
@@ -109,7 +109,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - bitwig_dir:
       name: Bitwig
@@ -118,7 +118,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - reaper_dir:
       name: Reaper
@@ -127,7 +127,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - reason_dir:
       name: Reason
@@ -136,7 +136,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -145,7 +145,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   comp_app_subdir_data: &comp_app_subdir_data
     - fusion_dir:
@@ -155,7 +155,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - resolve_dir:
       name: Resolve
@@ -164,7 +164,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - nuke_dir:
       name: Nuke
@@ -173,7 +173,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - adobe_dir:
       name: Adobe
@@ -182,7 +182,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -191,7 +191,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   edit_app_data: &edit_app_data
     - resolve_dir:
@@ -201,7 +201,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - adobe_dir:
       name: adobe
@@ -210,7 +210,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   audio_subdir_data: &audio_subdir_data
     - sfx_dir:
@@ -220,7 +220,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - music_dir:
       name: Music
@@ -229,7 +229,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - reference_dir:
       name: reference
@@ -238,7 +238,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - project_files_dir:
       name: SFX
@@ -247,7 +247,7 @@
       env:
       h_env:
       files: README.md
-      gitkeep: yes
+      gitkeep: True
       children: *audio_app_subdir_data
     - other_dir:
       name: Other
@@ -256,7 +256,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   post_tex_subdir_data: &post_tex_subdir_data
     - data_tex_dir:
@@ -266,7 +266,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - alphas_dir:
       name: Alphas
@@ -275,7 +275,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - masks_dir:
       name: Masks
@@ -284,7 +284,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - pbr_dir:
       name: PBR
@@ -293,7 +293,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - pbr_dir:
       name: PBR
@@ -302,7 +302,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - grunge_dir:
       name: Grunge
@@ -311,7 +311,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - substance_dir:
       name: Substance
@@ -320,7 +320,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
       - sbr_dir:
         name: sbr
@@ -329,7 +329,7 @@
         env:
         h_env:
         files:
-        gitkeep: yes
+        gitkeep: True
         children:
     - project_files_dir:
       name: Project_Files
@@ -338,7 +338,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: *post_app_subdir_data
     - other_dir:
       name: Other
@@ -347,7 +347,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   src_subdir_data: &src_subdir_data
     - blender_dir:
@@ -357,7 +357,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - maya_dir:
       name: Maya
@@ -366,7 +366,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - zbrush_dir:
       name: ZBrush
@@ -375,7 +375,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - substance_dir:
       name: Substance
@@ -384,7 +384,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -393,7 +393,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   geo_subdir_data: &geo_subdir_data
     - fbx_dir:
@@ -403,7 +403,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - obj_dir:
       name: OBJ
@@ -412,7 +412,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - houdini_dir:
       name: Houdini
@@ -421,7 +421,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - usd_dir:
       name: USD
@@ -430,7 +430,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - cache_dir:
       name: cache
@@ -439,7 +439,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -448,7 +448,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   tex_subdir_data: &tex_subdir_data
     - hdri_dir:
@@ -458,7 +458,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - imperfections_dir:
       name: Imperfections
@@ -467,7 +467,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - pbr_dir:
       name: PBR
@@ -476,7 +476,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - data_tex_dir:
       name: Data_Textures
@@ -485,7 +485,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - decals_dir:
       name: Decals
@@ -494,7 +494,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - substance_dir:
       name: Substance
@@ -503,7 +503,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - alphas_dir:
       name: Alphas
@@ -512,7 +512,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - masks_dir:
       name: Masks
@@ -521,7 +521,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - grunge_dir:
       name: Grunge
@@ -530,7 +530,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -539,7 +539,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   assets_subdir_data: &assets_subdir_data
     - src_dir:
@@ -549,7 +549,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - geo_dir:
       name: GEO
@@ -558,7 +558,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - blend_dir:
       name: Blend
@@ -567,7 +567,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - texture_dir:
       name: Texture
@@ -576,7 +576,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - hda_dir:
       name: HDA
@@ -585,7 +585,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -594,7 +594,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - pdg_dir:
       name: PDG
@@ -603,7 +603,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - usd_dir:
       name: USD
@@ -612,7 +612,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   comp_subdir_data: &comp_subdir_data
     - luts_dir:
@@ -622,7 +622,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - color_scripts_dir:
       name: Color_Scripts
@@ -631,7 +631,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - project_files_dir:
       name: Project_Files
@@ -640,7 +640,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -649,7 +649,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - export_dir:
       name: export
@@ -658,7 +658,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   edit_subdir_data: &edit_subdir_data
     - project_files_dir:
@@ -668,7 +668,7 @@
       env:
       h_env:
       files: README.md
-      gitkeep: yes
+      gitkeep: True
       children: *edit_app_data
     - export_dir:
       name: export
@@ -677,7 +677,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   post_pro_subdir_data: &post_pro_subdir_data
     - audio_dir:
@@ -687,7 +687,7 @@
       env:
       h_env:
       files: README.md
-      gitkeep: yes
+      gitkeep: True
       children: *audio_subdir_data
     - comp_dir:
       name: Compositing
@@ -696,7 +696,7 @@
       env:
       h_env:
       files: README.md
-      gitkeep: yes
+      gitkeep: True
       children: *comp_subdir_data
     - editing_dir:
       name: Editing
@@ -705,7 +705,7 @@
       env:
       h_env:
       files: README.md
-      gitkeep: yes
+      gitkeep: True
       children: *edit_subdir_data
     - ref_dir:
       name: Reference
@@ -714,7 +714,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - proj_files_dir:
       name: Project_Files
@@ -723,7 +723,7 @@
       env:
       h_env:
       files: README.md
-      gitkeep: yes
+      gitkeep: True
       children: *post_app_subdir_data
     - nuke_dir:
       name: Nuke
@@ -732,7 +732,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: Other
@@ -741,7 +741,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - export_dir:
       name: Export
@@ -750,7 +750,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   pre_pro_subdir_data: &pre_pro_subdir_data
     - concept_art_dir:
@@ -760,7 +760,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - storyboard_dir:
       name: Storyboard
@@ -769,7 +769,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - color_scripts_dir:
       name: Color_Scripts
@@ -778,7 +778,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - animatic_dir:
       name: Animatic
@@ -787,7 +787,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - reference_dir:
       name: Reference
@@ -796,7 +796,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - Other_dir:
       name: Other
@@ -805,7 +805,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   shot_subdir_data:
     - shot_config_dir:
@@ -815,7 +815,7 @@
       env:
       h_env:
       files: README.md
-      gitkeep: yes
+      gitkeep: True
       children: *geo_subdir_data
     - geo_dir:
       name: geo
@@ -824,7 +824,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: *geo_subdir_data
     - src_dir:
       name: src
@@ -833,7 +833,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: *src_subdir_data
     - hip_dir:
       name: hip
@@ -842,7 +842,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: 
     - render_dir:
       name: render
@@ -851,7 +851,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - texture_dir:
       name: texture
@@ -860,7 +860,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: *tex_subdir_data
     - blend_dir:
       name: blend
@@ -869,7 +869,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - assets_dir:
       name: assets
@@ -878,7 +878,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: *assets_subdir_data
     - hda_dir:
       name: HDA
@@ -887,7 +887,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - reference_dir:
       name: reference
@@ -896,7 +896,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - research_and_development_dir:
       name: reserach_and_development
@@ -905,7 +905,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: 
     - lookdev_dir:
       name: lookdev
@@ -914,7 +914,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - post_production_dir:
       name: post_production
@@ -923,7 +923,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: *post_pro_subdir_data
     - pre_production_dir:
       name: pre_production
@@ -932,7 +932,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children: *pre_pro_subdir_data
     - final_dir:
       name: final
@@ -941,7 +941,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - scripts_dir:
       name: scripts
@@ -950,7 +950,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - clips_dir:
       name: clips
@@ -959,7 +959,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - vex_dir:
       name: vex
@@ -968,7 +968,7 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
     - other_dir:
       name: other
@@ -977,98 +977,98 @@
       env:
       h_env:
       files:
-      gitkeep: yes
+      gitkeep: True
       children:
   project_root:
-    name: project_name
+    name: test_project
     type: directory
     path:
     env: PROJECT_ROOT
     h_env:
     files: README.md
-    gitkeep: yes
+    gitkeep: True
     children:
-      assets_dir:
-        name: assets
-        type: directory
-        path:
-        env: GLOBAL_ASSETS_ROOT
-        h_env:
-        files: README.md
-        gitkeep: yes
-        children: *assets_subdir_data
-      hsite_dir:
-        name: hsite
-        type: directory
-        path:
-        env: HSITE_ROOT
-        h_env: HSITE
-        files: README.md
-        gitkeep: no
-        children:
-      packages_dir:
-        name: packages
-        type: directory
-        path:
-        env: GLOBAL_PACKAGES
-        h_env: HOUDINI_PACKAGE_DIR
-        files: README.md
-        gitkeep: yes
-        children:
-      pre_pro_dir:
-        name: pre_production
-        type: directory
-        path:
-        env: PRE_PRO
-        h_env:
-        files: README.md
-        gitkeep: yes
-        children: *pre_pro_subdir_data
-      post_pro_dir:
-        name: post_production
-        type: directory
-        path:
-        env: POST_PRODUCTION
-        h_env:
-        files: README.md
-        gitkeep: yes
-        children: *post_pro_subdir_data
-      shots_dir:
-        name: shots
-        type: directory
-        path:
-        env: SHOTS_ROOT
-        h_env:
-        files: README.md
-        gitkeep: yes
-        children:
-      delivery_dir:
-        name: deliverables
-        type: directory
-        path:
-        env: DELIVER
-        h_env:
-        files: README.md
-        gitkeep: yes
-        children: 
-      hda_dir:
-        name: HDA
-        type: directory
-        path:
-        env:
-        h_env:
-        files: README.md
-        gitkeep: yes
-        children:
-      config_dir:
-        name: .config
-        type: directory
-        path:
-        env:
-        h_env:
-        files: README.md
-        gitkeep: yes
-        children:
+      - assets_dir:
+          name: assets
+          type: directory
+          path:
+          env: GLOBAL_ASSETS_ROOT
+          h_env:
+          files: README.md
+          gitkeep: True
+          children: *assets_subdir_data
+      - hsite_dir:
+          name: hsite
+          type: directory
+          path:
+          env: HSITE_ROOT
+          h_env: HSITE
+          files: README.md
+          gitkeep: no
+          children:
+      - packages_dir:
+          name: packages
+          type: directory
+          path:
+          env: GLOBAL_PACKAGES
+          h_env: HOUDINI_PACKAGE_DIR
+          files: README.md
+          gitkeep: True
+          children:
+      - pre_pro_dir:
+          name: pre_production
+          type: directory
+          path:
+          env: PRE_PRO
+          h_env:
+          files: README.md
+          gitkeep: True
+          children: *pre_pro_subdir_data
+      - post_pro_dir:
+          name: post_production
+          type: directory
+          path:
+          env: POST_PRODUCTION
+          h_env:
+          files: README.md
+          gitkeep: True
+          children: *post_pro_subdir_data
+      - shots_dir:
+          name: shots
+          type: directory
+          path:
+          env: SHOTS_ROOT
+          h_env:
+          files: README.md
+          gitkeep: True
+          children:
+      - delivery_dir:
+          name: deliverables
+          type: directory
+          path:
+          env: DELIVER
+          h_env:
+          files: README.md
+          gitkeep: True
+          children: 
+      - hda_dir:
+          name: HDA
+          type: directory
+          path:
+          env:
+          h_env:
+          files: README.md
+          gitkeep: True
+          children:
+      - config_dir:
+          name: .config
+          type: directory
+          path:
+          env:
+          h_env:
+          files: README.md
+          gitkeep: True
+          children:
 
 
 
