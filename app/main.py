@@ -14,8 +14,11 @@ import fnmatch
 import glob
 import sys
 import json
+import functools
+from textwrap import indent
 from typing import OrderedDict
 from unicodedata import name
+from functools import lru_cache
 
 from yaml import Dumper
 import lib.dotenv
@@ -303,11 +306,12 @@ class DirTree(object):
     '''
     def create_node(self,data):
         return DirNode(data)
-
+    def traverse(self):
+        pass
 
 
 class DirNode(object):
-    def __init__(self, data) -> None:
+    def __init__(self) -> None:
         self.name = None
         self.type = None
         self.path = None
@@ -315,7 +319,6 @@ class DirNode(object):
         self.h_env = None
         self.gitkeep = None
         self.children = None
-        self.setup_data(data)
     def setup_data(self, data):
         for k,v in data.items():
             if k == 'name':
@@ -334,15 +337,22 @@ class DirNode(object):
                 self.gitkeep = v
             elif k == 'children':
                 self.children = v
+    def refresh_node(self,data):
+        self.setup_data(data)
     def __repr__(self) -> str:
         return self.name
     def add_child(self,node):
         assert isinstance(node,DirTree)
         self.children.append(node)
 
-def recurseProject(func):
-    def wrapper(*args):
-        print(func)
+def memoize(f):
+    results = {}
+
+    def helper(n):
+        if n not in tuple(results):
+            results[n] = tuple(f(n))
+        return results[n]
+    return helper
 
 def generate_project_dec(func):
     def inner(*args):
@@ -352,12 +362,14 @@ class ProjectSetup(object):
     def __init__(self) -> None:
         #self.keys_path = keys_path
         # self.data = data
+        self.yaml = YAML(typ="safe")
         self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
         self.data = ConfigData(self.project_temp_file).data
         self.project_data = {}
         self.new_data = {}
         self.dir_keys = []
         self.set_values(self.project_data)
+        self.data_test(self.data)
         self.process_data(self.data)
     def set_values(self,d):
         stack = list(d.items())
@@ -374,15 +386,106 @@ class ProjectSetup(object):
             visited.add(k)
     def set_new_project_info(self,data):
         pass
-    #@recurseProject
+    def data_test(self,data):
+        # print(type(data))
+        # pprint(data['None']['project_root'])
+        # ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+        project_dirs = data['None']['project_root']
+        ymldata = dict(self.yaml.load(json.dumps(project_dirs)))
+        # pprint(ymldata)
+        prev_name = ''
+        sys.setrecursionlimit(10*1000)
+
+        last_obj = {}
+        obj_stack = []
+        node_stack = []
+        parents = 1
+        #@lru_cache(maxsize=2)
+        def iter_through(data):
+            nonlocal last_obj
+            nonlocal obj_stack
+            nonlocal node_stack
+            nonlocal parents
+            #pprint(last_obj)
+            pprint(len(obj_stack))
+            for item in obj_stack:
+                #print(item['name'])
+                pass
+            
+            temp_obj = {}
+            
+            try:
+                ### recursion depth error ###
+                if isinstance(data, dict):
+                    c = 0
+                    
+                    #print(len(data))
+                    for key in data.keys():
+                        
+                        
+                        if key == 'children':
+                            break
+                        last_obj[key]=data[key]
+                        temp_obj[key]=data[key]
+                        c += 1
+                    #print(f'items processed: {c}')
+                    if last_obj not in obj_stack:
+                        obj_stack.append(temp_obj)
+                    #print(data['children'])
+                    
+                    #print(data['children']==None)
+                    #print(parents)
+
+                    if data['children'] is None:
+                        parents = 1
+                        for item in obj_stack:
+
+                            pass
+
+                        pass
+
+                    else:
+                        parents += 1
+                        print(f'parents: {parents}')
+
+
+                    for kk in data.keys():
+                        # print(kk == "children")
+                        if kk == 'children':
+                            # print(f'children of node::: {type(data[kk])}')
+                            if isinstance(data[kk],list):
+                                
+                                # print(f'List has {len(data[kk])} elements:')
+                                counter = 0
+                                for item in data[kk]:
+                                    counter += 1
+                                    # print(f'list count: {counter}')
+                                    # print(type(item))
+                                    if (len(item)>0):
+                                        # print(f'More than one item in list:')
+                                        for value in item.values():
+                                            #print(value)
+                                            if isinstance(value, dict):
+                                                # print(f'name:: {kk}')
+                                                # print(type(value))
+                                                #print(value)
+                                                iter_through(value)
+            except ValueError:
+                print('not a dict')
+
+
+        iter_through(ymldata)
+        #pprint(last_obj)
+        #pprint(obj_stack)
+
+
     def process_data(self,data):
-        
         ddata = dict(data)
         #pprint(data)
         listd = []
         result = {}
         ldata = list(data)
-        print(ldata)
+        #print(ldata)
         level = 0
         def inner(data):
             nonlocal level
@@ -404,6 +507,7 @@ class ProjectSetup(object):
         inner(data)
         ldata.append(result)
         return result
+    
     def create_paths(self):
         newdata = self.data['None']['project_root']
         #pprint(type(newdata))
@@ -427,27 +531,24 @@ class ProjectSetup(object):
         for i in range(len(namelist)):
             #print(i)
             root = namelist[0].split(':')
-            print(root[1])
+            #print(root[1])
             #print(namelist[i])
             #pattern = re.compile(r'(?<=name:)(.*$)')
             name = re.compile(r'(?<=name:)(.*$)').findall(namelist[i])
             #print(re.compile(r'(children:)(\d)').findall(namelist[i]))
             if not name == None:
                 prevname = name
-                print(prevname)
+                #print(prevname)
 
             fixpaths = re.compile(r'(:)')
             newpaths = re.sub(fixpaths,'/',namelist[i])
             #names = re.match(r'(name)',namelist[i])
-            print(newpaths)
+            #print(newpaths)
 
             #add_root = re.sub('None:',root,namelist[i])
             #print(add_root)
             result = re.sub('children:','',namelist[i])
             remove_nums = re.sub(r'\d+:','',result)
-
-
-
 
         parent_name = ''
         def inner(data):
@@ -469,7 +570,8 @@ class ProjectSetup(object):
                     parent_name = k
                     #print(pathlist.count)
                     if pathlist.count == 0:
-                        print('sdf none')
+                        pass
+                        #print('sdf none')
                         #prevpath = pathlib.Path(rootpath).joinpath(k)
                         #pathlist.append(prevpath)
                     #print(k)
@@ -493,9 +595,9 @@ class ProjectSetup(object):
                     #result[k]=v
         inner(newdata)
         #pprint(parent_obj)
-        pprint(pathlist)
+        #pprint(pathlist)
 
-test = ProjectSetup().create_paths()
+#test = ProjectSetup()
 #pprint(ProjectSetup().data['None']['project_root'])
 
 

@@ -1,0 +1,191 @@
+children:
+- assets_dir:
+    children:
+    - src_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: SRC, parent: null, path: null, type: directory}
+    - geo_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: GEO, parent: null, path: null, type: directory}
+    - blend_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Blend, parent: null, path: null, type: directory}
+    - texture_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Texture, parent: null, path: null, type: directory}
+    - hda_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: HDA, parent: null, path: null, type: directory}
+    - other_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Other, parent: null, path: null, type: directory}
+    - pdg_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: PDG, parent: null, path: null, type: directory}
+    - usd_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: USD, parent: null, path: null, type: directory}
+    env: GLOBAL_ASSETS_ROOT
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: assets
+    parent: null
+    path: null
+    type: directory
+- hsite_dir: {children: null, env: HSITE_ROOT, files: README.md, gitkeep: true, h_env: HSITE,
+    name: hsite, parent: null, path: null, type: directory}
+- packages_dir: {children: null, env: GLOBAL_PACKAGES, files: README.md, gitkeep: true,
+    h_env: HOUDINI_PACKAGE_DIR, name: packages, parent: null, path: null, type: directory}
+- pre_pro_dir:
+    children:
+    - concept_art_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Concept_Art, parent: null, path: null, type: directory}
+    - storyboard_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Storyboard, parent: null, path: null, type: directory}
+    - color_scripts_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Color_Scripts, parent: null, path: null, type: directory}
+    - animatic_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Animatic, parent: null, path: null, type: directory}
+    - reference_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Reference, parent: null, path: null, type: directory}
+    - Other_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Other, parent: null, path: null, type: directory}
+    env: PRE_PRO
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: pre_production
+    parent: null
+    path: null
+    type: directory
+- post_pro_dir:
+    children:
+    - audio_dir:
+        children:
+        - sfx_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: SFX, parent: null, path: null, type: directory}
+        - music_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: Music, parent: null, path: null, type: directory}
+        - reference_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: reference, parent: null, path: null, type: directory}
+        - project_files_dir:
+            children:
+            - pro_tools_dir: {children: null, env: null, files: null, gitkeep: true,
+                h_env: null, name: Pro_Tools, parent: null, path: null, type: directory}
+            - ableton_dir: {children: null, env: null, files: null, gitkeep: true,
+                h_env: null, name: Ableton, parent: null, path: null, type: directory}
+            - bitwig_dir: {children: null, env: null, files: null, gitkeep: true,
+                h_env: null, name: Bitwig, parent: null, path: null, type: directory}
+            - reaper_dir: {children: null, env: null, files: null, gitkeep: true,
+                h_env: null, name: Reaper, parent: null, path: null, type: directory}
+            - reason_dir: {children: null, env: null, files: null, gitkeep: true,
+                h_env: null, name: Reason, parent: null, path: null, type: directory}
+            - other_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+                name: Other, parent: null, path: null, type: directory}
+            env: null
+            files: README.md
+            gitkeep: true
+            h_env: null
+            name: SFX
+            parent: null
+            path: null
+            type: directory
+        - other_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: Other, parent: null, path: null, type: directory}
+        env: null
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: Audio
+        parent: null
+        path: null
+        type: directory
+    - comp_dir:
+        children:
+        - luts_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: LUTS, parent: null, path: null, type: directory}
+        - color_scripts_dir: {children: null, env: null, files: null, gitkeep: true,
+            h_env: null, name: Color_Scripts, parent: null, path: null, type: directory}
+        - project_files_dir: {children: null, env: null, files: null, gitkeep: true,
+            h_env: null, name: Project_Files, parent: null, path: null, type: directory}
+        - other_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: Other, parent: null, path: null, type: directory}
+        - export_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: export, parent: null, path: null, type: directory}
+        env: null
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: Compositing
+        parent: null
+        path: null
+        type: directory
+    - editing_dir:
+        children:
+        - project_files_dir:
+            children:
+            - resolve_dir: {children: null, env: null, files: null, gitkeep: true,
+                h_env: null, name: resolve, parent: null, path: null, type: directory}
+            - adobe_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+                name: adobe, parent: null, path: null, type: directory}
+            env: null
+            files: README.md
+            gitkeep: true
+            h_env: null
+            name: Project_Files
+            parent: null
+            path: null
+            type: directory
+        - export_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: export, parent: null, path: null, type: directory}
+        env: null
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: Editing
+        parent: null
+        path: null
+        type: directory
+    - ref_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Reference, parent: null, path: null, type: directory}
+    - proj_files_dir:
+        children:
+        - fusion_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: Fusion, parent: null, path: null, type: directory}
+        - nuke_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: Nuke, parent: null, path: null, type: directory}
+        - resolve_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: Resolve, parent: null, path: null, type: directory}
+        - adobe_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+            name: Adobe, parent: null, path: null, type: directory}
+        env: null
+        files: README.md
+        gitkeep: true
+        h_env: null
+        name: Project_Files
+        parent: null
+        path: null
+        type: directory
+    - nuke_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Nuke, parent: null, path: null, type: directory}
+    - other_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Other, parent: null, path: null, type: directory}
+    - export_dir: {children: null, env: null, files: null, gitkeep: true, h_env: null,
+        name: Export, parent: null, path: null, type: directory}
+    env: POST_PRODUCTION
+    files: README.md
+    gitkeep: true
+    h_env: null
+    name: post_production
+    parent: null
+    path: null
+    type: directory
+- shots_dir: {children: null, env: SHOTS_ROOT, files: README.md, gitkeep: true, h_env: null,
+    name: shots, parent: null, path: null, type: directory}
+- delivery_dir: {children: null, env: DELIVER, files: README.md, gitkeep: true, h_env: null,
+    name: deliverables, parent: null, path: null, type: directory}
+- hda_dir: {children: null, env: null, files: README.md, gitkeep: true, h_env: null,
+    name: HDA, parent: null, path: null, type: directory}
+- config_dir: {children: null, env: null, files: README.md, gitkeep: true, h_env: null,
+    name: .config, parent: null, path: null, type: directory}
+env: PROJECT_ROOT
+files: README.md
+gitkeep: true
+h_env: null
+name: test_project
+parent: null
+path: null
+type: directory
