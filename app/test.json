@@ -9,7 +9,7 @@
     "parent": null,
     "children": [
         {
-            "assets_dir": {
+            "global_assets_dir": {
                 "name": "assets",
                 "type": "directory",
                 "path": null,

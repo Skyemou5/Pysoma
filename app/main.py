@@ -2,46 +2,45 @@
 
 #region HEADER
 
-from array import ArrayType
+import argparse
 import array
+import collections
 import contextlib
-from curses import nonl
+import fnmatch
+import functools
+import glob
+import json
 import os
 import pathlib
-import string
-import argparse
-import fnmatch
-import glob
-import sys
-import json
-import functools
-from textwrap import indent
-from typing import OrderedDict
-from unicodedata import name
-from functools import lru_cache
-
-from yaml import Dumper
-import lib.dotenv
-import tkinter as tk
+import pprint
 # import yaml
 import re
-import argparse
-import pprint
-import collections
-import ruamel.yaml
-from ruamel.yaml import YAML, yaml_object
-
-
+import string
+import sys
+#from lib import dotenv
+import tkinter as tk
+from array import ArrayType
+from curses import nonl
+from functools import lru_cache
+from itertools import chain, repeat
+from pathlib import Path, PurePath
 #########################################
 #########################################
 #########################################
 from pprint import pprint
-from itertools import chain, repeat
-from pathlib import Path, PurePath
 from sys import platform, stderr, stdout
+from textwrap import indent
+from typing import OrderedDict
+from unicodedata import name
+
+import dotenv
+import ruamel.yaml
+from ruamel.yaml import YAML, yaml_object
+from yaml import Dumper
+
+import lib.flatdict as flatdict
 #from simple_term_menu import TerminalMenu
 from lib.dotenv import dotenv_values, load_dotenv
-import lib.flatdict as flatdict
 
 ##########################################
 ##########################################
@@ -132,8 +131,9 @@ TEXTURE = ''
 #endregion
 #region fix compile issues
 if getattr(sys, 'frozen', False):
-    import sys, os
-    
+    import os
+    import sys
+
     # If the application is run as a bundle, the PyInstaller bootloader
     # extends the sys module by a flag frozen=True and sets the app 
     # path into variable _MEIPASS'.
@@ -209,8 +209,8 @@ class ParseYamlLoad(object):
 
     def parse_data(self,data):
         result = {}
-        #pprint(data['project_root'])
-        #jdata = json.dumps(data)
+        # pprint(data['project_root'])
+        # jdata = json.dumps(data)
 
         for document in data:
         #     stack = list(document.items())
@@ -236,10 +236,10 @@ class ParseYamlLoad(object):
                     self.parse_data(v)
                 else:
                     result[k]=v
-        #pprint(result)
+        # pprint(result)
         jdata = json.dumps(result)
         result = json.loads(jdata)
-        #pprint(result)
+        # pprint(result)
         return result
 
 class ConfigData(object):
@@ -253,17 +253,17 @@ class ConfigData(object):
         self.data = self.load_file()
         self.new_data = {}
         self.parse_dict()
-        #self.new_data = self.load_file()
+        # self.new_data = self.load_file()
     def load_file(self):
         result = {}
         with self.config_file.open('r') as f:
             try:
                 conf = self.yaml.load_all(f)
                 cd = ParseYamlLoad(conf).return_data
-                #print('dictionary stuff::: ')
+                # print('dictionary stuff::: ')
                 # json_string = json.dumps(cd)
                 # from_json = json.loads(json_string)
-                #pprint(from_json)
+                # pprint(from_json)
                 return cd
             except yaml.YAMLError as exc:
                 print(exc)
@@ -273,7 +273,7 @@ class ConfigData(object):
     def write_file(self):
         # monkey patch:
         ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
-        #pprint(self.data)
+        # pprint(self.data)
         with self.config_file.open('w') as f:
             self.yaml.default_flow_style = False
             self.yaml.dump(dict(self.data),f)
@@ -296,9 +296,10 @@ class ConfigData(object):
                     stack.extend(v.items())
             else:
                 self.new_data[k]=v
-                #print("%s: %s" % (k,v))
+                # print("%s: %s" % (k,v))
                 pass
             visited.add(k)
+
 
 class DirTree(object):
     '''
@@ -345,6 +346,7 @@ class DirNode(object):
         assert isinstance(node,DirTree)
         self.children.append(node)
 
+
 def memoize(f):
     results = {}
 
@@ -354,9 +356,11 @@ def memoize(f):
         return results[n]
     return helper
 
+
 def generate_project_dec(func):
     def inner(*args):
         pass
+
 
 class ProjectSetup(object):
     def __init__(self) -> None:
@@ -386,6 +390,7 @@ class ProjectSetup(object):
             visited.add(k)
     def set_new_project_info(self,data):
         pass
+    
     def data_test(self,data):
         # print(type(data))
         # pprint(data['None']['project_root'])
@@ -398,80 +403,116 @@ class ProjectSetup(object):
 
         last_obj = {}
         obj_stack = []
-        node_stack = []
+        parents_cache = []
         parents = 1
+        sibling_cache = []
         #@lru_cache(maxsize=2)
         def iter_through(data):
             nonlocal last_obj
             nonlocal obj_stack
-            nonlocal node_stack
+            nonlocal parents_cache
             nonlocal parents
+            nonlocal sibling_cache
             #pprint(last_obj)
-            pprint(len(obj_stack))
+            #pprint(len(obj_stack))
             for item in obj_stack:
                 #print(item['name'])
                 pass
-            
+
             temp_obj = {}
-            
-            try:
-                ### recursion depth error ###
-                if isinstance(data, dict):
-                    c = 0
+
+
+                
+            if isinstance(data, dict):
+                #c = 0
+                '''
+                get data for each node until children
+                '''
+                #print(len(data))
+                for key in data.keys():
                     
-                    #print(len(data))
-                    for key in data.keys():
-                        
-                        
-                        if key == 'children':
-                            break
-                        last_obj[key]=data[key]
-                        temp_obj[key]=data[key]
-                        c += 1
-                    #print(f'items processed: {c}')
-                    if last_obj not in obj_stack:
-                        obj_stack.append(temp_obj)
-                    #print(data['children'])
                     
-                    #print(data['children']==None)
-                    #print(parents)
+                    if key == 'children':
+                        break
+                    #last_obj[key]=data[key]
+                    temp_obj[key]=data[key]
+                    #c += 1
 
-                    if data['children'] is None:
-                        parents = 1
-                        for item in obj_stack:
+                # print(f'items processed: {c}')
+                if data['children'] is not None:
+                    pass
+                obj_stack.append(temp_obj)
+                if last_obj not in obj_stack:
+                    # obj_stack.append(temp_obj)
+                    pass
+                
+                #pprint(obj_stack)
+                #print(data['children'])
+                #print(data['children']==None)
+                #print(parents)
+                items = 0
 
-                            pass
+                obj_cache = []
+                #pprint(obj_stack)
+                #print(f'length of stack: {len(obj_stack)}')
+                print('________ stack process ________')
+                for index, item in enumerate(obj_stack):
+                    print(index)
+                    #print(f'Node::: {item["name"]}')
+                    if (item['name']==data['name']):
+                        if (data['children'] is None):
+                            print('------parents------')
+                            for i in parents_cache:
+                                print(f'^^ --{i["name"]}-- ^^')
+                            print(f'node {item["name"]} has no children and has {len(parents_cache)} parents')
+                            parents_cache.clear()
+                        else:
+                            print(obj_stack[index-1])
+                            parents_cache.append(item)
+                            print(f'{item["name"]} has children and {len(obj_stack)} parents')
+                    # if item['children'] is None:
+                    #     #print('stack')
+                    #     #pprint(item)
+                    #     obj_cache.append(obj_stack.pop())
+                    #     #pprint(item['name'])
+                    #     items += 1
+                    #     #print('cache')
+                    #     #pprint(obj_cache)
+                if (data['children'] is None):
+                    obj_stack.clear()
+                #pprint(obj_cache)
+                        #print(f'items: {item["name"]}')
+                        #print(f'items in stack: {items}')
 
-                        pass
+                    parents = 1
 
-                    else:
-                        parents += 1
-                        print(f'parents: {parents}')
+                else:
+                    parents += 1
+                    #print(f'parents: {parents}')
 
 
-                    for kk in data.keys():
-                        # print(kk == "children")
-                        if kk == 'children':
-                            # print(f'children of node::: {type(data[kk])}')
-                            if isinstance(data[kk],list):
-                                
-                                # print(f'List has {len(data[kk])} elements:')
-                                counter = 0
-                                for item in data[kk]:
-                                    counter += 1
-                                    # print(f'list count: {counter}')
-                                    # print(type(item))
-                                    if (len(item)>0):
-                                        # print(f'More than one item in list:')
-                                        for value in item.values():
-                                            #print(value)
-                                            if isinstance(value, dict):
-                                                # print(f'name:: {kk}')
-                                                # print(type(value))
-                                                #print(value)
-                                                iter_through(value)
-            except ValueError:
-                print('not a dict')
+                for kk in data.keys():
+                    # print(kk == "children")
+                    if kk == 'children':
+                        # print(f'children of node::: {type(data[kk])}')
+                        if isinstance(data[kk],list):
+                            
+                            # print(f'List has {len(data[kk])} elements:')
+                            counter = 0
+                            for item in data[kk]:
+                                counter += 1
+                                # print(f'list count: {counter}')
+                                # print(type(item))
+                                if (len(item)>0):
+                                    # print(f'More than one item in list:')
+                                    for value in item.values():
+                                        #print(value)
+                                        if isinstance(value, dict):
+                                            # print(f'name:: {kk}')
+                                            # print(type(value))
+                                            # print(value)
+                                            iter_through(value)
+
 
 
         iter_through(ymldata)
@@ -2686,8 +2727,9 @@ def check_for_projects_in_folder(path):
 
 
 # GUI? #read text file list? terminal input?
-from tkinter import filedialog
 from tkinter import *
+from tkinter import filedialog
+
 
 def choose_dir_gui():
     root = tk.Tk()
