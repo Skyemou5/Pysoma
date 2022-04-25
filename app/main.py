@@ -9,6 +9,7 @@ import contextlib
 import fnmatch
 import functools
 import glob
+from importlib.resources import path
 import json
 import os
 import pathlib
@@ -182,13 +183,14 @@ class ConfigData(object):
     def update_dict(self,other_dict):
         self.data.update(other_dict)
     def write_file(self):
-        self.convert_paths()
+        converted_data = self.convert_paths(self.data)
+
         # monkey patch:
         ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
         # pprint(self.data)
         with self.config_file.open('w') as f:
             self.yaml.default_flow_style = False
-            self.yaml.dump(dict(self.data),f)
+            self.yaml.dump(dict(converted_data),f)
             # f.write(str(self.yaml.dump(dict(self.data),self.config_file,default_flow_style=False)))
     def refresh(self):
         self.data = self.load_file()
@@ -198,32 +200,21 @@ class ConfigData(object):
     def print_data(self):
         print('printing config data...... ')
         pprint(self.data)
-    def convert_paths(self):
-
+    def convert_paths(self,data):
+        temp_obj = data.copy()
         def traverse_data(data):
-            if isinstance(data,dict):
-                for value in data.values():
-                    if isinstance(value,dict):
-                        traverse_data(value)
-                    elif isinstance(value, list):
-                        for item in value:
-                            traverse_data(item)
-                    elif isinstance(value, pathlib.PurePath):
-                        #print('pathobj')
-                        
-                        value = str(value)
-                        #print(value)
-                    else:
-                        pass
-                        # print(value)
-                        # print(type(value))
-            elif isinstance(data, list):
-                for item in data:
-                    traverse_data(item)
-            else:
-                pass
-        
-        traverse_data(self.data)
+            for k,v in data.items():
+                if isinstance(v,dict):
+                    traverse_data(v)
+                elif isinstance(v,list):
+                    for item in v:
+                        traverse_data(item)
+                elif isinstance(v,pathlib.Path):
+                    data[k]=str(v)
+        traverse_data(temp_obj)
+
+        return temp_obj
+
 
 
 class ProjectSetup(object):
@@ -234,21 +225,22 @@ class ProjectSetup(object):
         # project_template.yml
         self.yaml = YAML(typ="safe")
         self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
-        self.data = ConfigData(self.project_temp_file).data
-        self.data_class = ConfigData(self.project_temp_file)
+        self.config = ConfigData(self.project_temp_file)
+        self.data = self.config.data
         self.project_data = self.data['None']['project_root']
         self.enviornment_variables = {}
         self.config_path = None
-    def create_config(self,path,c_data):
+    def create_config(self,name,c_data):
+        print(self.config_path)
+        converted_data = self.config.convert_paths(c_data)
         # monkey patch:
         ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
         # pprint(self.data)
-        fp = pathlib.Path(path)/'project_data.yml'
+        fp = pathlib.Path(self.config_path)/name
         with fp.open('w') as f:
             self.yaml.default_flow_style = False
-            self.yaml.dump(dict(self.c_data),f)
+            self.yaml.dump(dict(converted_data),f)
             # f.write(str(self.yaml.dump(dict(self.data),self.config_file,default_flow_style=False)))
-
 
     def create_project(self,config_data):
         env_vars = {}
@@ -285,9 +277,14 @@ class ProjectSetup(object):
             if data['env'] is not None:
                 env_vars[data['env']]=current_path
             if data['h_env'] is not None:
-                hou_vars[data['h_env']]=current_path
+                if data['h_env'] in hou_vars:
+                    print('item exists')
+                    print(hou_vars[data['h_env']])
+                    #print(f'{data["h_env"]} + {hou_vars[data["h_env"]]}')
+                else:
+                    hou_vars[data['h_env']]=current_path
             if data['name']=='.config':
-                self.config_path = pathlib.Path(current_path)/'project_data.yml'
+                self.config_path = pathlib.Path(current_path)
             # if config is not None and data['name']=='.config':
             #     create_project_config(current_path,config)
             if data['children'] is not None:
@@ -362,14 +359,22 @@ class MainConfig(object):
         self.config_path = pathlib.Path(pathlib.Path(application_path)/'main_config.yml')
         self.config = ConfigData(self.config_path)
         self.data = self.config.data
+        self.project_list = self.parse_projects()
+    def parse_projects(self):
+        result = []
+        for item in self.data['None']['projects']:
+            result.append(item)
+        return result
+    def refresh_projects(self):
+        self.project_list = self.parse_projects()
     def add_project(self,data):
         if 'projects' in data:
-            if self.data['projects']==None:
-                self.data['projects']=[]
+            if self.data['None']['projects']==None:
+                self.data['None']['projects']=[]
             else:
-                self.data['projects'].append(data)
+                self.data['None']['projects'].append(data)
         else:
-            self.data['projects']=[data]
+            self.data['None']['projects']=[data]
         self.update_config()
     def remove_project(self,data):
         pass
@@ -1841,7 +1846,63 @@ def write_to_second_temp(d_content):
         with path.open('w') as f:
             f.write(l)
 
+#region project setup helpers
 
+def choose_project(l):
+    print(len(l))
+    '''
+    Takes a list
+    Returns the index chosen by user if valid
+    also returns user confirmation
+    '''
+    # returns
+    choice = 0
+    confirm = False
+    # other
+    inner_confirm = True
+    #result = ''
+    while True:
+        try:
+            choice = int(input('Please type the corresponding number of the shot you wish to open: '))
+            result = check_if_num_in_list(choice,l)
+            if (result == True):
+                proj = l[choice-1]
+                proj_name = proj['name']
+                print(f'You chose <{proj_name}>')
+                while inner_confirm:
+                    try:
+                        #accepted_input = ['y','n']
+                        user_confirm = input(
+                            'Is this correct? y/n: '
+                        ).lower()
+                        if (user_confirm == 'y' or 'n'):
+                            if(user_confirm == 'y'):
+                                confirm = True
+                                inner_confirm = False
+                            elif(user_confirm == 'n'):
+                                confirm = False
+                                inner_confirm = False
+                            else:
+                                print('Invalid response, try again...')
+                                raise ValueError                          
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        print('Invalid response, try again...')
+                        continue
+                if(confirm == True):
+                    break
+                elif(confirm == False):
+                    break
+            else:
+                print('Invalid response, try again...')
+                continue
+        except ValueError:
+            print('Invalid response, try again...')
+            continue
+    return choice, confirm
+
+#endregion
 #region ARGPARSE
 # create parser
 #TODO let user choose default behavior with args
@@ -1883,64 +1944,71 @@ main_config = MainConfig()
 # TODO:convert to yaml from config
 def projects_init_main():
     # args
-    
+
+    def create_project():
+
+        print('Creating a new project...')
+        main_config.data['None']['appdata']['initialized']=True
+        project_name = set_project_name()
+        project_data = ProjectData()
+        
+        project_data.name = project_name
+        
+        choice = user_choose_folder_methods_noscan()
+        path = choose_folder_method(choice)
+        project_data.parent_path = path
+        project_path = pathlib.Path(path)/project_data.name
+        project_data.path = project_path
+        
+        new_project = ProjectSetup()
+        new_project.create_project(vars(project_data))
+        project_data.config = new_project.config_path
+        
+        project_data.env = new_project.enviornment_variables
+        project_data.initialized = True
+        project_data.project_root = project_path
+        project_data.name = project_name
+        project_data.houdini_major_version = '18.5'
+        project_data.houdini_minor_version = '759'
+        
+
+        project_data.houdini_install_path = main_config.get_hou_path(project_data)
+        simple_project_data = {'name':project_data.name,'path':project_data.project_root,'config':project_data.config}
+        main_config.add_project(simple_project_data)
+        #pprint(main_config.data)
+        new_project.create_config('project_data.yml',vars(project_data))
+        main_config.write_config()
+        
+        #pprint(vars(project_data))
+
+    def add_existing_project():
+        choose_folder = user_choose_folder_methods_noscan()
+        parent_path = choose_folder_method(choose_folder)
+        config_path = pathlib.Path(parent_path)/'.config/project_data.yml'
+        if config_path.exists():
+            existing_project = ConfigData(config_path)
+            pprint(existing_project.data)
+
 
     if not (main_config.config.data['None']['appdata']['initialized']):
         print('First time setup')
-        if y_n_q('Would you like to open an existing project?'):
-            print('opening project')
+        if y_n_q('Would you like to add an existing project?'):
+            print('adding project')
+            add_existing_project()
         else:
-            print('Create a new project...')
-            main_config.data['None']['appdata']['initialized']=True
-            project_name = set_project_name()
-            project_data = ProjectData()
-            
-            project_data.name = project_name
-            
-
-            choice = user_choose_folder_methods_noscan()
-            path = choose_folder_method(choice)
-            project_data.parent_path = path
-            project_path = pathlib.Path(path)/project_data.name
-            project_data.path = project_path
-            
-            new_project = ProjectSetup()
-            new_project.create_project(vars(project_data))
-            project_data.config = new_project.config_path
-            
-            project_data.env = new_project.enviornment_variables
-            project_data.initialized = True
-            project_data.project_root = project_path
-            project_data.name = project_name
-            project_data.houdini_major_version = '18.5'
-            project_data.houdini_minor_version = '759'
-            
-
-            project_data.houdini_install_path = main_config.get_hou_path(project_data)
-            simple_project_data = {'name':project_data.name,'path':project_data.project_root}
-            main_config.add_project(simple_project_data)
-            pprint(main_config.data)
-            main_config.write_config()
-            
-            #pprint(vars(project_data))
-            
-
-
+            create_project()
 
     else:   
-        print('The following projects exist...')
-
         if y_n_q('Would you like to open an existing project?'):
-            if check_if_temp_empty():
-                print('No projects saved...')
-                print('Scan for projects or create a new one...')
-                choice = user_choose_folder_methods_noscan()
-                p_list = choose_folder_method(choice)
-            else:
-                pass
-                #project_list = list_projects(temp_path)
-                #pprint(project_list)
-                #choose_project(project_list)
+            print('The following projects exist...')
+            
+            for i, item in enumerate(main_config.project_list):
+                print(f'{i+1} : {item["name"]}')
+            choose_project(main_config.project_list)
+
+            # choice = user_choose_folder_methods_noscan()
+            # p_list = choose_folder_method(choice)
+
         else:
             print('Create new project')
             print('Choose directory to create project in...')

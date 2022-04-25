@@ -885,7 +885,7 @@ None:
       name: HDA
       path:
       env:
-      h_env:
+      h_env: HDA
       files:
       gitkeep: True
       parent:
@@ -1055,8 +1055,8 @@ None:
       - hda_dir:
         name: HDA
         path:
-        env:
-        h_env:
+        env: HDA
+        h_env: 
         files: README.md
         gitkeep: True
         parent:
