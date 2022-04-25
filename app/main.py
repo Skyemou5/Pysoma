@@ -169,26 +169,6 @@ class NonAliasingRTRepresenter(ruamel.yaml.representer.RoundTripRepresenter):
 class config(object):
     pass
 
-# @yaml_object(yaml)
-# class User:
-#     yaml_tag = u'!main'
-
-#     def __init__(self, name, age):
-#         self.name = name
-#         self.age = age
-
-#     @classmethod
-#     def to_yaml(cls, representer, node):
-#         return representer.represent_scalar(cls.yaml_tag,
-#                                             u'{.name}-{.age}'.format(node, node))
-
-#     @classmethod
-#     def from_yaml(cls, constructor, node):
-#         return cls(*node.value.split('-'))
-
-
-
-
 
 
 class ParseTemplateYaml(object):
@@ -209,27 +189,9 @@ class ParseYamlLoad(object):
 
     def parse_data(self,data):
         result = {}
-        # pprint(data['project_root'])
-        # jdata = json.dumps(data)
+
 
         for document in data:
-        #     stack = list(document.items())
-        #     visited = set()
-        #     while stack:
-        #         k, v = stack.pop()
-        #         if isinstance(v,dict):
-        #             if k not in visited:
-        #                 stack.extend(v.items())
-        #         elif isinstance(v,list):
-        #             for i in v:
-        #                 if isinstance(v,dict):
-        #                     if i not in visited:
-        #                         stack.extend(v.items())
-        #         else:
-        #             print("%s: %s" % (k,v))
-        #             result[k]=v
-        #             pass
-        #         visited.add(k)
 
             for k,v in document.items():
                 if isinstance(v,list):
@@ -269,7 +231,8 @@ class ConfigData(object):
                 print(exc)
 
         return result
-
+    def update_dict(self,other_dict):
+        self.data.update(other_dict)
     def write_file(self):
         # monkey patch:
         ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
@@ -301,345 +264,70 @@ class ConfigData(object):
             visited.add(k)
 
 
-class DirTree(object):
-    '''
-    Generic tree node
-    '''
-    def create_node(self,data):
-        return DirNode(data)
-    def traverse(self):
-        pass
-
-
-class DirNode(object):
-    def __init__(self) -> None:
-        self.name = None
-        self.type = None
-        self.path = None
-        self.env = None
-        self.h_env = None
-        self.gitkeep = None
-        self.children = None
-    def setup_data(self, data):
-        for k,v in data.items():
-            if k == 'name':
-                self.name = v
-            elif k == 'type':
-                self.type = v
-            elif k == 'path':
-                self.path = v
-            elif k == 'env':
-                self.env = v
-            elif k == 'h_env':
-                self.h_env = v
-            elif k == 'files':
-                self.files = v
-            elif k == 'gitkeep':
-                self.gitkeep = v
-            elif k == 'children':
-                self.children = v
-    def refresh_node(self,data):
-        self.setup_data(data)
-    def __repr__(self) -> str:
-        return self.name
-    def add_child(self,node):
-        assert isinstance(node,DirTree)
-        self.children.append(node)
-
-
-def memoize(f):
-    results = {}
-
-    def helper(n):
-        if n not in tuple(results):
-            results[n] = tuple(f(n))
-        return results[n]
-    return helper
-
-
-def generate_project_dec(func):
-    def inner(*args):
-        pass
-
 
 class ProjectSetup(object):
+
     def __init__(self) -> None:
         #self.keys_path = keys_path
         # self.data = data
+        # project_template.yml
         self.yaml = YAML(typ="safe")
-        self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
+        self.project_temp_file = pathlib.Path(application_path)/'temp_list_copy.yml'
         self.data = ConfigData(self.project_temp_file).data
-        self.project_data = {}
-        self.new_data = {}
-        self.dir_keys = []
-        self.set_values(self.project_data)
-        self.data_test(self.data)
-        self.process_data(self.data)
-    def set_values(self,d):
-        stack = list(d.items())
-        visited = set()
-        while stack:
-            k, v = stack.pop()
-            if isinstance(v,dict):
-                if k not in visited:
-                    stack.extend(v.items())
-            else:
-                self.new_data[k]=v
-                #print("%s: %s" % (k,v))
-                pass
-            visited.add(k)
+        self.data_class = ConfigData(self.project_temp_file)
+        self.project_data = self.data['None']['project_root']
+        self.process_template(self.project_data)
+
     def set_new_project_info(self,data):
         pass
-    
-    def data_test(self,data):
-        # print(type(data))
-        # pprint(data['None']['project_root'])
-        # ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
-        project_dirs = data['None']['project_root']
-        ymldata = dict(self.yaml.load(json.dumps(project_dirs)))
-        # pprint(ymldata)
-        prev_name = ''
-        sys.setrecursionlimit(10*1000)
 
-        last_obj = {}
-        obj_stack = []
-        parents_cache = []
-        parents = 1
-        sibling_cache = []
-        #@lru_cache(maxsize=2)
-        def iter_through(data):
-            nonlocal last_obj
-            nonlocal obj_stack
-            nonlocal parents_cache
-            nonlocal parents
-            nonlocal sibling_cache
-            #pprint(last_obj)
-            #pprint(len(obj_stack))
-            for item in obj_stack:
-                #print(item['name'])
+
+    def process_template(self,data,config_data=None):
+        env_vars = {}
+        hou_vars = {}
+
+        def create_dir_if_not_present(dirpath):
+            if not dirpath.exists():
+                #print(f'+D/..........................Creating new {dirpath.name} Directory in {dirpath.parent}...')
+                pathlib.Path(dirpath).mkdir(parents=True,exist_ok=True)
+            else:
+                #print(f'!!!--------------Directory <{dirpath.name}> in {dirpath.parent} exists! Skipping...')
                 pass
+        def add_gitkeep(path):
+            fp = pathlib.Path(path)/'.gitkeep'
+            fp.open("w",encoding="utf-8")
+        def add_file(path,f):
+            fp = pathlib.Path(path)/f
+            fp.open("w",encoding="utf-8")
 
-            temp_obj = {}
-
-
-                
-            if isinstance(data, dict):
-                #c = 0
-                '''
-                get data for each node until children
-                '''
-                #print(len(data))
-                for key in data.keys():
-                    
-                    
-                    if key == 'children':
-                        break
-                    #last_obj[key]=data[key]
-                    temp_obj[key]=data[key]
-                    #c += 1
-
-                # print(f'items processed: {c}')
-                if data['children'] is not None:
-                    pass
-                obj_stack.append(temp_obj)
-                if last_obj not in obj_stack:
-                    # obj_stack.append(temp_obj)
-                    pass
-                
-                #pprint(obj_stack)
-                #print(data['children'])
-                #print(data['children']==None)
-                #print(parents)
-                items = 0
-
-                obj_cache = []
-                #pprint(obj_stack)
-                #print(f'length of stack: {len(obj_stack)}')
-                print('________ stack process ________')
-                for index, item in enumerate(obj_stack):
-                    print(index)
-                    #print(f'Node::: {item["name"]}')
-                    if (item['name']==data['name']):
-                        if (data['children'] is None):
-                            print('------parents------')
-                            for i in parents_cache:
-                                print(f'^^ --{i["name"]}-- ^^')
-                            print(f'node {item["name"]} has no children and has {len(parents_cache)} parents')
-                            parents_cache.clear()
-                        else:
-                            print(obj_stack[index-1])
-                            parents_cache.append(item)
-                            print(f'{item["name"]} has children and {len(obj_stack)} parents')
-                    # if item['children'] is None:
-                    #     #print('stack')
-                    #     #pprint(item)
-                    #     obj_cache.append(obj_stack.pop())
-                    #     #pprint(item['name'])
-                    #     items += 1
-                    #     #print('cache')
-                    #     #pprint(obj_cache)
-                if (data['children'] is None):
-                    obj_stack.clear()
-                #pprint(obj_cache)
-                        #print(f'items: {item["name"]}')
-                        #print(f'items in stack: {items}')
-
-                    parents = 1
-
-                else:
-                    parents += 1
-                    #print(f'parents: {parents}')
-
-
-                for kk in data.keys():
-                    # print(kk == "children")
-                    if kk == 'children':
-                        # print(f'children of node::: {type(data[kk])}')
-                        if isinstance(data[kk],list):
-                            
-                            # print(f'List has {len(data[kk])} elements:')
-                            counter = 0
-                            for item in data[kk]:
-                                counter += 1
-                                # print(f'list count: {counter}')
-                                # print(type(item))
-                                if (len(item)>0):
-                                    # print(f'More than one item in list:')
-                                    for value in item.values():
-                                        #print(value)
-                                        if isinstance(value, dict):
-                                            # print(f'name:: {kk}')
-                                            # print(type(value))
-                                            # print(value)
-                                            iter_through(value)
-
-
-
-        iter_through(ymldata)
-        #pprint(last_obj)
-        #pprint(obj_stack)
-
-
-    def process_data(self,data):
-        ddata = dict(data)
-        #pprint(data)
-        listd = []
-        result = {}
-        ldata = list(data)
-        #print(ldata)
-        level = 0
-        def inner(data):
-            nonlocal level
-            innerdata = {}
-            for k,v in data.items():
-                if isinstance(v,dict):
-                    inner(v)
-                if isinstance(v,list):
-                    for item in v:
-                        inner(item)
-                else:
-                    innerdata[k]=v
-                    #print(f'{type(k)} - {k} :: {type(v)} - {v}')
-            level += 1
-            #print(level)
-            result[k]=v
-            #pprint(innerdata)
-        #print(level)
-        inner(data)
-        ldata.append(result)
-        return result
-    
-    def create_paths(self):
-        newdata = self.data['None']['project_root']
-        #pprint(type(newdata))
-        rootpath = pathlib.Path(application_path)/'test_project'
-        pathlist = [rootpath]
-        result = {}
-        lastpath = ''
-        parent_obj = {}
+        test_root = pathlib.Path(application_path)
         
-        flat = flatdict.FlatterDict(newdata)
-        #pprint(flat.keys())
-        namelist = []
-        pathlist = []
-        for k,v in flat.items():
-            #print(type(k))
-            if k.endswith('name'):
-                namelist.append(str(f'{k}:{v}'))
-                #print(f'{k} :: {v}')
-        #pprint(namelist)
-        prevname = ''
-        for i in range(len(namelist)):
-            #print(i)
-            root = namelist[0].split(':')
-            #print(root[1])
-            #print(namelist[i])
-            #pattern = re.compile(r'(?<=name:)(.*$)')
-            name = re.compile(r'(?<=name:)(.*$)').findall(namelist[i])
-            #print(re.compile(r'(children:)(\d)').findall(namelist[i]))
-            if not name == None:
-                prevname = name
-                #print(prevname)
+        def process_dirs(data,path):
+            nonlocal env_vars
+            nonlocal hou_vars
+            current_path = pathlib.Path(path).joinpath(data['name'])
+            data['path']=current_path
+            create_dir_if_not_present(current_path)
+            
 
-            fixpaths = re.compile(r'(:)')
-            newpaths = re.sub(fixpaths,'/',namelist[i])
-            #names = re.match(r'(name)',namelist[i])
-            #print(newpaths)
+            if data['gitkeep']:
+                add_gitkeep(current_path)
+            if data['files'] is not None:
+                add_file(current_path,data['files'])
+            if data['env'] is not None:
+                env_vars[data['env']]=current_path
+            if data['h_env'] is not None:
+                hou_vars[data['h_env']]=current_path
+            if data['children'] is not None:
+                for obj in data['children']:
+                    # pprint(obj)
+                    process_dirs(obj,current_path)
 
-            #add_root = re.sub('None:',root,namelist[i])
-            #print(add_root)
-            result = re.sub('children:','',namelist[i])
-            remove_nums = re.sub(r'\d+:','',result)
-
-        parent_name = ''
-        def inner(data):
-            nonlocal parent_obj
-            nonlocal pathlist
-            nonlocal parent_name
-            #nonlocal prev_data
-            prev_data = {}
-            #pprint(prev_data)
-            innerdata = {}
-            newpath = ''
-            prevpath = ''
-            prevname = ''
-            #print(prevname)
-            #print(type(data))
-            for k,v in data.items():
-                if isinstance(v,dict):
-                    #print('dict----->')
-                    parent_name = k
-                    #print(pathlist.count)
-                    if pathlist.count == 0:
-                        pass
-                        #print('sdf none')
-                        #prevpath = pathlib.Path(rootpath).joinpath(k)
-                        #pathlist.append(prevpath)
-                    #print(k)
-                    inner(v)
-                if isinstance(v,list):
-                    #print('list------>')
-                    #print(k)
-                    #prevname = v
-                    for item in v:
-                        inner(item)
-                else:
-                    #parent_obj = data
-                    #pprint(parent_obj)
-                    innerdata[k]=v
-                    #print(f'{type(k)} - {k} :: {type(v)} - {v}')
-                    #print(parent_name)
-                    # print(k,v)
-                    # if k == 'name':
-                    #     newpath = pathlib.Path(pathlist[-1]).joinpath(parent_name)
-                    #     pathlist.append(newpath)
-                    #result[k]=v
-        inner(newdata)
-        #pprint(parent_obj)
-        #pprint(pathlist)
-
-#test = ProjectSetup()
-#pprint(ProjectSetup().data['None']['project_root'])
+        process_dirs(self.project_data,test_root)
+        pprint(env_vars)
+        pprint(hou_vars)
+        # pprint(project_dirs)
+        # pprint(self.project_data)
 
 
 class ShotData(object):
