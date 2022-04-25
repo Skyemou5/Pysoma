@@ -2,12 +2,11 @@ None:
   appdata:
     initialized: false
   houdini_versions:
-  - houdini_18.5:
+  - '18.5':
     - '759':
-        houdini_paths:
-          linux: /opt/hfs18.5.759
-          mac: /Applications/Houdini18.5.759
-          win: C:\\Program\ Files\\Side\ Effects\ Software\\Houdini\ 18.5.75
+        linux: /opt/hfs18.5.759
+        mac: /Applications/Houdini18.5.759
+        win: C:\\Program\ Files\\Side\ Effects\ Software\\Houdini\ 18.5.75
   renderers:
   - name: 3Delight
     ACES: null

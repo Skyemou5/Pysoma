@@ -75,6 +75,36 @@ else:
 
 
 #endregion
+#region helper funcs
+# check OS
+def check_os():
+    platform = ''
+    from sys import platform
+    if platform == "linux" or platform == "linux2":
+        # linux
+        print("Congrats! You are on linux!")
+        platform = "linux"
+
+        pass
+    elif platform == "darwin":
+        # OS X
+        print("You are on OSX")
+        platform = "mac"
+
+        pass
+    elif platform == "win32":
+        # Windows...
+        print("You are, unfortunately on Windows...")
+        platform = "win"
+
+        pass
+    else:
+        print("I don't know what system you're on...")
+        pass
+    return platform
+
+
+#endregion
 #region data classes
 # classes
 # class NoAliasDumper(yaml.SafeDumper):
@@ -132,11 +162,9 @@ class ConfigData(object):
         self.yaml = ruamel.yaml.YAML(typ="rt",pure=True)
         self.config = config
         self.config_file = pathlib.Path(self.config)
-        self.data = self.load_file()
-        self.new_data = {}
-        self.parse_dict()
-        # self.new_data = self.load_file()
-    def load_file(self):
+        self.data = self.load_file(self.config_file)
+        
+    def load_file(self,file):
         result = {}
         with self.config_file.open('r') as f:
             try:
@@ -154,6 +182,7 @@ class ConfigData(object):
     def update_dict(self,other_dict):
         self.data.update(other_dict)
     def write_file(self):
+        self.convert_paths()
         # monkey patch:
         ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
         # pprint(self.data)
@@ -169,20 +198,32 @@ class ConfigData(object):
     def print_data(self):
         print('printing config data...... ')
         pprint(self.data)
-    def parse_dict(self):
-        stack = list(self.data.items())
-        visited = set()
-        while stack:
-            k, v = stack.pop()
-            if isinstance(v,dict):
-                if k not in visited:
-                    stack.extend(v.items())
-            else:
-                self.new_data[k]=v
-                # print("%s: %s" % (k,v))
-                pass
-            visited.add(k)
+    def convert_paths(self):
 
+        def traverse_data(data):
+            if isinstance(data,dict):
+                for value in data.values():
+                    if isinstance(value,dict):
+                        traverse_data(value)
+                    elif isinstance(value, list):
+                        for item in value:
+                            traverse_data(item)
+                    elif isinstance(value, pathlib.PurePath):
+                        #print('pathobj')
+                        
+                        value = str(value)
+                        #print(value)
+                    else:
+                        pass
+                        # print(value)
+                        # print(type(value))
+            elif isinstance(data, list):
+                for item in data:
+                    traverse_data(item)
+            else:
+                pass
+        
+        traverse_data(self.data)
 
 
 class ProjectSetup(object):
@@ -196,16 +237,22 @@ class ProjectSetup(object):
         self.data = ConfigData(self.project_temp_file).data
         self.data_class = ConfigData(self.project_temp_file)
         self.project_data = self.data['None']['project_root']
-        self.process_template(self.project_data)
+        self.enviornment_variables = {}
+        self.config_path = None
+    def create_config(self,path,c_data):
+        # monkey patch:
+        ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+        # pprint(self.data)
+        fp = pathlib.Path(path)/'project_data.yml'
+        with fp.open('w') as f:
+            self.yaml.default_flow_style = False
+            self.yaml.dump(dict(self.c_data),f)
+            # f.write(str(self.yaml.dump(dict(self.data),self.config_file,default_flow_style=False)))
 
-    def set_new_project_info(self,data):
-        pass
 
-
-    def process_template(self,data,config_data=None):
+    def create_project(self,config_data):
         env_vars = {}
         hou_vars = {}
-
 
         def create_dir_if_not_present(dirpath):
             if not dirpath.exists():
@@ -239,20 +286,22 @@ class ProjectSetup(object):
                 env_vars[data['env']]=current_path
             if data['h_env'] is not None:
                 hou_vars[data['h_env']]=current_path
+            if data['name']=='.config':
+                self.config_path = pathlib.Path(current_path)/'project_data.yml'
+            # if config is not None and data['name']=='.config':
+            #     create_project_config(current_path,config)
             if data['children'] is not None:
                 for obj in data['children']:
                     # pprint(obj)
                     process_dirs(obj,current_path)
         
         if config_data is not None:
-            data['name']=config_data['name']
-            process_dirs(self.project_data,config_data['path'])
+            self.project_data['name']=config_data['name']
+            process_dirs(self.project_data,config_data['parent_path'])
         else:
             process_dirs(self.project_data,test_root)
-        # pprint(env_vars)
-        # pprint(hou_vars)
-        # pprint(project_dirs)
-        # pprint(self.project_data)
+        self.enviornment_variables['env_vars']=env_vars
+        self.enviornment_variables['houdini_vars']=hou_vars
 
 
 class ShotData(object):
@@ -303,16 +352,9 @@ class ShotData(object):
         
         if config_data is not None:
             data['name']=config_data['name']
-            process_dirs(self.project_data,config_data['path'])
+            process_dirs(self.project_data,config_data['parent_path'])
         else:
             process_dirs(self.project_data,test_root)
-        # pprint(env_vars)
-        # pprint(hou_vars)
-        # pprint(project_dirs)
-        # pprint(self.project_data)
-
-
-
 
 
 class MainConfig(object):
@@ -321,33 +363,43 @@ class MainConfig(object):
         self.config = ConfigData(self.config_path)
         self.data = self.config.data
     def add_project(self,data):
-        self.data['projects']=data
+        if 'projects' in data:
+            if self.data['projects']==None:
+                self.data['projects']=[]
+            else:
+                self.data['projects'].append(data)
+        else:
+            self.data['projects']=[data]
+        self.update_config()
     def remove_project(self,data):
         pass
     def update_config(self):
         self.config.update_dict(self.data)
+    def write_config(self):
+        self.config.update()
+    def get_hou_path(self,data):
+        result = ''
+        houdini_versions = self.data['None']['houdini_versions']
+        for majv in houdini_versions:
+            for k in majv.keys():
+                try:
+                    if k == data.houdini_major_version:
+                        for minv in majv[data.houdini_major_version]:
+                            for kk,v in minv.items():
+                                try:
+                                    if kk == data.houdini_minor_version:
+                                        result = pathlib.Path(v[check_os()])
+                                    else:
+                                        raise ValueError
+                                except ValueError:
+                                    exit('config likely has incorrect houdini versions')
+                    else:
+                        raise ValueError
+                except ValueError:
+                    exit('config likely has incorrect houdini versions')
+        return result
 
 
-@yaml_object(yaml)
-class ProjectListData(object):
-    def __init__(self) -> None:
-        self.name = None
-        self.path = None
-        self.default_args = None
-        self.initialized = None
-        self.config = None
-
-    @classmethod
-    def to_yaml(cls,representer,node):
-        return representer.represent_scalar(cls.yaml_tag,u'{.name}-{.age}'.format(node,node))
-
-    @classmethod
-    def from_yaml(cls,constructor,node):
-        return cls(*node.value.split('-'))
-
-    @classmethod
-    def to_dict(cls):
-        pass
 
 @yaml_object(yaml)
 class ProjectData:
@@ -357,12 +409,15 @@ class ProjectData:
         self.name = None
         self.users = None
         self.init_date = None
-        self.houdini_version = None
+        self.houdini_major_version = None
+        self.houdini_minor_version = None
         self.houdini_install_path = None
-        self.project_name = None
+        self.name = None
         self.project_root = None
+        self.parent_path = None
         self.env = None
         self.path = None
+        self.config = None
 
     @classmethod
     def to_yaml(cls,representer,node):
@@ -378,21 +433,32 @@ class Dict2Class(object):
             setattr(self,k,my_dict[k])
 
 
-# class testing
-project_data = ProjectSetup()
-main_config = MainConfig()
+# pdata = ProjectData()
+# pdata.houdini_major_version = '18.5'
+# pdata.houdini_minor_version = '759'
 
-new_project_data = ProjectListData()
-new_project_data.name = 'test_project_2'
+# mc = MainConfig()
+# pdata.houdini_install_path = mc.get_hou_path(pdata)
+# mc.add_project(vars(pdata))
+# mc.config.convert_paths()
+
+
+# # class testing
+# project_data = ProjectSetup()
+# main_config = MainConfig()
+
+# new_project_data = ProjectListData()
+# new_project_data.name = 'test_project_2'
 
 # main_config.add_project(vars(new_project_data))
 # main_config.update_config()
 # main_config.config.update()
-# pprint(main_config.data)
+# # pprint(main_config.data)
+# #project_data.
 
-new_shot = ShotData()
-# for obj in new_shot.data:
-#     print(obj['name'])
+# new_shot = ShotData()
+# # for obj in new_shot.data:
+# #     print(obj['name'])
 
 #endregion
 #region HELPER METHODS
@@ -441,36 +507,6 @@ def create_config_dir():
         add_var_to_dict('CONFIG_DIR',p)
         return p
 
-
-# check OS
-def check_os():
-    platform = ''
-    from sys import platform
-    if platform == "linux" or platform == "linux2":
-        # linux
-        print("Congrats! You are on linux!")
-        platform = "linux"
-        add_var_to_dict('OS','linux')
-        #return
-        pass
-    elif platform == "darwin":
-        # OS X
-        print("You are on OSX")
-        platform = "mac"
-        add_var_to_dict('OS','mac')
-        #return
-        pass
-    elif platform == "win32":
-        # Windows...
-        print("You are, unfortunately on Windows...")
-        platform = "win"
-        add_var_to_dict('OS','win')
-        #return
-        pass
-    else:
-        print("I don't know what system you're on...")
-        pass
-    return platform
 
 
 def subdirList(rootDir):
@@ -667,11 +703,11 @@ redshift_vars = {
 
 def redshift_setup():
     platform = check_os()
-    add_var_to_dict('HOUDINI_DSO_ERROR',str(2))
+    #add_var_to_dict('HOUDINI_DSO_ERROR',str(2))
     rs_key = 'RS_PATH'
-    add_var_to_dict(rs_key,redshift_paths[platform])
+    #add_var_to_dict(rs_key,redshift_paths[platform])
     rs_path = pathlib.Path(redshift_paths[platform])
-    add_var_to_dict('USE_RS',str(1))
+    #add_var_to_dict('USE_RS',str(1))
     return rs_path
 
 
@@ -691,7 +727,8 @@ def redshift_main():
             print('please install redshift and try again...')
             quit()
     else:
-        add_var_to_dict('USE_RS',str(0))
+        #add_var_to_dict('USE_RS',str(0))
+        return False
         print('Your config will be set to not use redshift... \n if you want to change this, initialize the project again...')
 
 
@@ -1359,6 +1396,44 @@ def houdini_main():
 #endregion
 #region path setup
 #region Initialize
+#region Project name
+
+def check_for_space_in_string(s):
+    result = 0
+    for a in s:
+        if (a.isspace()==True):
+            result += 1
+    return result
+
+def set_project_name():
+    user_confirm = True
+    user_choice = ''
+    while True:
+        try:
+            user_choice = input('Please enter the name of the project: ').lower()
+            if(check_for_space_in_string(user_choice)>0):
+                print('White space characters not allowed...')
+                raise ValueError
+            else:
+                while user_confirm:
+                    try:
+                        if y_n_q(f'Is {user_choice} correct?'):
+                            user_confirm = False
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        continue
+            if(user_confirm == False):
+                break
+            else:
+                raise ValueError
+        except ValueError:
+            print('Please enter a valid choice...')
+            continue
+    return user_choice
+
+#endregion
+
 #region Choose Project Dir
 # Project stuff
 def choose_proj_dir():
@@ -1591,6 +1666,7 @@ def user_choose_folder_methods_noscan() -> int:
     options = {
         1:'default: Open gui to choose path',
         2:'type in path to scan',
+        3:'Current application directory',
     }
     op_nums = []
     choice = 0
@@ -1607,6 +1683,8 @@ def user_choose_folder_methods_noscan() -> int:
                 if user_input == 1:
                     choice = user_input
                 elif user_input == 2:
+                    choice = user_input
+                elif user_input == 3:
                     choice = user_input
                 else:
                     raise ValueError
@@ -1667,6 +1745,8 @@ def choose_folder_method(choice: int):
             result = choose_dir_gui()
         elif choice == 2:
             result = type_path_of_dir()
+        elif choice == 3:
+            result = application_path
         else:
             raise ValueError
     except ValueError:
@@ -1799,29 +1879,57 @@ args = parser.parse_args()
 #!!! Per project config
 # so we need to choose the project
 # default behavior -> once initialized open last project
-
+main_config = MainConfig()
 # TODO:convert to yaml from config
 def projects_init_main():
     # args
-
-
-    app_root = pathlib.Path(application_path)
-    temp_path = pathlib.Path(application_path)/'.temp.env'
+    
 
     if not (main_config.config.data['None']['appdata']['initialized']):
         print('First time setup')
         if y_n_q('Would you like to open an existing project?'):
             print('opening project')
         else:
+            print('Create a new project...')
+            main_config.data['None']['appdata']['initialized']=True
+            project_name = set_project_name()
+            project_data = ProjectData()
+            
+            project_data.name = project_name
+            
+
             choice = user_choose_folder_methods_noscan()
             path = choose_folder_method(choice)
-            main_config.update_new_project_data([('path',str(path)),('name',path.name)])
-            #pprint(main_config.config.data)
-            main_config.config.write_file()
+            project_data.parent_path = path
+            project_path = pathlib.Path(path)/project_data.name
+            project_data.path = project_path
+            
+            new_project = ProjectSetup()
+            new_project.create_project(vars(project_data))
+            project_data.config = new_project.config_path
+            
+            project_data.env = new_project.enviornment_variables
+            project_data.initialized = True
+            project_data.project_root = project_path
+            project_data.name = project_name
+            project_data.houdini_major_version = '18.5'
+            project_data.houdini_minor_version = '759'
+            
+
+            project_data.houdini_install_path = main_config.get_hou_path(project_data)
+            simple_project_data = {'name':project_data.name,'path':project_data.project_root}
+            main_config.add_project(simple_project_data)
+            pprint(main_config.data)
+            main_config.write_config()
+            
+            #pprint(vars(project_data))
+            
+
+
 
     else:   
         print('The following projects exist...')
-        read_temp_file(temp_path)
+
         if y_n_q('Would you like to open an existing project?'):
             if check_if_temp_empty():
                 print('No projects saved...')
@@ -1829,9 +1937,10 @@ def projects_init_main():
                 choice = user_choose_folder_methods_noscan()
                 p_list = choose_folder_method(choice)
             else:
-                project_list = list_projects(temp_path)
-                pprint(project_list)
-                choose_project(project_list)
+                pass
+                #project_list = list_projects(temp_path)
+                #pprint(project_list)
+                #choose_project(project_list)
         else:
             print('Create new project')
             print('Choose directory to create project in...')
@@ -1845,43 +1954,6 @@ def projects_init_main():
 
 
 #endregion
-#endregion
-#region Project name
-
-def check_for_space_in_string(s):
-    result = 0
-    for a in s:
-        if (a.isspace()==True):
-            result += 1
-    return result
-
-def set_project_name():
-    user_confirm = True
-    user_choice = ''
-    while True:
-        try:
-            user_choice = input('Please enter the name of the project: ').lower()
-            if(check_for_space_in_string(user_choice)>0):
-                print('White space characters not allowed...')
-                raise ValueError
-            else:
-                while user_confirm:
-                    try:
-                        if y_n_q(f'Is {user_choice} correct?'):
-                            user_confirm = False
-                        else:
-                            raise ValueError
-                    except ValueError:
-                        continue
-            if(user_confirm == False):
-                break
-            else:
-                raise ValueError
-        except ValueError:
-            print('Please enter a valid choice...')
-            continue
-    return user_choice
-
 #endregion
 #endregion
 #endregion
@@ -1910,7 +1982,7 @@ def main(project_data):
         indie_check()
         redshift_main()
         # initialize
-        get_initial_paths()
+
         # Shot stuff
         shot_decision()
         #houdini setup
@@ -1929,7 +2001,7 @@ def main(project_data):
         indie_check()
         redshift_main()
         # initialize
-        get_initial_paths()
+
         # Shot stuff
         shot_decision()
         #houdini setup
@@ -1946,7 +2018,7 @@ def main(project_data):
         #TODO use flatdict in houdini setup
         result = dict(unpack_dotenv(env_vars))
         
-        add_dict_to_dict(result,env_dict)
+
         
         #pprint(result)
         houdini_main()
@@ -1973,7 +2045,7 @@ def main(project_data):
             indie_check()
             redshift_main()
             # initialize
-            get_initial_paths()
+
             # Shot stuff
             shot_decision()
             #houdini setup
@@ -1991,7 +2063,7 @@ def main(project_data):
             #TODO use flatdict in houdini setup
             dotenvdict = dict(unpack_dotenv(env_vars))
             
-            add_dict_to_dict(dotenvdict,env_dict)
+
             
             #pprint(env_dict)
 
