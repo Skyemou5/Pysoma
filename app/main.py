@@ -59,74 +59,6 @@ from lib.dotenv import dotenv_values, load_dotenv
 ####################################
 yaml = YAML()
 
-hou_18_paths = {
-    "linux":"/opt/hfs18.5.759",
-    "mac":"/Applications/Houdini18.5.759",
-    "win":"C:\Program Files\Side Effects Software\Houdini 18.5.759"
-    }
-
-choose_project_root = ''
-
-#inital setup check
-INITIALIZED=''
-
-#Team member name
-USER: string = ''
-
-#dates
-INIT_DATE=''
-CURRENT_DATE=''
-LAST_OPENED=''
-TIME_OPENED=''
-TIMES_OPENED = []
-DATES_OPENED = []
-
-#houdini terminal
-HOUDINI_TERM = ''
-
-# config
-CONFIG = ''
-
-# Other vars
-path_list = []
-env_dict = {}
-
-# System Paths
-HOU_ROOT = ''
-
-# 3Delight Path
-DELIGHT = ''
-
-# ACES path
-OCIO = ''
-
-# current shot
-SHOT = ''
-
-# preset paths
-HOME = Path.home() # gets path for HOME variable
-
-# app path
-application_path = ''
-
-# name
-PROJECT_NAME = ''
-
-# paths to set
-PROJECT_ROOT = ''
-SHOTS_ROOT = ''
-ASSETS_GLOBAL_ROOT = ''
-
-PACKAGES = ''
-HDA_GLOBAL = ''
-
-# PER SHOT VARS
-BLEND = ''
-GEO = ''
-HIP = ''
-RENDER = ''
-REF = ''
-TEXTURE = ''
 
 #endregion
 #region fix compile issues
@@ -141,8 +73,6 @@ if getattr(sys, 'frozen', False):
 else:
     application_path = os.path.dirname(os.path.abspath(__file__))
 
-REPO_ROOT = Path(application_path).parents[1]
-dirslist = glob.glob("%s/*/" % REPO_ROOT)
 
 #endregion
 #region data classes
@@ -164,16 +94,6 @@ class NonAliasingRTRepresenter(ruamel.yaml.representer.RoundTripRepresenter):
 
 #yaml.representer = NonAliasingRTRepresenter
 
-
-# serialized object as class
-class config(object):
-    pass
-
-
-
-class ParseTemplateYaml(object):
-    def __init__(self) -> None:
-        pass
 
 
 class ParseYamlLoad(object):
@@ -272,7 +192,7 @@ class ProjectSetup(object):
         # self.data = data
         # project_template.yml
         self.yaml = YAML(typ="safe")
-        self.project_temp_file = pathlib.Path(application_path)/'temp_list_copy.yml'
+        self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
         self.data = ConfigData(self.project_temp_file).data
         self.data_class = ConfigData(self.project_temp_file)
         self.project_data = self.data['None']['project_root']
@@ -285,6 +205,7 @@ class ProjectSetup(object):
     def process_template(self,data,config_data=None):
         env_vars = {}
         hou_vars = {}
+
 
         def create_dir_if_not_present(dirpath):
             if not dirpath.exists():
@@ -322,10 +243,14 @@ class ProjectSetup(object):
                 for obj in data['children']:
                     # pprint(obj)
                     process_dirs(obj,current_path)
-
-        process_dirs(self.project_data,test_root)
-        pprint(env_vars)
-        pprint(hou_vars)
+        
+        if config_data is not None:
+            data['name']=config_data['name']
+            process_dirs(self.project_data,config_data['path'])
+        else:
+            process_dirs(self.project_data,test_root)
+        # pprint(env_vars)
+        # pprint(hou_vars)
         # pprint(project_dirs)
         # pprint(self.project_data)
 
@@ -334,135 +259,73 @@ class ShotData(object):
     def __init__(self) -> None:
         self.yaml = ruamel.yaml.YAML()
         self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
-        self.config_file = pathlib.Path(application_path)/'test.yml'
-        self.project_data = ConfigData(self.project_temp_file).data
-        self.all_data = self.read_yaml()
-        self.data = self.shot_data_setup()
-        #self.read_yaml()
-        #pprint(project_data)
-    def shot_data_setup(self):
-        return self.project_data['None']['shot_subdir_data']
-    def write_file(self):
-        # monkey patch:
-        ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
-        #pprint(self.data)
-        with self.config_file.open('w') as f:
-            self.yaml.default_flow_style = False
-            self.yaml.dump(dict(self.data),f)
-    def read_yaml(self):
-        result = {}
-        with self.project_temp_file.open('r') as f:
-            try:
-                conf = self.yaml.load_all(f)
-                for d in conf:
-                    stack = list(d.items())
-                    visited = set()
-                    while stack:
-                        k, v = stack.pop()
-                        if isinstance(v,dict):
-                            if k not in visited:
-                                stack.extend(v.items())
-                        else:
-                            #self.new_data[k]=v
-                            #result[k]=v
-                            #pprint("%s: %s" % (k,v))
-                            pass
-                        visited.add(k)
-            except yaml.YAMLError as exc:
-                print(exc)
-        return result
+        self.config = ConfigData(self.project_temp_file)
+        self.data = self.config.data['None']['shot_subdir_data']
+    def create_shot(self,data,config_data=None):
+        env_vars = {}
+        hou_vars = {}
+        def create_dir_if_not_present(dirpath):
+            if not dirpath.exists():
+                #print(f'+D/..........................Creating new {dirpath.name} Directory in {dirpath.parent}...')
+                pathlib.Path(dirpath).mkdir(parents=True,exist_ok=True)
+            else:
+                #print(f'!!!--------------Directory <{dirpath.name}> in {dirpath.parent} exists! Skipping...')
+                pass
+        def add_gitkeep(path):
+            fp = pathlib.Path(path)/'.gitkeep'
+            fp.open("w",encoding="utf-8")
+        def add_file(path,f):
+            fp = pathlib.Path(path)/f
+            fp.open("w",encoding="utf-8")
+
+        test_root = pathlib.Path(application_path)
+        
+        def process_dirs(data,path):
+            nonlocal env_vars
+            nonlocal hou_vars
+            current_path = pathlib.Path(path).joinpath(data['name'])
+            data['path']=current_path
+            create_dir_if_not_present(current_path)
+            
+
+            if data['gitkeep']:
+                add_gitkeep(current_path)
+            if data['files'] is not None:
+                add_file(current_path,data['files'])
+            if data['env'] is not None:
+                env_vars[data['env']]=current_path
+            if data['h_env'] is not None:
+                hou_vars[data['h_env']]=current_path
+            if data['children'] is not None:
+                for obj in data['children']:
+                    # pprint(obj)
+                    process_dirs(obj,current_path)
+        
+        if config_data is not None:
+            data['name']=config_data['name']
+            process_dirs(self.project_data,config_data['path'])
+        else:
+            process_dirs(self.project_data,test_root)
+        # pprint(env_vars)
+        # pprint(hou_vars)
+        # pprint(project_dirs)
+        # pprint(self.project_data)
 
 
-def tree_traverse(tree, key):
-    if key in tree:
-        return tree[key]
-    for v in filter(dict.__instancecheck__, tree.values()):
-        if (found := tree_traverse(v, key)) is not None:  
-            return found
 
-
-class Dict2Class(object):
-    def __init__(self,my_dict) -> None:
-        for k in my_dict:
-            setattr(self,k,my_dict[k])
 
 
 class MainConfig(object):
     def __init__(self) -> None:
         self.config_path = pathlib.Path(pathlib.Path(application_path)/'main_config.yml')
         self.config = ConfigData(self.config_path)
-        self.project_template = self.config.data['None']['templates']['project_template']
-        self.new_project_config = self.project_template['project_config']
-        self.houdini_paths = self.config.data['None']['houdini_paths']
-        self.config.data['None']['project_scan_dirs']=[None]
-        self.config.data['None']['projects']=[]
-    def update_new_project_data(self,data: list):
-        '''
-        insert list of tuples and match keys from yaml
-        '''
-        pprint(self.project_template)
-        result = []
-        data_copy = {}
-        for k,v in self.project_template.items():
-            data_copy[k]=v
-        for item in data:
-            found=False
-            for config_item in data_copy.items():
-                #print(config_item)
-                # print(f'{item[0]} : {config_item}')
-                # print(item[0]==config_item[0])
-                if item[0]==config_item[0]:
-                    n = item[1]
-                    data_copy[item[0]]=n
-                    found=True
-            if not found:
-                print(f'{item} not a field in project config...')
-        self.add_project(data_copy)
-        #pprint(self.new_project_config)
-    def update_new_project_config(self,data: list):
-        '''
-        Insert a list of tuples and match the keys and it will update the values
-        '''
-        # print('update project')
-        data_copy = {}
-        for item in data:
-            found=False
-            for config_item in self.new_project_config.items():
-                if item[0]==config_item[0]:
-                    n = item[1]
-                    self.new_project_config[item[0]]=n
-                    found=True
-            if not found:
-                print(f'{item} not a field in project config... ')
-        #pprint(self.new_project_config)
-    def add_scan_path(self,data):
-        self.config['None']['project_scan_dirs'].append(data)
-    # TODO: implement remove scan path
+        self.data = self.config.data
     def add_project(self,data):
-        for item in self.config.data['None']['projects']:
-            print(item)
-            for k,v in data.items():
-                print(f'{k} :: {v}')
-        self.config.data['None']['projects'].append(data)
-    def remove_project(self,name):
-        print('remove project...')
-        if not self.config.data['None']['projects']==None:
-            for project in self.config.data['None']['projects']:
-                for k,v in project.items():
-                    if k == 'name' and v == name:
-                        self.config.data['None']['projects'].remove(project)
-        else:
-            print('no projects exist')
-    def add_project_list(self,data):
-        self.config['None']['projects'].append(data)
-    def toggle_initialize(self):
-        self.config['None']['appdata']['initialized'] = not self.config['None']['appdata']['initialized']
-    def read_config(self):
-        self.config.refresh()
-    def write_config(self):
-        self.config.update()
-    def write_project_config():
+        self.data['projects']=data
+    def remove_project(self,data):
         pass
+    def update_config(self):
+        self.config.update_dict(self.data)
 
 
 @yaml_object(yaml)
@@ -482,135 +345,54 @@ class ProjectListData(object):
     def from_yaml(cls,constructor,node):
         return cls(*node.value.split('-'))
 
+    @classmethod
+    def to_dict(cls):
+        pass
 
 @yaml_object(yaml)
 class ProjectData:
     yaml_tag = u'!project'
-    def __init__(self, initialized,users,init_date,houdini_version,houdini_install_path,project_name,project_root,env,path) -> None:
-        self.initialized = initialized
-        self.users = users
-        self.init_date = init_date
-        self.houdini_version = houdini_version
-        self.houdini_install_path = houdini_install_path
-        self.project_name = project_name
-        self.project_root = project_root
-        self.env = env
-        self.path = path
+    def __init__(self) -> None:
+        self.initialized = None
+        self.name = None
+        self.users = None
+        self.init_date = None
+        self.houdini_version = None
+        self.houdini_install_path = None
+        self.project_name = None
+        self.project_root = None
+        self.env = None
+        self.path = None
 
     @classmethod
     def to_yaml(cls,representer,node):
-        return representer.represent_scalar(cls.yaml_tag,u'{.name}-{.age}'.format(node,node))
+        return representer.represent_scalar(cls.yaml_tag,u'{.initialized}-{.name}-{.users}-{.init_date}'.format(node,node))
 
     @classmethod
     def from_yaml(cls,constructor,node):
         return cls(*node.value.split('-'))
 
+class Dict2Class(object):
+    def __init__(self,my_dict) -> None:
+        for k in my_dict:
+            setattr(self,k,my_dict[k])
 
 
-
-class create_project(object):
-    def __init__(self) -> None:
-        pass
-
-
-# actual yaml data setup
-main_config_file = pathlib.Path(application_path)/'main_config.yml'
-
-project_template_file = pathlib.Path(application_path)/'project_template.yml'
-
-# config classes
-
+# class testing
 project_data = ProjectSetup()
 main_config = MainConfig()
-#shot_1 = ShotData()
-#shot_1.write_file()
 
-pd = ProjectData(True,'ben',None,None,None,'test_project',None,None,None)
-# pprint(vars(pd))
+new_project_data = ProjectListData()
+new_project_data.name = 'test_project_2'
 
-def tree_traverse(tree, key):
-    if key in tree:
-        return tree[key]
-    for v in filter(dict.__instancecheck__, tree.values()):
-        if (found := tree_traverse(v, key)) is not None:  
-            return found
+# main_config.add_project(vars(new_project_data))
+# main_config.update_config()
+# main_config.config.update()
+# pprint(main_config.data)
 
-
-def nest_iterate(d):
-    stack = list(d)
-    visited = set()
-    while stack:
-        k, v = stack.pop()
-        if (k == 'children' and not v == None):
-            if k not in visited:
-                stack.extend(v.items())
-        else:
-            #self.new_data[k]=v
-            #result[k]=v
-            pprint("%s: %s" % (k,v))
-            pass
-        visited.add(k)
-
-
-def nest_iter_rec(d):
-    l = list(d)
-    result = {}
-    for i in l:
-        sub = {}
-        for k,v in i.items():
-            if isinstance(v,dict):
-                nest_iter_rec(v)
-            else:
-                sub[k]=v
-                #print(f'{k} : {v}')
-    result.append(sub)
-    return result
-
-
-def iter_children_decorator(func):
-    def inner(k,d):
-        pass
-
-
-def iter_though_children(d):
-    l = list(d)
-    result = []
-    for i in l:
-        sub_item = {}
-        for k,v in i.items():
-            if (k == 'children' and not v == None):
-                pprint(list(v))
-                iter_though_children(v)
-            else:
-                sub_item[k]=v
-                #print(type(v))
-                #print(f'{k} : {v}')
-        result.append(sub_item)
-    return result
-
-
-# testing
-shotdata_1 = project_data.data['None']['shot_subdir_data']
-
-#listdata = list(shotdata_1)
-#print(type(shotdata_1))
-#pprint(nest_iterate(shotdata_1))
-#pprint(iter_though_children(shotdata_1))
-
-#pprint(listdata[0]['children'])
-#pprint(nest_iter_rec(shotdata_1))
-
-# for i in shotdata_1:
-#     for k,v in i.items():
-#         print(f'{k}:{v}')
-#pprint(type(shotdata_1))
-
-#nest_iterate(project_data.data)
-#main_config.update_new_project_data([('name','test project')])
-#main_config.remove_project('test project')
-#main_config.write_config()
-#pprint(main_config.config.data)
-
+new_shot = ShotData()
+# for obj in new_shot.data:
+#     print(obj['name'])
 
 #endregion
 #region HELPER METHODS
@@ -627,77 +409,6 @@ def unpack_dotenv(env_d):
     return result
 
 
-def add_dict_to_dict(sd,td):
-    for k, v in sd.items():
-        print(k)
-        td[k]=v
-
-
-def get_path(root,target):
-    new_path = PurePath(root,target)
-    return new_path
-
-
-def add_var_to_dict(k,v):
-    env_dict[k]=v
-
-
-def add_to_arr(obj):
-    path_list.append(obj)
-
-
-def add_to_dict_and_arr(k,v):
-    add_var_to_dict(k,v)
-    add_to_arr(v)
-
-
-def add_dirlist_to_return_dict(list):
-
-    k = ''
-    v = ''
-    dict = {}
-    for i in list:
-
-        if (i.is_dir() == True):
-            k = i.name
-            v = i
-
-            dict[k]=v
-        else:
-            continue
-    return dict
-
-
-def create_dir_if_not_present(dirpath):
-
-    if not dirpath.exists():
-        print(f'+D/..........................Creating new {dirpath.name} Directory in {dirpath.parent}...')
-        pathlib.Path(dirpath).mkdir(parents=True,exist_ok=True)
-    else:
-        print(f'!!!--------------Directory {dirpath.name} in {dirpath.parent} exists! Skipping...')
-
-
-def create_dirs_from_list(currpath,dirlist) -> list:
-    """
-    takes the current path as a path obejct and a list of strings 
-    created the child directories based on the list of strings
-    returns an array of the paths of the newly created child dirs
-    if dirs already exist grap the paths and export them
-    """
-    newpathlist = []
-    for d in dirlist:
-        newdirpath = pathlib.Path(currpath)/d
-        
-
-        create_dir_if_not_present(newdirpath)
-        try:
-            if newdirpath.exists():
-                newpathlist.append(newdirpath)
-        except:
-            print('could not add child dir to list!')
-    return newpathlist
-
-
 def env_from_file(path):
     #env_file = pathlib.Path(pathlib.Path.cwd())/'.config/config.env'
     dict_var = dotenv_values(path)
@@ -705,41 +416,8 @@ def env_from_file(path):
     return dict_var
 
 
-def add_dirlist_to_dict(dirlist,nameprefix):
-    '''Add a list to a dictionary and add a prefix to key'''
-
-    for d in dirlist:
-        k = f'{nameprefix}{d.name}'
-
-        add_to_dict_and_arr(k,d)
-
-
 def is_empty(folder: Path) -> bool:
     return not any(folder.iterdir())
-
-
-# create empty file in empty dir for git
-def add_file_to_empty_folder(path):
-    if is_empty(path):
-        fp = pathlib.Path(path)/'.gitkeep'
-        fp.open("w",encoding="utf-8")
-
-
-def add_readme_file_to_dir(path):
-    #check if git file exists
-    # gitfile = pathlib.Path(path)/'.gitkeep'
-    # if gitfile.exists():
-    #     print('git file exists')
-    #     gitfile.unlink()
-    print(f'+f/...................................................................creating README file in {path.name}...')
-    fp = pathlib.Path(path)/'README.md'
-    fp.open("w",encoding="utf-8")
-
-
-def add_files_to_empty_folders(dirlist):
-    for d in dirlist:
-        #print(d)
-        add_file_to_empty_folder(d)
 
 
 #endregion
@@ -1062,171 +740,8 @@ def aces_check():
 ###################################################
 
 
-
-'''project root global asset directories'''
-global_asset_child_dir_namelist = [
-    'SRC',
-    'GEO',
-    'BLEND',
-    'TEXTURE',
-    'HDA',
-    'OTHER',
-    'PDG',
-    'USD',
-    'POST_PRODUCTION',
-]
-
-
-
-###### POST stuff
-global_asset_post_dir_namelist = [
-    'Audio',
-    'Compositing',
-    'Reference',
-    'Texture',
-    'Project_Files',
-    'Nuke',
-    'Other',
-    'Export'
-
-]
-
-post_comp_dir_namelist = [
-    'LUTs',
-    'Color_Scripts',
-    'Project_Files',
-    'Other'
-    'Export'
-]
-
-post_audio_dir_namelist = [
-    'SFX',
-    'Music',
-    'Reference',
-    'Project_Files',
-    'Other'
-]
-
-post_tex_dir_namelist = [
-    'Data_Textures',
-    'Alphas',
-    'Masks',
-    'PBR',
-    'Grunge',
-    'Substance'
-    'Project_Files'
-    'Other'
-]
-
-# Global Post folder
-
-global_post_dir_namelist = [
-    'Audio',
-    'Compositing',
-    'Reference',
-    'Texture',
-    'Project_Files',
-    'Nuke',
-    'Render',
-    'Shots',
-    'Scenes',
-    'Other',
-    'Export'
-]
-
-post_app_list = [
-    'Fusion',
-    'Nuke',
-    'Resolve',
-    'Adobe'
-]
-
-tex_app_list = [
-    'Affinity',
-    'Adobe',
-    'Krita',
-    'Gimp',
-    'Other'
-]
-
-audio_app_list = [
-    'Pro_Tools',
-    'Ableton',
-    'Bitwig',
-    'Reaper',
-    'Reason',
-    'Other'
-]
-
-comp_app_list = [
-    'Fusion',
-    'Resolve',
-    'Nuke',
-    'Adobe'
-]
-
-######## CG stuff
-'''global src subdirectories'''
-global_src_dir_namelist = [
-    'Blender',
-    'Maya',
-    'ZBrush',
-    'Substance',
-    'Other'
-]
-'''global geo subdirectories'''
-global_geo_dir_namelist = [
-    'FBX',
-    'OBJ',
-    'Houdini',
-    'USD',
-    'Cache',
-    'Other'
-]
-'''global texture subdirectories'''
-global_tex_dir_namelist = [
-    'HDRI',
-    'Imperfections',
-    'PBR',
-    'Data_Textures',
-    'Decals',
-    'Substance',
-    'Alphas',
-    'Masks',
-    'Grunge',
-    'OTHER',
-]
-
 #endregion
 #region init folder helper functions
-
-# def init_folders(path,name,subdirs,add_to_dict,pref,key):
-#     parent = Path(path)/name
-#     create_dir_if_not_present(parent)
-#     try:
-#         #if subdirs is not None:
-#         add_readme_file_to_dir(parent)
-        
-#         #else:
-#         #    pass
-#     except ValueError:
-#         pass
-#     try:
-#         if(add_to_dict == True):
-#             try:
-#                 add_to_dict_and_arr(key,parent)
-#             except ValueError:
-#                 pass
-#     except ValueError:
-#         pass
-#     try:
-#         subdirlist = create_dirs_from_list(parent,subdirs)
-#         try:
-#             add_dirlist_to_dict(subdirlist,pref)
-#         except ValueError:
-#             pass
-#     except ValueError:
-#         pass
 
 def init_folder(parent_path,name):
     path = pathlib.Path(parent_path)/name
@@ -1260,79 +775,11 @@ def register_nested_folders(dirlist,prefix,env=False):
 #region SHOTS
 #region shot subdir definition
 
-#TODO change this to json
-#TODO add R&D to shots
-
 ###########################################
 ##############               ##############
 ############     Shot Prep     ############
 ##############               ##############
 ###########################################
-#region Shot dir names
-'''shot subdirectories'''
-shot_subdir_names = [
-    "GEO",
-    "SRC",
-    "HIP",
-    "RENDER",
-    "TEXTURE",
-    "BLEND",
-    "ASSETS",
-    "HDA",
-    "PDG",
-    "USD",
-    "REFERENCE",
-    "RESEARCH_AND_DEVELOPMENT",
-    "LOOKDEV",
-    "POST_PRODUCTION",
-    "PRE_PRODUCTION",
-    "FINAL",
-    'SCRIPTS',
-    "CLIPS",
-    "VEX",
-    "OTHER",
-]
-
-# Post fx shot stuff
-shot_post_dirnames = [
-    'Audio',
-    'Compositing',
-    'Editing',
-    'Texture',
-    'Project_Files',
-    'Export',
-]
-
-shot_audio_dirnames = [
-    'SFX',
-    'Music',
-    'Reference',
-    'Project_Files',
-]
-
-shot_comp_dirnames = [
-    'LUTs',
-    'Color_Scripts',
-    'Project_Files',
-    'Fusion',
-    'Nuke',
-    'Adobe',
-    'Other',
-    'Export',
-]
-
-
-shot_tex_post_dirnames = [
-    'Data_Textures',
-    'Alphas',
-    'Masks',
-    'PBR',
-    'Grunge',
-    'Substance',
-    'Project_Files',
-    'Other',
-]
-#endregion
 #endregion
 #region Create Shot
 ####
@@ -1398,82 +845,6 @@ def create_shot():
         
         print(f"\'{shot_n}\' created along with resource dirs.")
         return shot_subfolders, shot_n
-
-def create_shot_subfolders(rootdir):
-    dirlist = create_dirs_from_list(rootdir,shot_subdir_names)
-    add_readme_file_to_dir(rootdir)
-    global global_src_dir_namelist,global_geo_dir_namelist,global_tex_dir_namelist
-    subsubresdict = {
-        'SRC':global_src_dir_namelist,
-        'GEO':global_geo_dir_namelist,
-        'TEXTURE':global_tex_dir_namelist,
-    }
-
-    specresdict={}
-
-    for a in dirlist:
-        specresdict[a.name]=a
-    for d in dirlist:
-        for k, v in subsubresdict.items():
-            if d.name == k:
-                curr_dir = specresdict[k]
-                print(f'++D.......creating subresource folders in {k}...')
-                subsubdirlist = create_dirs_from_list(specresdict[k],v)
-                add_readme_file_to_dir(specresdict[k])
-                add_files_to_empty_folders(subsubdirlist)
-    
-    global pre_prod_dir_names, shot_post_dirnames, comp_app_list, shot_audio_dirnames, shot_comp_dirnames, shot_tex_post_dirnames
-
-    #pre production
-    shot_pre_dir = Path(rootdir)/'PRE_PRODUCTION'
-    add_readme_file_to_dir(shot_pre_dir)
-    shot_pre_sub_list = create_dirs_from_list(shot_pre_dir,pre_prod_dir_names)
-    add_files_to_empty_folders(shot_pre_sub_list)
-
-    #post sub
-    post_prod_path = Path(rootdir)/'POST_PRODUCTION'
-    add_readme_file_to_dir(post_prod_path)
-    post_prod_list = create_dirs_from_list(post_prod_path,shot_post_dirnames)
-    #post proj
-    post_proj_path = Path(post_prod_path)/'Project_Files'
-    add_readme_file_to_dir(post_proj_path)
-    post_proj_list = create_dirs_from_list(post_proj_path,comp_app_list)
-    add_files_to_empty_folders(post_prod_list)
-    #audio sub
-    post_aud_path = Path(post_prod_path)/'Audio'
-    add_readme_file_to_dir(post_aud_path)
-    post_aud_list = create_dirs_from_list(post_aud_path,shot_audio_dirnames)
-    #audio proj
-    aud_proj_path = Path(post_aud_path)/'Project_Files'
-    add_readme_file_to_dir(aud_proj_path)
-    aud_proj_list = create_dirs_from_list(aud_proj_path,audio_app_list)
-    add_files_to_empty_folders(post_aud_list)
-    add_files_to_empty_folders(aud_proj_list)
-    #comp sub
-    comp_path = Path(post_prod_path)/'Compositing'
-    add_readme_file_to_dir(comp_path)
-    comp_list = create_dirs_from_list(comp_path,shot_comp_dirnames)
-    #comp proj
-    comp_proj_path = Path(comp_path)/'Project_Files'
-    add_readme_file_to_dir(comp_proj_path)
-    comp_proj_list = create_dirs_from_list(comp_proj_path,comp_app_list)
-    add_files_to_empty_folders(comp_list)
-    add_files_to_empty_folders(comp_proj_list)
-    #tex sub
-    post_tex_path = Path(post_prod_path)/'Texture'
-    add_readme_file_to_dir(post_tex_path)
-    post_tex_list = create_dirs_from_list(post_tex_path,shot_tex_post_dirnames)
-    #tex proj
-    post_tex_proj_path = Path(post_tex_path)/'Project_Files'
-    add_readme_file_to_dir(post_tex_proj_path)
-    post_tex_proj_list = create_dirs_from_list(post_tex_proj_path,tex_app_list)
-    add_files_to_empty_folders(post_tex_list)
-    add_files_to_empty_folders(post_tex_proj_list)
-
-    #get any loose empty folders
-    add_files_to_empty_folders(dirlist)
-    
-    return dirlist
 
 #endregion
 #region Open Shot
@@ -1948,7 +1319,7 @@ def set_env_vars(dictionary):
 def env_from_file():
     env_file = pathlib.Path(env_dict['CONFIG'])/'config.env'
 
-    env_dict_file = lib.dotenv.dotenv_values(env_file)
+    env_dict_file = dotenv.dotenv_values(env_file)
     set_env_vars(env_dict_file)
 
 def init_houdini():
@@ -1983,194 +1354,10 @@ def houdini_main():
     else:
         pass
 
-
-def hou_linux_setup():
-    pass
-
-@contextlib.contextmanager
-def working_directory(path):
-    prev_cwd = pathlib.Path.cwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(prev_cwd)
-
 #endregion
 #endregion
 #endregion
 #region path setup
-#region Pre Production Setup
-
-pre_prod_dir_names = {
-    'Storyboards',
-    'Animatics',
-    'Color_Scripts',
-}
-
-def init_pre_production(path):
-    repo_root = pathlib.Path(REPO_ROOT)/path
-    pre_pro_root = pathlib.Path(repo_root)/'Pre_Production'
-    
-    create_dir_if_not_present(pre_pro_root)
-    add_readme_file_to_dir(pre_pro_root)
-    add_to_dict_and_arr('G_PRE_PRODUCTION',pre_pro_root)
-
-    # sub
-    pre_sub_list = create_dirs_from_list(pre_pro_root,pre_prod_dir_names)
-    add_files_to_empty_folders(pre_sub_list)
-
-#endregion
-#region HSITE setup
-
-hsite_names = [
-    'houdini18',
-    'houdini19',
-]
-
-def hsite_setup():
-    #global REPO_ROOT, PROJECT_ROOT
-    hsite_root = pathlib.Path(env_dict['PROJECT_ROOT'])/'hsite'
-    create_dir_if_not_present(hsite_root)
-    add_readme_file_to_dir(hsite_root)
-    add_to_dict_and_arr('HSITE',hsite_root)
-    hsite_185 = pathlib.Path(hsite_root)/'houdini18.5'
-    create_dir_if_not_present(hsite_185)
-    add_to_dict_and_arr('HSITE_185',hsite_185)
-
-#endregion
-#region Research and Development Setup
-
-def re_and_de_setup():
-    global PROJECT_ROOT
-    path = pathlib.Path(PROJECT_ROOT)/'Research_and_Development'
-    create_dir_if_not_present(path)
-    add_readme_file_to_dir(path)
-
-#endregion
-#region Post Production Setup
-
-def init_post_production():
-
-    proj_root = pathlib.Path(REPO_ROOT)/'Main_Project'
-
-    # create post production folder
-    post_prod_path = pathlib.Path(proj_root)/'Post_Production'
-    create_dir_if_not_present(post_prod_path)
-    add_readme_file_to_dir(post_prod_path)
-    add_to_dict_and_arr('G_POST_PRODUCTION',post_prod_path)
-
-    # Config Global Post Production subdirs
-    g_post_subdirlist = create_dirs_from_list(post_prod_path,global_post_dir_namelist)
-    #add_files_to_empty_folders(g_post_subdirlist)
-
-    post_proj = Path(post_prod_path)/'Project_Files'
-    create_dir_if_not_present(post_proj)
-    add_readme_file_to_dir(post_proj)
-    post_proj_dirs = create_dirs_from_list(post_proj,post_app_list)
-    add_files_to_empty_folders(post_proj_dirs)
-
-    # child dirs
-    # audio
-    aud_dir = Path(post_prod_path)/'Audio'
-    create_dir_if_not_present(aud_dir)
-    add_readme_file_to_dir(aud_dir)
-    aud_dirs = create_dirs_from_list(aud_dir,post_audio_dir_namelist)
-    add_files_to_empty_folders(aud_dirs)
-    #sub
-    aud_proj = Path(aud_dir)/'Project_Files'
-    create_dir_if_not_present(aud_proj)
-    add_readme_file_to_dir(aud_proj)
-    aud_proj_dirs = create_dirs_from_list(aud_proj, audio_app_list)
-    add_files_to_empty_folders(aud_proj_dirs)
-
-    #comp
-    comp_dir = Path(post_prod_path)/'Compositing'
-    create_dir_if_not_present(comp_dir)
-    add_readme_file_to_dir(comp_dir)
-    comp_dirs = create_dirs_from_list(comp_dir,post_comp_dir_namelist)
-    add_files_to_empty_folders(comp_dirs)
-    #sub
-    comp_proj = Path(comp_dir)/'Project_Files'
-    create_dir_if_not_present(comp_proj)
-    add_readme_file_to_dir(comp_proj)
-    comp_proj_dirs = create_dirs_from_list(comp_proj,comp_app_list)
-    add_files_to_empty_folders(comp_proj_dirs)
-
-    #tex
-    tex_dir = Path(post_prod_path)/'Texture'
-    create_dir_if_not_present(tex_dir)
-    add_readme_file_to_dir(tex_dir)
-    tex_dirs = create_dirs_from_list(tex_dir,post_tex_dir_namelist)
-    add_files_to_empty_folders(tex_dirs)
-
-    #proj
-    tex_proj = Path(tex_dir)/'Project_Files'
-    create_dir_if_not_present(tex_proj)
-    add_readme_file_to_dir(tex_proj)
-    tex_proj_dirs = create_dirs_from_list(tex_proj,tex_app_list)
-    add_files_to_empty_folders(tex_proj_dirs)
-
-    #full_dirlist = dir
-    add_files_to_empty_folders(g_post_subdirlist)
-
-def init_asset_post_production(path):
-    post_prod_path = path
-    # ++++++++++
-
-    g_asset_post_subdir_list = create_dirs_from_list(post_prod_path,global_asset_post_dir_namelist)
-    
-    #general project files
-    post_proj = Path(post_prod_path)/'Project_Files'
-    create_dir_if_not_present(post_proj)
-    add_readme_file_to_dir(post_proj)
-    post_proj_dirs = create_dirs_from_list(post_proj,post_app_list)
-    add_files_to_empty_folders(post_proj_dirs)
-
-    # audio
-    aud_dir = Path(post_prod_path)/'Audio'
-    create_dir_if_not_present(aud_dir)
-    add_readme_file_to_dir(aud_dir)
-    aud_dirs = create_dirs_from_list(aud_dir,post_audio_dir_namelist)
-    add_files_to_empty_folders(aud_dirs)
-    #sub
-    aud_proj = Path(aud_dir)/'Project_Files'
-    create_dir_if_not_present(aud_proj)
-    add_readme_file_to_dir(aud_proj)
-    aud_proj_dirs = create_dirs_from_list(aud_proj, audio_app_list)
-    add_files_to_empty_folders(aud_proj_dirs)
-
-    #comp
-    comp_dir = Path(post_prod_path)/'Compositing'
-    create_dir_if_not_present(comp_dir)
-    add_readme_file_to_dir(comp_dir)
-    comp_dirs = create_dirs_from_list(comp_dir,post_comp_dir_namelist)
-    add_files_to_empty_folders(comp_dirs)
-    #sub
-    comp_proj = Path(comp_dir)/'Project_Files'
-    create_dir_if_not_present(comp_proj)
-    add_readme_file_to_dir(comp_proj)
-    comp_proj_dirs = create_dirs_from_list(comp_proj,comp_app_list)
-    add_files_to_empty_folders(comp_proj_dirs)
-
-    #tex
-    tex_dir = Path(post_prod_path)/'Texture'
-    create_dir_if_not_present(tex_dir)
-    add_readme_file_to_dir(tex_dir)
-    tex_dirs = create_dirs_from_list(tex_dir,post_tex_dir_namelist)
-    add_files_to_empty_folders(tex_dirs)
-
-    #proj
-    tex_proj = Path(tex_dir)/'Project_Files'
-    create_dir_if_not_present(tex_proj)
-    add_readme_file_to_dir(tex_proj)
-    tex_proj_dirs = create_dirs_from_list(tex_proj,tex_app_list)
-    add_files_to_empty_folders(tex_proj_dirs)
-
-
-    add_files_to_empty_folders(g_asset_post_subdir_list)    
-
-#endregion
 #region Initialize
 #region Choose Project Dir
 # Project stuff
@@ -2333,57 +1520,9 @@ def check_for_projects_in_folder(path):
     # TODO: Fix directory scanning
     
     result = {}
-    #dataclass = project_data
-    # pprint(dataclass.project_data)
-    # template = dict(dataclass.project_data)
-    
 
 
-    #print(template)
 
-    # pprint(flatten(template))
-    # pprint(unflatten(template))
-
-    # flattendict = dict(flatten_dict(template))
-    # for k,v in flattendict.items():
-    #     if k == 'name':
-    #         print(k)
-    # pprint(flattendict)
-
-
-    #names_dict = parse_dict(template)
-    # for i in names_dict.items():
-    #     print(i)
-    #pprint(names_dict)
-    #pprint(parse_dict(template,))
-
-    # names = dict.fromkeys(template, 'name')
-    # names = {key: None for key in template}
-    # pprint(names)
-    #parse_dict(template)
-    # for k,v in template.items():
-    #     if k == 'name':
-    #         print(f'{k} : {v}')
-
-    #pprint(dataclass.project_data['children'])
-
-    #scan_dirs = dict(get_level(dataclass.project_data,1))
-
-
-    # filtered_names = list(filter(lambda x: x['name'], dataclass.items()))
-    # pprint(filtered_names)
-
-    # pprint({k:v for k,v in dataclass.project_data.items() if 'name' in k})
-
-
-    inner_proj_dirs = [
-        ".config",
-        "assets",
-        "hsite",
-        "packages",
-        "Pre_Production",
-        "Shots",
-    ]
 
     for p in path.iterdir():
         # print(p)
@@ -2573,7 +1712,7 @@ def check_for_project_init():
     pass
 
 def list_projects(env_path):
-    temp_file = lib.dotenv.dotenv_values(env_path)
+    temp_file = dotenv.dotenv_values(env_path)
     dotenvdict = dict(unpack_dotenv(temp_file))
     return dotenvdict
 
@@ -2703,9 +1842,6 @@ def projects_init_main():
 
 
 
-    #print(p_list)
-    # p_list = check_for_projects_in_folder(app_root)
-    # str_list = convert_env_dict_to_string(p_list)
 
 
 #endregion
@@ -2746,233 +1882,8 @@ def set_project_name():
             continue
     return user_choice
 
-def project_name_setup():
-    global PROJECT_NAME
-    name = set_project_name()
-    PROJECT_NAME = name
-    add_var_to_dict('PROJECT_NAME',name)
-
 #endregion
 #endregion
-#region CLI stuff
-#endregion
-##############################################
-############## Get Initialized ###############
-##############################################
-
-def get_initial_paths():
-    global env_dict
-    global HOUDINI_TERM
-    global CONFIG
-    global HOME
-    global HOU_ROOT
-    #global PROJECT_ROOT
-    global ASSETS_GLOBAL_ROOT
-    global SHOTS_ROOT
-    #TODO add option to set project root at cwd?
-    new_folders = []
-    # config stuff
-    CONFIG = create_config_dir()
-
-    # HSITE stuff
-    hsite_setup()
-
-    #region logging setup
-    #TODO implement log file
-    # logfile = pathlib.Path(CONFIG)/'std.log'
-    # logging.basicConfig(str(logfile),format='%(asctime)s %(message)s', filemode='w')
-    # logger=logging.getLogger()
-    # logger.setLevel(logging.DEBUG)
-    # logger.debug('test log')
-    
-    #region
-
-    # TODO: research and development init
-
-    # houdini term
-    HOUDINI_TERM = source_houdini()
-    add_to_dict_and_arr('HOUDINI_TERM',HOUDINI_TERM)
-
-    #print(CONFIG)
-    add_to_dict_and_arr('CONFIG',CONFIG)
-
-    # ACES and 3Delight
-    delight_setup()
-    aces_check()
-    
-    # System Pathts
-    add_to_dict_and_arr("HOME",HOME)
-
-    # Houdini Root Dir
-    hou_root_str = getHouRoot()
-    hou_root_path = pathlib.Path(hou_root_str)
-    HOU_ROOT = hou_root_path
-    add_to_dict_and_arr("HOU_ROOT",HOU_ROOT)
-    
-    # Repo Root 
-    add_to_dict_and_arr("REPO_ROOT",REPO_ROOT)
-    
-    # Project Root
-    #print(env_dict['PROJECT_ROOT'])
-    PROJECT_ROOT = env_dict['PROJECT_ROOT']
-    create_dir_if_not_present(PROJECT_ROOT)
-    # allready added to env   
-    #add_to_dict_and_arr("PROJECT_ROOT",PROJECT_ROOT)
-
-    #persistent config
-    pers_config_dir = pathlib.Path(PROJECT_ROOT)/'.config'
-    PROJECT_CONFIG = create_dir_if_not_present(pers_config_dir)
-    add_to_dict_and_arr('PROJECT_CONFIG',pers_config_dir)
-
-    # r and d
-    re_and_de_setup()
-
-    # User stuff
-    user_init(pers_config_dir)
-
-
-    # Global Assets Root
-    create_dir_if_not_present(pathlib.Path(PROJECT_ROOT,"assets"))
-    ASSETS_GLOBAL_ROOT = pathlib.Path(PROJECT_ROOT,"assets")
-    add_readme_file_to_dir(ASSETS_GLOBAL_ROOT)
-    add_to_dict_and_arr("ASSETS_GLOBAL_ROOT",ASSETS_GLOBAL_ROOT)
-    ########## GLOB CHILD DIRS #############
-
-
-    global_asset_child_dir_list = create_dirs_from_list(ASSETS_GLOBAL_ROOT,global_asset_child_dir_namelist)
-    #print(global_asset_child_dir_list)
-    #
-    add_dirlist_to_dict(global_asset_child_dir_list,"G_")
-    #print(env_dict)
-
-
-    srcrootpath = pathlib.Path(ASSETS_GLOBAL_ROOT)/'SRC'
-    global_src_dir_list = create_dirs_from_list(srcrootpath,global_src_dir_namelist)
-    add_readme_file_to_dir(srcrootpath)
-    add_files_to_empty_folders(global_src_dir_list)
-    add_dirlist_to_dict(global_src_dir_list,'G_SRC_')
-
-    georootpath = pathlib.Path(ASSETS_GLOBAL_ROOT)/'GEO'
-    global_geo_dir_list = create_dirs_from_list(georootpath,global_geo_dir_namelist)
-    add_readme_file_to_dir(georootpath)
-    add_files_to_empty_folders(global_geo_dir_list)
-    add_dirlist_to_dict(global_geo_dir_list,'G_GEO_')
-
-
-    texrootpath = pathlib.Path(ASSETS_GLOBAL_ROOT)/'TEXTURE'
-    global_tex_dir_list = create_dirs_from_list(texrootpath,global_tex_dir_namelist)
-    add_readme_file_to_dir(texrootpath)
-    add_files_to_empty_folders(global_tex_dir_list)
-
-    add_dirlist_to_dict(global_tex_dir_list,'G_TEX_')
-
-    #Post Production stuff
-    postrootpath = pathlib.Path(ASSETS_GLOBAL_ROOT)/'POST_PRODUCTION'
-    global_post_asset_dir_list = create_dirs_from_list(postrootpath,global_asset_post_dir_namelist)
-    add_readme_file_to_dir(postrootpath)
-
-    #add setup here
-    init_asset_post_production(postrootpath)
-
-
-    #empty files to empty folders global assets
-    add_files_to_empty_folders(global_asset_child_dir_list)
-
-    # PACKAGES
-    PACKAGES = pathlib.Path(PROJECT_ROOT,"packages")
-    create_dir_if_not_present(PACKAGES)
-    add_readme_file_to_dir(PACKAGES)
-    add_to_dict_and_arr("PACKAGES",PACKAGES)
-
-    # SHOT ROOT
-    SHOTS_ROOT = pathlib.Path(PROJECT_ROOT,"Shots")
-    create_dir_if_not_present(SHOTS_ROOT)
-    add_readme_file_to_dir(SHOTS_ROOT)
-    add_to_dict_and_arr("SHOTS_ROOT",SHOTS_ROOT)
-    
-    #pre prod
-    init_pre_production(PROJECT_ROOT)
-
-    init_post_production()
-    #createShotDir(SHOTS_ROOT)
-
-    add_to_dict_and_arr('INITIALIZED','TRUE')
-
-#endregion
-#endregion
-#region EXECUTE
-#region exec helpers
-# def parse_dotenv(dotenv_path): 
-#     with open(dotenv_path) as f: 
-#         for line in f: 
-#             line = line.strip() 
-#             if not line or line.startswith('#') or '=' not in line: 
-#                 continue 
-#             k, v = line.split('=', 1) 
-
-#             # Remove any leading and trailing spaces in key, value 
-#             k, v = k.strip(), v.strip().encode('unicode-escape').decode('ascii') 
-
-#             if len(v) > 0:
-#                 quoted = v[0] == v[len(v) - 1] in ['"', "'"] 
-
-#                 if quoted: 
-#                     v = decode_escaped(v[1:-1]) 
-
-#             yield k, v
-
-
-
-def check_init(env_path) -> bool:
-    global env_dict
-    input(f'ENV PATH::: {env_path}')
-    result = False
-    config = ''
-    if(env_path.is_file()):
-        config = dotenv_values(env_path)
-        env_dict = config
-        #pprint(config)
-        result = True
-    else:
-        result = False
-    return result
-
-# def unpack(data):
-#     for k, v in data.items():
-#         if isinstance(v, dict):
-#             yield from unpack(v)
-#         else:
-#             yield v
-
-# def depth(it, count=0):
-#     """Depth of a nested dict.
-#     # Arguments
-#         it: a nested dict or list.
-#         count: a constant value used in internal calculations.
-#     # Returns
-#         Numeric value.
-#     """
-#     if isinstance(it, list):
-#         if any(isinstance(v, list) or isinstance(v, dict) for v in it):
-#             for v in it:
-#                 if isinstance(v, list) or isinstance(v, dict):
-#                     return depth(v, count + 1)
-#         else:
-#             return count
-#     elif isinstance(it, dict):
-#         if any(isinstance(v, list) or isinstance(v, dict) for v in it.values()):
-#             for v in it.values():
-#                 if isinstance(v, list) or isinstance(v, dict):
-#                     return depth(v, count + 1)
-#         else:
-#             return count
-#     else:
-#         return count
-
-
-
-
-
 #endregion
 #endregion
 #region MAIN

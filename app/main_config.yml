@@ -1,36 +1,24 @@
 None:
   appdata:
     initialized: false
-  templates:
-    project_template:
-      name:
-      path:
-      default_args:
-      initialized: false
-      project_config: 
-        initialized: false
-        users:
-        init_date:
-        houdini_version:
-        houdini_install_path:
-        project_name:
-        project_root:
-        env_vars:
-        hou_env_vars:
-        env:
-        path:
-  houdini_paths:
-    linux: /opt/hfs18.5.759
-    mac: /Applications/Houdini18.5.759
-    win: C:\\Program\ Files\\Side\ Effects\ Software\\Houdini\ 18.5.75
-  project_scan_dirs:
-  - 
-  project_paths:
-  projects:
+  houdini_versions:
+  - houdini_18.5:
+    - '759':
+        houdini_paths:
+          linux: /opt/hfs18.5.759
+          mac: /Applications/Houdini18.5.759
+          win: C:\\Program\ Files\\Side\ Effects\ Software\\Houdini\ 18.5.75
   renderers:
-  - OCIO:
+  - name: 3Delight
+    ACES: null
+    env: null
+    path: null
+  - name: redshift
+    ACES: null
     env:
-    path:
-  - redshift:
-    env:
-    path:
+      HOUDINI_DSO_ERROR: 2
+    paths:
+      linux: /usr/redshift/bin
+      mac: /Applications/redshift/redshift4houdini/
+      win: C:\\ProgramData\\Redshift\\bin
+
