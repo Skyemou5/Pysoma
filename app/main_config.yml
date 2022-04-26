@@ -1,6 +1,7 @@
 None:
   appdata:
     initialized: true
+    last_opened: null
   houdini_versions:
   - '18.5':
     - '759':
@@ -25,3 +26,11 @@ None:
     path: /home/ben/dev/Aces_Stuff/Pysoma/app/tt
     config: /home/ben/dev/Aces_Stuff/Pysoma/app/tt/.config
     last_opened: true
+  - name: rr
+    path: /home/ben/dev/Aces_Stuff/Pysoma/app/rr
+    config: /home/ben/dev/Aces_Stuff/Pysoma/app/rr/.config
+    last_opened: true
+  - name: dd
+    path: /home/ben/dev/Aces_Stuff/Pysoma/app/dd
+    config: /home/ben/dev/Aces_Stuff/Pysoma/app/dd/.config
+    last_opened: false

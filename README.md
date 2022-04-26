@@ -20,6 +20,7 @@ This was developed for my needs during my senior project using Houdini with a sm
 - refactor to properly serialize data with yaml and only use env files for enviornments
 - Implement unit testing
 - Implement project scanning
+- refactor print statements for an actual logging system
 
 # Future goals
 - add support for game projects with unity and unreal and possibly godot

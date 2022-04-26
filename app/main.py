@@ -203,7 +203,7 @@ class ConfigData(object):
         self.data.update(other_dict)
     def write_file(self):
         converted_data = self.convert_paths(self.data)
-        pprint(converted_data)
+        #pprint(converted_data)
         # monkey patch:
         ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
         # pprint(self.data)
@@ -321,12 +321,18 @@ class ProjectSetup(object):
 
 
 class ShotData(object):
-    def __init__(self) -> None:
+    def __init__(self,project_data) -> None:
         self.yaml = ruamel.yaml.YAML()
         self.project_temp_file = pathlib.Path(application_path)/'project_template.yml'
         self.config = ConfigData(self.project_temp_file)
+        self.project_data = project_data
         self.data = self.config.data['None']['shot_subdir_data']
-    def create_shot(self,data,config_data=None):
+        self.last_opened = None
+    def open_shot(self):
+        pass
+    def update_last_opened(self):
+        pass
+    def create_shot(self,data):
         env_vars = {}
         hou_vars = {}
         def create_dir_if_not_present(dirpath):
@@ -366,11 +372,11 @@ class ShotData(object):
                     # pprint(obj)
                     process_dirs(obj,current_path)
         
-        if config_data is not None:
-            data['name']=config_data['name']
-            process_dirs(self.project_data,config_data['parent_path'])
-        else:
-            process_dirs(self.project_data,test_root)
+        # if config_data is not None:
+        #     data['name']=config_data['name']
+        #     process_dirs(self.project_data,config_data['parent_path'])
+        # else:
+        #     process_dirs(self.project_data,test_root)
 
 
 class MainConfig(object):
@@ -379,6 +385,7 @@ class MainConfig(object):
         self.config = ConfigData(self.config_path)
         self.data = self.config.data
         self.project_list = self.parse_projects()
+        self.last_opened = self.data['None']['appdata']['last_opened']
     def parse_projects(self):
         result = []
         if self.data['None']['projects'] is not None:
@@ -389,10 +396,12 @@ class MainConfig(object):
         self.project_list = self.parse_projects()
     def update_projects(self):
         self.data['None']['projects']=self.project_list
+    def update_last_opened(self,data):
+        self.last_opened = data
+        
+        self.data['None']['appdata']['last_opened'] = self.last_opened
+        self.config.update_dict(self.data)
     def add_project(self,data):
-
-        print(data)
-
         if data not in self.project_list:
             self.project_list.append(data)
             self.data['None']['projects']=self.project_list
@@ -425,7 +434,6 @@ class MainConfig(object):
                 except ValueError:
                     exit('config likely has incorrect houdini versions')
         return result
-
 
 
 @yaml_object(yaml)
@@ -844,464 +852,36 @@ def register_nested_folders(dirlist,prefix,env=False):
 #endregion
 ###########
 #endregion
-#region SHOTS
-#region shot subdir definition
-
-###########################################
-##############               ##############
-############     Shot Prep     ############
-##############               ##############
-###########################################
-#endregion
-#region Create Shot
-####
-shots_list = []
-shot_env_dict = {}
-
-def create_shot():
-    '''
-    Check if first shot folder exists, if not, create it. If folders exists count them and create a new one incremented
-    '''
-
-    #ensure top-level 'shots' exists
-    #top_level_shot = Path(Path(Path.cwd().parent)) / "Main_Project/shots"
-    #TODO fix this
-    top_level_shot = Path(env_dict['PROJECT_ROOT']) / "Shots"
-    if not Path.is_dir(top_level_shot):
-        Path.mkdir(top_level_shot)
-
-    #case 1 - creating first shot directory
-    first_shot_n = Path(top_level_shot)/'shot_1'
-    if not Path.is_dir(first_shot_n):
-        Path.mkdir(first_shot_n)
-        shot_subfolders = create_shot_subfolders(first_shot_n)
-
-
-        print(f'{first_shot_n.name} created...')
-        
-        add_to_dict_and_arr('SHOT_ROOT',first_shot_n)
-        
-        #shot_env_var_init(first_shot_n,shot_subfolders)
-        print(f"\'{first_shot_n}\' created along with resource dirs.")
-        return shot_subfolders, first_shot_n
-    #case 2 - creating any subsequent shot directory
-    else:
-        shot_n = first_shot_n
-        #skip existing shot directories...
-        while Path.is_dir(shot_n):
-            try:
-                shot_name = shot_n.name
-                #incremented_number = int(shot_n.name.parts[1].split('_')[1])+1
-                incremented_number = int(shot_name.split('_')[1])+1
-                updated_shot_n = shot_n.parts[2].replace(shot_n.parts[2].split('_')[1],str(incremented_number))
-                shot_n = Path.joinpath(Path(shot_n.parts[1]), Path(updated_shot_n))
-                shot_n = Path("./Main_Project")/shot_n
-            except:
-                raise Exception("!! couldn't increment appended folder number")
-
-        #make the new shot directory...
-        Path.mkdir(shot_n)
-        shots_list.append(shot_n)
-        #create resources for the new shot directory
-        shot_subfolders = create_shot_subfolders(shot_n)
-        
-        add_to_dict_and_arr('SHOT_ROOT',shot_n)
-
-        
-
-        # if y_n_q("would you like to open newly created shot?"):
-        #     open_shot(shot_n)
-        # else:
-        #     shotlist = subdir_list(top_level_shot)
-        #     print(shotlist)
-        
-        print(f"\'{shot_n}\' created along with resource dirs.")
-        return shot_subfolders, shot_n
-
-#endregion
-#region Open Shot
-#region open shot helpers
-def get_resource_paths(curr_path):
-    path = curr_path
-    path_list = []
-    for p in Path(path).iterdir():
-        if(p.is_dir()==True):
-            #print(f'creating {p.name} directory...')
-            path_list.append(p)
-        else:
-            #print('file')
-            continue
-    #print(path_list)
-    return path_list
-
-def check_if_num_in_list(num,list) -> bool:
-    result = False
-    total = len(list)
-    if (num > 0) and (num < len(list)+1):
-        result = True
-    else:
-        result = False
-    return result
-
-#endregion
-
-def subdir_list(path):
-
-    shots_only=[]
-    sorted_shots=[]
-    sorted_shot_names=[]
-    shot_name_list=[]
-    if any(Path(path).iterdir()):
-
-        for p in Path(path).iterdir():
-            if p.is_dir():
-                shot_name_list.append(p.name)
-        shots_only = [x for x in shot_name_list if re.match(r"^shot_\d+$", x)]
-        sorted_shot_names = sorted(shots_only,key=lambda x: x.split('_')[1])
-        #print(f'sorted shots::: {sorted_shot_names}')
-        for p in sorted_shot_names:
-            np = pathlib.Path(path)/p
-            sorted_shots.append(np)
-    return sorted_shots
-
-def choose_shot(pathlist):
-    '''
-    displays number of choices user and input
-    '''
-    choices = []
-    choice = ''
-    for i in range(len(pathlist)):
-        print(f'{i+1} = {pathlist[i].name}')
-        choices.append(i+1)
-    print(f'Choices:: {choices}')
-    choice = user_choose_shot(choices)
-    return choice
-
-def user_choose_shot(list):
-    '''
-    Takes a list
-    Returns the index chosen by user if valid
-    also returns user confirmation
-    '''
-    # returns
-    choice = 0
-    confirm = False
-    # other
-    inner_confirm = True
-    #result = ''
-    while True:
-        try:
-            choice = int(input('Please type the corresponding number of the shot you wish to open: '))
-            result = check_if_num_in_list(choice,list)
-            if (result == True):
-                print(f'You chose shot_{choice}')
-                while inner_confirm:
-                    try:
-                        #accepted_input = ['y','n']
-                        user_confirm = input(
-                            'Is this correct? y/n: '
-                        ).lower()
-                        if (user_confirm == 'y' or 'n'):
-                            if(user_confirm == 'y'):
-                                confirm = True
-                                inner_confirm = False
-                            elif(user_confirm == 'n'):
-                                confirm = False
-                                inner_confirm = False
-                            else:
-                                print('Invalid response, try again...')
-                                raise ValueError                          
-                        else:
-                            raise ValueError
-                    except ValueError:
-                        print('Invalid response, try again...')
-                        continue
-                if(confirm == True):
-                    break
-                elif(confirm == False):
-                    break
-            else:
-                print('Invalid response, try again...')
-                continue
-        except ValueError:
-            print('Invalid response, try again...')
-            continue
-    return choice, confirm
-
-def shot_decision():
-    #TODO refactor into while lop with try except
-    '''
-    Asks user if they want to create a new shot or open an existing shot
-    if they want to open an existing shot and no shot exists it is created and automatically opened
-    if they created a new shot, the shot folder number is automatically incrimented
-    then they are asked which shot to open
-    '''
-    shots_root = pathlib.Path(env_dict['PROJECT_ROOT'])/'Shots'
-    shot_root_empty = no_subdirs(shots_root)
-    shot_choice_path = ''
-    shot_root = ''
-    shot_choice = ''
-    User_not_confirm = True
-    shot_chosen = False
-    while User_not_confirm:
-        try:
-            user_choice = int(input(
-                '1 - Create a new shot \n2 - Open existing shot \n'
-            ).lower())
-            
-            # Case 1 
-            if user_choice == 1:
-                #TODO add support for continuing to make shots
-                #TODO support for shot naming?
-                print('creating new shot....')
-
-                shot_folders = create_shot()
-                if y_n_q("Would you like to open newly created shot?"):
-                    newshot = shot_folders[1]
-                    newshotnum = int(newshot.name.split('_')[1])
-                    print(newshotnum)
-                    shot_choice_path = newshot
-                    shot_chosen = True
-                    break
-                else:
-                    if y_n_q('Do you want to open an existing shot?'):
-                        shotlist = subdir_list(shots_root)
-                        while True:
-                            try:
-                                shot_choice = choose_shot(shotlist)
-                                if (shot_choice[1] == False):
-                                    continue
-                                elif (shot_choice[1] == True):
-                                    print(f'shot choice:: {shot_choice[0]} ---')
-                                    shot_choice_path = shotlist[shot_choice[0]-1]
-                                    User_not_confirm = False
-                                    break
-                                else:
-                                    raise ValueError
-                            except ValueError:
-                                continue
-                            # select shot
-                            # then houdini stuff
-                    else:
-                        print('you must choose a shot before opening houdini...')
-                        quit()
-            # case 2
-            elif user_choice == 2:
-                '''
-                if no shot exists create it
-                since there would only be one select that folder
-                then go to houdini stuff
-                '''
-                print('please choose which shot to open...')
-                if no_subdirs(shots_root):
-                    print('No shots exist! Creating shot_1 first...')
-                    shot_folders = create_shot()
-                    print('Choosing newly created shot_1...')
-                    p = Path(shots_root)/'shot_1'
-                    shot_choice_path = p
-                    break
-                    #print(p)
-                    #open_shot(p)
-                else:
-                    shotlist = subdir_list(shots_root)
-                    while True:
-                        try:
-                            shot_choice = choose_shot(shotlist)
-                            if (shot_choice[1] == False):
-                                print(shot_choice[1])
-                                
-                                continue
-                            elif (shot_choice[1] == True):
-                                print(f'shot choice:: {shot_choice[0]} ')
-                                shot_choice_path = shotlist[shot_choice[0]-1]
-                                User_not_confirm = False
-                                break
-                                #open_shot(shot_choice_path)
-                            else:
-                                raise ValueError
-                        except ValueError:
-                            continue
-            else:
-                raise ValueError
-        except ValueError:
-            print('Please enter the numbers 1 or 2...')
-            continue
-    
-    open_shot(shot_choice_path)
-
-def open_shot(path):
-    '''
-    after user has confirmed shot folder do this...
-    '''
-    env_dict['SHOT_ROOT']=path
-    reslist = []
-    #print(path)
-    subdir_list = get_resource_paths(path)
-    for i in subdir_list:
-        reslist.append(i)
-        print(f'+------------------Registering directory {i.name} in {path.name} directory for your session...')
-    print(f'!!! ----- Here is a reminder of the subdirectories in your resources folder ----- !!!')
-    
-    add_dirlist_to_dict(reslist,'')
-    
-    for i in reslist:
-        
-        sublist = []
-        print(i.name)
-        for k in i.iterdir():
-            if k.is_dir():
-                print(f'...........{k.name}')
-                sublist.append(k)
-    
-    
-    # shot_env_dict(path,subdir_list)
-    #shot_env_var_init(path,reslist)
-
-#region Houdini file
-
-hip_file_ext = [
-    'hip',
-    'hipnc',
-    'hiplc',
-]
-
-
-def list_proj_files(directory):
-    p = directory
-    file_list = []
-    choice_list = []
-    # for f in os.listdir(p):
-    #     print(f)
-    try:
-        for f in os.listdir(p):
-            if not f.startswith('.'):
-                
-                file_list.append(f)
-    except FileNotFoundError: 
-        print('No hip files found')
-    
-    for i in range(len(file_list)):
-        print(f'{i+1}:: {file_list[i]}')
-        choice_list.append(i+1)
-    print(choice_list)
-    return file_list           
-
-def choose_file(flist):
-    '''
-    displays number of choices user and input
-    '''
-    choices = []
-    choice = ''
-    for i in range(len(flist)):
-        print(f'{i+1} = {flist[i]}')
-        choices.append(i+1)
-    print(f'Choices:: {choices}')
-    choice = user_choose_file(choices)
-    return choice
-
-def user_choose_file(choices):
-    inner_confirm = True
-    confirm = False
-    choice = 0
-    while True:
-        try:
-            user_choice = int(input('Please select a corresponding number for the file you wish to open: ').lower())
-            #print(proj_list[user_choice])
-            result = check_if_num_in_list(user_choice,choices)
-            if(result == True):
-                print(f'You chose: {choices[user_choice-1]}')
-                while inner_confirm:
-                    try:
-                        #accepted_input = ['y','n']
-                        user_confirm = input(
-                            'Is this correct? y/n: '
-                        ).lower()
-                        if (user_confirm == 'y' or 'n'):
-                            if(user_confirm == 'y'):
-                                confirm = True
-                                inner_confirm = False
-                            elif(user_confirm == 'n'):
-                                confirm = False
-                                inner_confirm = False
-                            else:
-                                print('Invalid response, try again...')
-                                raise ValueError                          
-                        else:
-                            raise ValueError
-                    except ValueError:
-                        print('Invalid response, try again...')
-                        continue
-                if(confirm == True):
-                    break
-                elif(confirm == False):
-                    break
-            else:
-                print('Invalid response, try again...')
-                continue
-        except ValueError:
-            print('Invalid response, try again...')
-            continue
-    return choice, confirm
-
-
-def houdini_file_main():
-    hip_root = pathlib.Path(env_dict['HIP'])
-    proj_list = list_proj_files(hip_root)
-
-    if not (len(proj_list) == 0):
-        print(proj_list)
-        if(y_n_q('Do you want to open an existing file?')):
-            choice = choose_file(proj_list)
-            add_var_to_dict('OPEN_FILE',1)
-            #print(choice)
-            file_choice = proj_list[choice[0]]
-            print(f'You chose {file_choice} to open....')
-            add_var_to_dict('FILE_TO_OPEN',file_choice)
-            #choice = choose_file()
-        else:
-                add_var_to_dict('OPEN_FILE',0)
-                print('Create a new file after Houdini launches...')
-                add_var_to_dict('FILE_TO_OPEN','')
-                input('Press Enter to continue....')
-    else:
-        print('There are no project files in HIP directory, create one after houdini launches... \n')
-        add_var_to_dict('OPEN_FILE',0)
-        add_var_to_dict('FILE_TO_OPEN','')
-        input('Press Enter to continue....')
-
-
-
-#endregion
 #region Hou shot env setup
-def shot_env_var_init(shot_path,shot_dirlist):
-    # add_readme_file_to_dir(shot_root)
-    # shot_resource_list = get_resource_paths(shot_root)
-    # for i in shot_dirlist:
-    #     shot_env_dict[i.name]=i
-    # pprint(shot_env_dict)
-    add_dirlist_to_dict(shot_dirlist,'')
-    #shot_dict = add_dirlist_to_return_dict(shot_resource_list)
-    #print(f'Shot dict:::: {shot_dict}')
-    # configure hou vars from existing paths
-    # packages
-    # HDAs
-    # vars HSITE, HOUDINI_PACKAGE_DIR, JOB, HIP, HOUDINI_OTL_SCAN_PATH, HOUDINI_NO_ENV_FILE
-    #print(shot_path)
-    add_var_to_dict('SHOT_NAME',shot_path.name)
-    #add_var_to_dict('HOUDINI_NO_ENV_FILE',True)
-    add_var_to_dict('HSITE',env_dict['HSITE'])
-    add_var_to_dict('HOUDINI_PACKAGE_DIR',env_dict['PACKAGES'])
-    add_var_to_dict('JOB',shot_path)
-    #hda_paths = env_dict['G_HDA']+':'+env_dict['HDA']
-    hda_paths = str(f'{env_dict["G_HDA"]};{env_dict["HDA"]}')
-    add_var_to_dict('HOUDINI_OTLSCAN_PATH',hda_paths)
-    add_var_to_dict('HOUDINI_SCRIPT_PATH',env_dict['SCRIPTS'])
-    add_var_to_dict('HOUDINI_TEXTURE_PATH',env_dict['TEXTURE'])
-    add_var_to_dict('HOUDINI_GEOMETRY_PATH',env_dict['GEO'])
-    add_var_to_dict('HOUDINI_CLIP_PATH',env_dict['CLIPS'])
-    add_var_to_dict('HOUDINI_VEX_PATH',env_dict['VEX'])
-    #print(hda_paths)
-    #add_var_to_dict('HIP',shot_env_dict['HIP'])
+# def shot_env_var_init(shot_path,shot_dirlist):
+#     # add_readme_file_to_dir(shot_root)
+#     # shot_resource_list = get_resource_paths(shot_root)
+#     # for i in shot_dirlist:
+#     #     shot_env_dict[i.name]=i
+#     # pprint(shot_env_dict)
+#     add_dirlist_to_dict(shot_dirlist,'')
+#     #shot_dict = add_dirlist_to_return_dict(shot_resource_list)
+#     #print(f'Shot dict:::: {shot_dict}')
+#     # configure hou vars from existing paths
+#     # packages
+#     # HDAs
+#     # vars HSITE, HOUDINI_PACKAGE_DIR, JOB, HIP, HOUDINI_OTL_SCAN_PATH, HOUDINI_NO_ENV_FILE
+#     #print(shot_path)
+#     add_var_to_dict('SHOT_NAME',shot_path.name)
+#     #add_var_to_dict('HOUDINI_NO_ENV_FILE',True)
+#     add_var_to_dict('HSITE',env_dict['HSITE'])
+#     add_var_to_dict('HOUDINI_PACKAGE_DIR',env_dict['PACKAGES'])
+#     add_var_to_dict('JOB',shot_path)
+#     #hda_paths = env_dict['G_HDA']+':'+env_dict['HDA']
+#     hda_paths = str(f'{env_dict["G_HDA"]};{env_dict["HDA"]}')
+#     add_var_to_dict('HOUDINI_OTLSCAN_PATH',hda_paths)
+#     add_var_to_dict('HOUDINI_SCRIPT_PATH',env_dict['SCRIPTS'])
+#     add_var_to_dict('HOUDINI_TEXTURE_PATH',env_dict['TEXTURE'])
+#     add_var_to_dict('HOUDINI_GEOMETRY_PATH',env_dict['GEO'])
+#     add_var_to_dict('HOUDINI_CLIP_PATH',env_dict['CLIPS'])
+#     add_var_to_dict('HOUDINI_VEX_PATH',env_dict['VEX'])
+#     #print(hda_paths)
+#     #add_var_to_dict('HIP',shot_env_dict['HIP'])
 
     # aces stuff
 
@@ -1429,8 +1009,8 @@ def houdini_main():
 #endregion
 #endregion
 #endregion
-#region path setup
-#region Initialize
+
+#region Projects Main
 #region Project name
 
 def check_for_space_in_string(s):
@@ -2003,13 +1583,14 @@ def projects_init_main():
         project_data.houdini_install_path = main_config.get_hou_path(project_data)
         simple_project_data = project_data.main_config_list_data()
         main_config.add_project(simple_project_data)
+        
         #pprint(main_config.data)
         new_project.create_config('project_data.yml',vars(project_data))
 
         #pprint(main_config.data)
         #pprint(main_config.config.data)
         main_config.write_config()
-        
+        return project_data
         #pprint(vars(project_data))
 
     def add_existing_project():
@@ -2018,10 +1599,11 @@ def projects_init_main():
         config_path = pathlib.Path(parent_path)/'.config/project_data.yml'
         #projec_list = set(main_config.project_list)
         #print(config_path)
-
+        existing_project = None
         if config_path.exists():
             existing_project = ConfigData(config_path)
             pprint(existing_project.data)
+        return existing_project
 
     def choose_existing_project():
         print('The following projects exist...')
@@ -2036,18 +1618,45 @@ def projects_init_main():
         main_config.update_config()
         main_config.write_config()
         project_data = ConfigData(pathlib.Path(chosen_project['config'])/'project_data.yml')
-        #pprint(main_config.data)
-        #pprint(project_data.data)
+        
+        # pprint(main_config.data)
+        # pprint(project_data.data)
+    def open_project(project_data):
+        pprint(project_data)
+
+    ###########################################
+    ###########################################
+    ###########################################
 
 
     if not (main_config.config.data['None']['appdata']['initialized']):
         print('First time setup')
         if y_n_q('Would you like to add an existing project?'):
             print('adding project')
-            add_existing_project()
-        else:
-            create_project()
+            while True:
+                existing_project = add_existing_project()
 
+                if y_n_q('do you want to open the project you just added?'):
+                    break
+                else:
+                    continue
+
+            open_project(existing_project)
+                    
+        else:
+            print('create a new project')
+            while True:
+                new_project = create_project()
+
+                if y_n_q('do you want to open the project you just created?'):
+                    break
+                else:
+                    continue
+            open_project(new_project)
+    elif main_config.config.data['None']['appdata']['last_opened'] is not None:
+        #open last opened project
+        print('open last opened project')
+        pass
     else:   
         if y_n_q('Would you like to open an existing project?'):
             choose_existing_project()
@@ -2061,12 +1670,449 @@ def projects_init_main():
 
 
 
+
 #endregion
 #endregion
 #endregion
 #endregion
+#region Shot Main
+#region SHOTS
+#region shot subdir definition
+
+###########################################
+##############               ##############
+############     Shot Prep     ############
+##############               ##############
+###########################################
+#endregion
+#region Create Shot
+####
+shots_list = []
+shot_env_dict = {}
+
+def create_shot():
+    '''
+    Check if first shot folder exists, if not, create it. If folders exists count them and create a new one incremented
+    '''
+
+    #ensure top-level 'shots' exists
+    #top_level_shot = Path(Path(Path.cwd().parent)) / "Main_Project/shots"
+    #TODO fix this
+    top_level_shot = Path(env_dict['PROJECT_ROOT']) / "Shots"
+    if not Path.is_dir(top_level_shot):
+        Path.mkdir(top_level_shot)
+
+    #case 1 - creating first shot directory
+    first_shot_n = Path(top_level_shot)/'shot_1'
+    if not Path.is_dir(first_shot_n):
+        Path.mkdir(first_shot_n)
+        shot_subfolders = create_shot_subfolders(first_shot_n)
+
+
+        print(f'{first_shot_n.name} created...')
+        
+        add_to_dict_and_arr('SHOT_ROOT',first_shot_n)
+        
+        #shot_env_var_init(first_shot_n,shot_subfolders)
+        print(f"\'{first_shot_n}\' created along with resource dirs.")
+        return shot_subfolders, first_shot_n
+    #case 2 - creating any subsequent shot directory
+    else:
+        shot_n = first_shot_n
+        #skip existing shot directories...
+        while Path.is_dir(shot_n):
+            try:
+                shot_name = shot_n.name
+                #incremented_number = int(shot_n.name.parts[1].split('_')[1])+1
+                incremented_number = int(shot_name.split('_')[1])+1
+                updated_shot_n = shot_n.parts[2].replace(shot_n.parts[2].split('_')[1],str(incremented_number))
+                shot_n = Path.joinpath(Path(shot_n.parts[1]), Path(updated_shot_n))
+                shot_n = Path("./Main_Project")/shot_n
+            except:
+                raise Exception("!! couldn't increment appended folder number")
+
+        #make the new shot directory...
+        Path.mkdir(shot_n)
+        shots_list.append(shot_n)
+        #create resources for the new shot directory
+        shot_subfolders = create_shot_subfolders(shot_n)
+        
+        add_to_dict_and_arr('SHOT_ROOT',shot_n)
+
+        
+
+        # if y_n_q("would you like to open newly created shot?"):
+        #     open_shot(shot_n)
+        # else:
+        #     shotlist = subdir_list(top_level_shot)
+        #     print(shotlist)
+        
+        print(f"\'{shot_n}\' created along with resource dirs.")
+        return shot_subfolders, shot_n
+
+#endregion
+#region Open Shot
+#region open shot helpers
+def get_resource_paths(curr_path):
+    path = curr_path
+    path_list = []
+    for p in Path(path).iterdir():
+        if(p.is_dir()==True):
+            #print(f'creating {p.name} directory...')
+            path_list.append(p)
+        else:
+            #print('file')
+            continue
+    #print(path_list)
+    return path_list
+
+def check_if_num_in_list(num,list) -> bool:
+    result = False
+    total = len(list)
+    if (num > 0) and (num < len(list)+1):
+        result = True
+    else:
+        result = False
+    return result
+
+#endregion
+
+def subdir_list(path):
+
+    shots_only=[]
+    sorted_shots=[]
+    sorted_shot_names=[]
+    shot_name_list=[]
+    if any(Path(path).iterdir()):
+
+        for p in Path(path).iterdir():
+            if p.is_dir():
+                shot_name_list.append(p.name)
+        shots_only = [x for x in shot_name_list if re.match(r"^shot_\d+$", x)]
+        sorted_shot_names = sorted(shots_only,key=lambda x: x.split('_')[1])
+        #print(f'sorted shots::: {sorted_shot_names}')
+        for p in sorted_shot_names:
+            np = pathlib.Path(path)/p
+            sorted_shots.append(np)
+    return sorted_shots
+
+def choose_shot(pathlist):
+    '''
+    displays number of choices user and input
+    '''
+    choices = []
+    choice = ''
+    for i in range(len(pathlist)):
+        print(f'{i+1} = {pathlist[i].name}')
+        choices.append(i+1)
+    print(f'Choices:: {choices}')
+    choice = user_choose_shot(choices)
+    return choice
+
+def user_choose_shot(list):
+    '''
+    Takes a list
+    Returns the index chosen by user if valid
+    also returns user confirmation
+    '''
+    # returns
+    choice = 0
+    confirm = False
+    # other
+    inner_confirm = True
+    #result = ''
+    while True:
+        try:
+            choice = int(input('Please type the corresponding number of the shot you wish to open: '))
+            result = check_if_num_in_list(choice,list)
+            if (result == True):
+                print(f'You chose shot_{choice}')
+                while inner_confirm:
+                    try:
+                        #accepted_input = ['y','n']
+                        user_confirm = input(
+                            'Is this correct? y/n: '
+                        ).lower()
+                        if (user_confirm == 'y' or 'n'):
+                            if(user_confirm == 'y'):
+                                confirm = True
+                                inner_confirm = False
+                            elif(user_confirm == 'n'):
+                                confirm = False
+                                inner_confirm = False
+                            else:
+                                print('Invalid response, try again...')
+                                raise ValueError                          
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        print('Invalid response, try again...')
+                        continue
+                if(confirm == True):
+                    break
+                elif(confirm == False):
+                    break
+            else:
+                print('Invalid response, try again...')
+                continue
+        except ValueError:
+            print('Invalid response, try again...')
+            continue
+    return choice, confirm
+
+def shot_decision():
+    #TODO refactor into while lop with try except
+    '''
+    Asks user if they want to create a new shot or open an existing shot
+    if they want to open an existing shot and no shot exists it is created and automatically opened
+    if they created a new shot, the shot folder number is automatically incrimented
+    then they are asked which shot to open
+    '''
+    shots_root = pathlib.Path(env_dict['PROJECT_ROOT'])/'Shots'
+    shot_root_empty = no_subdirs(shots_root)
+    shot_choice_path = ''
+    shot_root = ''
+    shot_choice = ''
+    User_not_confirm = True
+    shot_chosen = False
+    while User_not_confirm:
+        try:
+            user_choice = int(input(
+                '1 - Create a new shot \n2 - Open existing shot \n'
+            ).lower())
+            
+            # Case 1 
+            if user_choice == 1:
+                #TODO add support for continuing to make shots
+                #TODO support for shot naming?
+                print('creating new shot....')
+
+                shot_folders = create_shot()
+                if y_n_q("Would you like to open newly created shot?"):
+                    newshot = shot_folders[1]
+                    newshotnum = int(newshot.name.split('_')[1])
+                    print(newshotnum)
+                    shot_choice_path = newshot
+                    shot_chosen = True
+                    break
+                else:
+                    if y_n_q('Do you want to open an existing shot?'):
+                        shotlist = subdir_list(shots_root)
+                        while True:
+                            try:
+                                shot_choice = choose_shot(shotlist)
+                                if (shot_choice[1] == False):
+                                    continue
+                                elif (shot_choice[1] == True):
+                                    print(f'shot choice:: {shot_choice[0]} ---')
+                                    shot_choice_path = shotlist[shot_choice[0]-1]
+                                    User_not_confirm = False
+                                    break
+                                else:
+                                    raise ValueError
+                            except ValueError:
+                                continue
+                            # select shot
+                            # then houdini stuff
+                    else:
+                        print('you must choose a shot before opening houdini...')
+                        quit()
+            # case 2
+            elif user_choice == 2:
+                '''
+                if no shot exists create it
+                since there would only be one select that folder
+                then go to houdini stuff
+                '''
+                print('please choose which shot to open...')
+                if no_subdirs(shots_root):
+                    print('No shots exist! Creating shot_1 first...')
+                    shot_folders = create_shot()
+                    print('Choosing newly created shot_1...')
+                    p = Path(shots_root)/'shot_1'
+                    shot_choice_path = p
+                    break
+                    #print(p)
+                    #open_shot(p)
+                else:
+                    shotlist = subdir_list(shots_root)
+                    while True:
+                        try:
+                            shot_choice = choose_shot(shotlist)
+                            if (shot_choice[1] == False):
+                                print(shot_choice[1])
+                                
+                                continue
+                            elif (shot_choice[1] == True):
+                                print(f'shot choice:: {shot_choice[0]} ')
+                                shot_choice_path = shotlist[shot_choice[0]-1]
+                                User_not_confirm = False
+                                break
+                                #open_shot(shot_choice_path)
+                            else:
+                                raise ValueError
+                        except ValueError:
+                            continue
+            else:
+                raise ValueError
+        except ValueError:
+            print('Please enter the numbers 1 or 2...')
+            continue
+    
+    open_shot(shot_choice_path)
+
+def open_shot(path):
+    '''
+    after user has confirmed shot folder do this...
+    '''
+    env_dict['SHOT_ROOT']=path
+    reslist = []
+    #print(path)
+    subdir_list = get_resource_paths(path)
+    for i in subdir_list:
+        reslist.append(i)
+        print(f'+------------------Registering directory {i.name} in {path.name} directory for your session...')
+    print(f'!!! ----- Here is a reminder of the subdirectories in your resources folder ----- !!!')
+    
+    #add_dirlist_to_dict(reslist,'')
+    
+    for i in reslist:
+        
+        sublist = []
+        print(i.name)
+        for k in i.iterdir():
+            if k.is_dir():
+                print(f'...........{k.name}')
+                sublist.append(k)
+    
+    
+    # shot_env_dict(path,subdir_list)
+    #shot_env_var_init(path,reslist)
+
+#region Houdini file
+
+hip_file_ext = [
+    'hip',
+    'hipnc',
+    'hiplc',
+]
+
+
+def list_proj_files(directory):
+    p = directory
+    file_list = []
+    choice_list = []
+    # for f in os.listdir(p):
+    #     print(f)
+    try:
+        for f in os.listdir(p):
+            if not f.startswith('.'):
+                
+                file_list.append(f)
+    except FileNotFoundError: 
+        print('No hip files found')
+    
+    for i in range(len(file_list)):
+        print(f'{i+1}:: {file_list[i]}')
+        choice_list.append(i+1)
+    print(choice_list)
+    return file_list           
+
+def choose_file(flist):
+    '''
+    displays number of choices user and input
+    '''
+    choices = []
+    choice = ''
+    for i in range(len(flist)):
+        print(f'{i+1} = {flist[i]}')
+        choices.append(i+1)
+    print(f'Choices:: {choices}')
+    choice = user_choose_file(choices)
+    return choice
+
+def user_choose_file(choices):
+    inner_confirm = True
+    confirm = False
+    choice = 0
+    while True:
+        try:
+            user_choice = int(input('Please select a corresponding number for the file you wish to open: ').lower())
+            #print(proj_list[user_choice])
+            result = check_if_num_in_list(user_choice,choices)
+            if(result == True):
+                print(f'You chose: {choices[user_choice-1]}')
+                while inner_confirm:
+                    try:
+                        #accepted_input = ['y','n']
+                        user_confirm = input(
+                            'Is this correct? y/n: '
+                        ).lower()
+                        if (user_confirm == 'y' or 'n'):
+                            if(user_confirm == 'y'):
+                                confirm = True
+                                inner_confirm = False
+                            elif(user_confirm == 'n'):
+                                confirm = False
+                                inner_confirm = False
+                            else:
+                                print('Invalid response, try again...')
+                                raise ValueError                          
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        print('Invalid response, try again...')
+                        continue
+                if(confirm == True):
+                    break
+                elif(confirm == False):
+                    break
+            else:
+                print('Invalid response, try again...')
+                continue
+        except ValueError:
+            print('Invalid response, try again...')
+            continue
+    return choice, confirm
+
+
+def houdini_file_main():
+    hip_root = pathlib.Path(env_dict['HIP'])
+    proj_list = list_proj_files(hip_root)
+
+    if not (len(proj_list) == 0):
+        print(proj_list)
+        if(y_n_q('Do you want to open an existing file?')):
+            choice = choose_file(proj_list)
+            add_var_to_dict('OPEN_FILE',1)
+            #print(choice)
+            file_choice = proj_list[choice[0]]
+            print(f'You chose {file_choice} to open....')
+            add_var_to_dict('FILE_TO_OPEN',file_choice)
+            #choice = choose_file()
+        else:
+                add_var_to_dict('OPEN_FILE',0)
+                print('Create a new file after Houdini launches...')
+                add_var_to_dict('FILE_TO_OPEN','')
+                input('Press Enter to continue....')
+    else:
+        print('There are no project files in HIP directory, create one after houdini launches... \n')
+        add_var_to_dict('OPEN_FILE',0)
+        add_var_to_dict('FILE_TO_OPEN','')
+        input('Press Enter to continue....')
+
+
+
+
+#endregion
+#endregion
+#endregion
+
 #endregion
 #region MAIN
+
+
+
 def main(project_data):
     # global env_dict
     global parser
