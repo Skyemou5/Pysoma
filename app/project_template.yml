@@ -818,6 +818,15 @@ None:
       gitkeep: True
       parent:
       children: *geo_subdir_data
+    - shot_maya_dir:
+      name: maya
+      path:
+      env:
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children: 
     - geo_dir:
       name: geo
       path:

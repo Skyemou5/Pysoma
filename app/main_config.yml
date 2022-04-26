@@ -1,6 +1,6 @@
 None:
   appdata:
-    initialized: false
+    initialized: true
   houdini_versions:
   - '18.5':
     - '759':
@@ -21,7 +21,7 @@ None:
       mac: /Applications/redshift/redshift4houdini/
       win: C:\\ProgramData\\Redshift\\bin
   projects:
-  - name: y
-    path: /home/ben/dev/Aces_Stuff/Pysoma/app/y
-    config: /home/ben/dev/Aces_Stuff/Pysoma/app/y/.config
+  - name: tt
+    path: /home/ben/dev/Aces_Stuff/Pysoma/app/tt
+    config: /home/ben/dev/Aces_Stuff/Pysoma/app/tt/.config
     last_opened: true

@@ -9,8 +9,8 @@ import contextlib
 import fnmatch
 import functools
 import glob
-from importlib.resources import path
 import json
+import operator
 import os
 import pathlib
 import pprint
@@ -22,7 +22,9 @@ import sys
 import tkinter as tk
 from array import ArrayType
 from curses import nonl
-from functools import lru_cache
+from dataclasses import asdict, astuple, dataclass
+from functools import lru_cache, reduce
+from importlib.resources import path
 from itertools import chain, repeat
 from pathlib import Path, PurePath
 #########################################
@@ -104,6 +106,23 @@ def check_os():
         pass
     return platform
 
+def keys_exists(element, *keys):
+    '''
+    Check if *keys (nested) exists in `element` (dict).
+    '''
+    if not isinstance(element, dict):
+        raise AttributeError('keys_exists() expects dict as first argument.')
+    if len(keys) == 0:
+        raise AttributeError('keys_exists() expects at least two arguments, one given.')
+
+    _element = element
+    for key in keys:
+        try:
+            _element = _element[key]
+        except KeyError:
+            return False
+    return True
+
 
 #endregion
 #region data classes
@@ -184,7 +203,7 @@ class ConfigData(object):
         self.data.update(other_dict)
     def write_file(self):
         converted_data = self.convert_paths(self.data)
-
+        pprint(converted_data)
         # monkey patch:
         ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
         # pprint(self.data)
@@ -362,20 +381,23 @@ class MainConfig(object):
         self.project_list = self.parse_projects()
     def parse_projects(self):
         result = []
-        for item in self.data['None']['projects']:
-            result.append(item)
+        if self.data['None']['projects'] is not None:
+            for item in self.data['None']['projects']:
+                result.append(item)
         return result
     def refresh_projects(self):
         self.project_list = self.parse_projects()
+    def update_projects(self):
+        self.data['None']['projects']=self.project_list
     def add_project(self,data):
-        if 'projects' in data:
-            if self.data['None']['projects']==None:
-                self.data['None']['projects']=[]
-            else:
-                self.data['None']['projects'].append(data)
-        else:
-            self.data['None']['projects']=[data]
-        self.update_config()
+
+        print(data)
+
+        if data not in self.project_list:
+            self.project_list.append(data)
+            self.data['None']['projects']=self.project_list
+        
+        #self.update_config()
     def remove_project(self,data):
         pass
     def update_config(self):
@@ -423,6 +445,14 @@ class ProjectData:
         self.env = None
         self.path = None
         self.config = None
+
+    def main_config_list_data(self):
+        result = {}
+        result['name']=self.name
+        result['path']=self.path
+        result['config']=self.config
+        result['last_opened']=False
+        return result
 
     @classmethod
     def to_yaml(cls,representer,node):
@@ -1801,43 +1831,39 @@ def list_projects(env_path):
     dotenvdict = dict(unpack_dotenv(temp_file))
     return dotenvdict
 
-def choose_project(p_dict):
-    amount = 0
-    choice_list = []
-    key_list = []
-    for k,v in p_dict.items():
-        amount+=1
-        k_pair = (amount,k)
-        key_list.append(k_pair)
-        choice_list.append(amount)
-    values = p_dict.values()
-    values_list = list(values)
-    keys = p_dict.keys()
-    keys_list = list(keys)
-    # print(values_list)
-    # print(keys_list)
-    print(amount)
-    while True:
-        try:
-            choice = int(input('Please type a corresponding number to open desired project: '))
-            if choice in choice_list:
-                f_choice = choice - 1
-                #get_choice = key_list[0]
-                #print(get_choice)
-                get_name = keys_list[f_choice]
-                get_path = values_list[f_choice]
-                #print(f'You chose: {p_dict[]}')
-                project_data = (get_name,get_path)
-                #str_opened = convert_env_dict_to_string(p_dict[get_name])
-                path_from_str = pathlib.Path(get_path)
-                str_opened = {'LAST_OPENED':get_path}
-                overwrite_line('LAST_OPENED',str_opened)
-                #print(type(path_from_str))
-                
-                break
-        except ValueError:
-            print('please try again with a valid input...')
-            continue
+# def choose_project(p_dict: dict):
+#     amount = 0
+#     choice_list = []
+#     key_list = []
+#     for k,v in p_dict.items():
+#         amount+=1
+#         k_pair = (amount,k)
+#         key_list.append(k_pair)
+#         choice_list.append(amount)
+#     values = p_dict.values()
+#     values_list = list(values)
+#     keys = p_dict.keys()
+#     keys_list = list(keys)
+#     # print(amount)
+#     while True:
+#         try:
+#             choice = int(input('Please type a corresponding number to open desired project: '))
+#             if choice in choice_list:
+#                 f_choice = choice - 1
+#                 print(choice)
+#                 get_name = keys_list[f_choice]
+#                 get_path = values_list[f_choice]
+
+#                 project_data = (get_name,get_path)
+
+#                 path_from_str = pathlib.Path(get_path)
+#                 str_opened = {'LAST_OPENED':get_path}
+#                 overwrite_line('LAST_OPENED',str_opened)
+
+#                 break
+#         except ValueError:
+#             print('please try again with a valid input...')
+#             continue
 
 def write_to_second_temp(d_content):
     path = pathlib.Path(application_path)/'.config.env'
@@ -1848,8 +1874,8 @@ def write_to_second_temp(d_content):
 
 #region project setup helpers
 
-def choose_project(l):
-    print(len(l))
+def choose_project_from_list(l: list):
+    #print(len(l))
     '''
     Takes a list
     Returns the index chosen by user if valid
@@ -1901,6 +1927,8 @@ def choose_project(l):
             print('Invalid response, try again...')
             continue
     return choice, confirm
+
+
 
 #endregion
 #region ARGPARSE
@@ -1973,10 +2001,13 @@ def projects_init_main():
         
 
         project_data.houdini_install_path = main_config.get_hou_path(project_data)
-        simple_project_data = {'name':project_data.name,'path':project_data.project_root,'config':project_data.config}
+        simple_project_data = project_data.main_config_list_data()
         main_config.add_project(simple_project_data)
         #pprint(main_config.data)
         new_project.create_config('project_data.yml',vars(project_data))
+
+        #pprint(main_config.data)
+        #pprint(main_config.config.data)
         main_config.write_config()
         
         #pprint(vars(project_data))
@@ -1985,9 +2016,28 @@ def projects_init_main():
         choose_folder = user_choose_folder_methods_noscan()
         parent_path = choose_folder_method(choose_folder)
         config_path = pathlib.Path(parent_path)/'.config/project_data.yml'
+        #projec_list = set(main_config.project_list)
+        #print(config_path)
+
         if config_path.exists():
             existing_project = ConfigData(config_path)
             pprint(existing_project.data)
+
+    def choose_existing_project():
+        print('The following projects exist...')
+        
+        for i, item in enumerate(main_config.project_list):
+            print(f'{i+1} : {item["name"]}')
+        choice = choose_project_from_list(main_config.project_list)
+        #print(choice)
+        chosen_project = main_config.project_list[choice[0]-1]
+        chosen_project['last_opened']=True
+        main_config.update_projects()
+        main_config.update_config()
+        main_config.write_config()
+        project_data = ConfigData(pathlib.Path(chosen_project['config'])/'project_data.yml')
+        #pprint(main_config.data)
+        #pprint(project_data.data)
 
 
     if not (main_config.config.data['None']['appdata']['initialized']):
@@ -2000,22 +2050,12 @@ def projects_init_main():
 
     else:   
         if y_n_q('Would you like to open an existing project?'):
-            print('The following projects exist...')
-            
-            for i, item in enumerate(main_config.project_list):
-                print(f'{i+1} : {item["name"]}')
-            choose_project(main_config.project_list)
-
-            # choice = user_choose_folder_methods_noscan()
-            # p_list = choose_folder_method(choice)
-
+            choose_existing_project()
         else:
             print('Create new project')
             print('Choose directory to create project in...')
-            choose_folder = user_choose_folder_methods_noscan()
-            parent_path = choose_folder_method(choose_folder)
-            print(parent_path)
-            #project_name_setup()
+            create_project()
+
 
 
 
