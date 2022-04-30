@@ -809,6 +809,14 @@ None:
       parent:
       children:
   shot_subdir_data:
+    name: shot_n
+    path:
+    env:
+    h_env:
+    files: README.md
+    gitkeep: True
+    parent: shots
+    children:
     - shot_config_dir:
       name: .config
       path:

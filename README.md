@@ -22,15 +22,19 @@ This was developed for my needs during my senior project using Houdini with a sm
 - Implement project scanning
 - refactor print statements for an actual logging system
 
-# Future goals
+# Roadmap
 - add support for game projects with unity and unreal and possibly godot
+- add support for houdini engine and respective game engines
+- add hou.py configuration for opening houdini projects
+  - new file
+  - default node setup
 - possible branch project name pyrasoma?
 - possibly rewrite in rust
 - add support for houdini package management
 - refactor data to json
 - add data manager to edit json defaults
 - use yaml for configuration
-
+- Add database for viewing assets in project and dependencies
 
 
 
