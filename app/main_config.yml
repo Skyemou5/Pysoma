@@ -2,7 +2,10 @@ None:
   appdata:
     initialized: true
     open_last: true
-    last_opened: null
+    last_opened:
+      name: test_project_1
+      path: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/test_project_1
+      config: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/test_project_1/.config/project_data.yml
   houdini_versions:
   - '18.5':
     - '759':
@@ -23,9 +26,9 @@ None:
       mac: /Applications/redshift/redshift4houdini/
       win: C:\\ProgramData\\Redshift\\bin
   projects:
-  - name: project_1
-    path: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/project_1
-    config: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/project_1/.config/project_data.yml
-  - name: project_2
-    path: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/project_2
-    config: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/project_2/.config/project_data.yml
+  - name: test_project_1
+    path: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/test_project_1
+    config: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/test_project_1/.config/project_data.yml
+  - name: test_project_1
+    path: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/test_project_1
+    config: /home/ben/dev/Aces_Stuff/Pysoma/testprojects/test_project_1/.config/project_data.yml

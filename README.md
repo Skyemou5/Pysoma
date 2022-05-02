@@ -21,6 +21,7 @@ This was developed for my needs during my senior project using Houdini with a sm
 - Implement unit testing
 - Implement project scanning
 - refactor print statements for an actual logging system
+- impliment CLI tool that lets you specify a YAML file to use a project template
 
 # Roadmap
 - add support for game projects with unity and unreal and possibly godot

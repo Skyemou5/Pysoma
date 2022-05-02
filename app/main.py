@@ -14,12 +14,13 @@ import operator
 import os
 import pathlib
 import pprint
-# import yaml
+
 import re
 import shutil
-import string
+from sqlite3 import DataError
+
 import sys
-#from lib import dotenv
+
 import tkinter as tk
 from array import ArrayType
 from curses import nonl
@@ -36,18 +37,17 @@ from pydoc import resolve
 from sys import platform, stderr, stdout
 from telnetlib import EXOPL
 from textwrap import indent
+from turtle import up
 from typing import OrderedDict
 from unicodedata import name
 
 import dotenv
+import dump_env
 import ruamel.yaml
 from ruamel.yaml import YAML, yaml_object
-from yaml import Dumper
 from yamlize import Object
-
 import lib.flatdict as flatdict
-#from simple_term_menu import TerminalMenu
-from lib.dotenv import dotenv_values, load_dotenv
+
 
 ##########################################
 ##########################################
@@ -186,6 +186,41 @@ class ParseYamlLoad(object):
         # pprint(result)
         return result
 
+
+
+class ConfigObject(object):
+    def __init__(self) -> None:
+        pass
+    def convert_paths(self,data):
+        temp_obj = data.copy()
+        def traverse_data(data):
+            for k,v in data.items():
+                if isinstance(v,dict):
+                    traverse_data(v)
+                elif isinstance(v,list):
+                    for item in v:
+                        traverse_data(item)
+                elif isinstance(v,pathlib.Path):
+                    data[k]=str(v)
+        traverse_data(temp_obj)
+        return temp_obj
+    def write_dotenv(self,data,path):
+        fp = Path(path)
+        converted_data = self.convert_paths(data)
+        flattened_data = flatten_dict(converted_data)
+        with fp.open("w",encoding="utf-8") as f:
+            for key, value in flattened_data.items():
+                f.write('%s="%s"\n' % (key, value))
+    def read_dotenv(self,path):
+        from dotenv import dotenv_values
+        env_dict = dotenv_values(path)
+        import lib.flatdict as flatdict
+        result = flatdict.FlatDict(env_dict,delimiter=':')
+        return result
+
+
+
+
 class ConfigData(object):
     '''
     Base class for the config object handles general yaml reading and writing
@@ -203,10 +238,6 @@ class ConfigData(object):
             try:
                 conf = self.yaml.load_all(f)
                 cd = ParseYamlLoad(conf).return_data
-                # print('dictionary stuff::: ')
-                # json_string = json.dumps(cd)
-                # from_json = json.loads(json_string)
-                # pprint(from_json)
                 return cd
             except yaml.YAMLError as exc:
                 print(exc)
@@ -215,6 +246,7 @@ class ConfigData(object):
     def update_dict(self,other_dict):
         self.data.update(other_dict)
     def write_file(self):
+        #pprint(self.data)
         converted_data = self.convert_paths(self.data)
         #pprint(converted_data)
         # monkey patch:
@@ -224,14 +256,84 @@ class ConfigData(object):
             self.yaml.default_flow_style = False
             self.yaml.dump(dict(converted_data),f)
             # f.write(str(self.yaml.dump(dict(self.data),self.config_file,default_flow_style=False)))
+    # def update_and_write_config(self):
+    #     self.update_dict()
+    #     self.write_config()
+
     def refresh(self):
-        self.data = self.load_file()
+        self.data = self.load_file(self.config_file)
     def update(self):
         #print('Updating File....')
         self.write_file()
     def print_data(self):
         print('printing config data...... ')
         pprint(self.data)
+    def convert_paths(self,data):
+        temp_obj = data.copy()
+        def traverse_data(data):
+            for k,v in data.items():
+                if isinstance(v,dict):
+                    traverse_data(v)
+                elif isinstance(v,list):
+                    for item in v:
+                        if isinstance(item,dict):
+                            traverse_data(item)
+                        elif isinstance(v,pathlib.Path):
+                            data[k]=str(v)
+                elif isinstance(v,pathlib.Path):
+                    data[k]=str(v)
+        traverse_data(temp_obj)
+
+        return temp_obj
+
+class ProjectParse(object):
+    def __init__(self,config_data) -> None:
+        self.yaml = YAML(typ="safe")
+        # self.config = ConfigData(pathlib.Path(data))
+        self.project_config_data = config_data
+        self.config_dir = pathlib.Path(self.project_config_data['config']).parents[0]
+        self.project_data_file = pathlib.Path(self.config_dir)/'project_data.yml'
+        self.project_data_config = ConfigData(self.project_data_file)
+        self.project_data = ProjectData()
+        self.project_data.update_from_dict(self.project_data_config.data)
+        self.project_data_template_file = pathlib.Path(self.config_dir)/'project_template.yml'
+        self.project_template_config = ConfigData(self.project_data_template_file)
+        self.enviornment_variables = {}
+
+    def refresh_project_data(self):
+        env_vars = {}
+        hou_vars = {}
+        new_template = dict(self.project_template_config.data['None'])
+        def process_dirs(data,path):
+            nonlocal env_vars
+            nonlocal hou_vars
+            current_path = pathlib.Path(path).joinpath(data['name'])
+            data['path']=current_path
+            # create_dir_if_not_present(current_path)
+            if data['env'] is not None:
+                env_vars[data['env']]=current_path
+            if data['h_env'] is not None:
+                if data['h_env'] in hou_vars:
+                    #print('item exists')
+                    print(hou_vars[data['h_env']])
+                    #print(f'{data["h_env"]} + {hou_vars[data["h_env"]]}')
+                else:
+                    hou_vars[data['h_env']]=current_path
+            if data['name']=='.config':
+                self.config_path = pathlib.Path(current_path)
+
+            if data['children'] is not None:
+                for obj in data['children']:
+                    # pprint(obj)
+                    process_dirs(obj,current_path)
+        print(self.project_config_data['path'])
+        #self.new_template['name']=config_data['name']
+        process_dirs(new_template,self.project_config_data['path'])
+        self.enviornment_variables['env_vars']=env_vars
+        self.enviornment_variables['houdini_vars']=hou_vars
+        #self.project_template_config.data = new_template
+        self.project_template_config.update_dict(new_template)
+        self.update_configs()
     def convert_paths(self,data):
         temp_obj = data.copy()
         def traverse_data(data):
@@ -247,7 +349,23 @@ class ConfigData(object):
 
         return temp_obj
 
+    def write_file(self,data,path):
+        converted_data = self.convert_paths(data)
+        # pprint(converted_data)
+        # monkey patch:
+        ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+        # pprint(self.data)
+        fp = pathlib.Path(path)
+        with fp.open('w') as f:
+            self.yaml.default_flow_style = False
+            self.yaml.dump(dict(converted_data),f)
 
+    def update_configs(self):
+        self.project_template_config.write_file()
+        self.project_data.update_paths(self.project_config_data)
+        self.project_data.env = self.enviornment_variables
+        #pprint(vars(self.project_data))
+        self.write_file(dict(vars(self.project_data)),self.project_config_data['config'])
 
 class ProjectSetup(object):
 
@@ -257,7 +375,7 @@ class ProjectSetup(object):
         # project_template.yml
         self.yaml = YAML(typ="safe")
         self.template_path = template_path
-        self.project_temp_file = self.set_template_path()
+        self.project_temp_file = self.set_template_path(self.template_path)
         self.config = ConfigData(self.project_temp_file)
         self.data = self.config.data
         self.project_data = self.data['None']['project_root']
@@ -266,14 +384,14 @@ class ProjectSetup(object):
         self.enviornment_variables = {}
         self.config_path = None
         self.new_template = None
-    def set_template_path(self):
+    def set_template_path(self,path):
         '''
         Sets application default if none is provided
         '''
         if self.template_path is None:
             return pathlib.Path(application_path)/'project_template_master.yml'
         else:
-            return self.template_path
+            return path
     def create_configs(self,c_data):
         #print(c_data['config'])
         #print(self.config_path)
@@ -301,13 +419,13 @@ class ProjectSetup(object):
         for item in template_list:
             #print('data')
             #print(type(item['data']))
-            data = None
+            data = {}
             if isinstance(item['data'],list):
                 print(type(item['data'][0]))
                 print(item['data'][0])
-                data = item['data']
+                data['None'] = item['data']
             if isinstance(item['data'],dict):
-                data = item['data']
+                data['None']=item['data']
             converted_data = self.config.convert_paths(data)
             ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
             fp = pathlib.Path(self.config_path)/item['filename']
@@ -315,41 +433,6 @@ class ProjectSetup(object):
                 self.yaml.default_flow_style = False
                 self.yaml.dump(dict(converted_data),f)
 
-    def process_env_vars(self,config_data):
-        env_vars = {}
-        hou_vars = {}
-        self.new_template = config_data
-        def process_dirs(data,path):
-            nonlocal env_vars
-            nonlocal hou_vars
-            current_path = pathlib.Path(path).joinpath(data['name'])
-            data['path']=current_path
-            # create_dir_if_not_present(current_path)
-            if data['env'] is not None:
-                env_vars[data['env']]=current_path
-            if data['h_env'] is not None:
-                if data['h_env'] in hou_vars:
-                    print('item exists')
-                    print(hou_vars[data['h_env']])
-                    #print(f'{data["h_env"]} + {hou_vars[data["h_env"]]}')
-                else:
-                    hou_vars[data['h_env']]=current_path
-            if data['name']=='.config':
-                self.config_path = pathlib.Path(current_path)
-
-            if data['children'] is not None:
-                for obj in data['children']:
-                    # pprint(obj)
-                    process_dirs(obj,current_path)
-        
-
-        self.new_template['name']=config_data['name']
-        process_dirs(self.new_template,config_data['path'])
-
-        self.enviornment_variables['env_vars']=env_vars
-        self.enviornment_variables['houdini_vars']=hou_vars
-        self.create_configs()
-        #pprint(self.new_template)
     def create_project(self,config_data):
         #pprint(self.shot_data.data)
         env_vars = {}
@@ -378,7 +461,7 @@ class ProjectSetup(object):
             current_path = pathlib.Path(path).joinpath(data['name'])
             data['path']=current_path
             create_dir_if_not_present(current_path)
-            
+
             if data['gitkeep']:
                 add_gitkeep(current_path)
             if data['files'] is not None:
@@ -400,44 +483,244 @@ class ProjectSetup(object):
                 for obj in data['children']:
                     # pprint(obj)
                     process_dirs(obj,current_path)
-        
+
         if config_data is not None:
             self.project_data['name']=config_data['name']
             process_dirs(self.project_data,config_data['parent_path'])
         else:
             process_dirs(self.project_data,test_root)
-        
+
         self.new_template = self.project_data
-        #pprint(self.new_template)
 
         self.enviornment_variables['env_vars']=env_vars
         self.enviornment_variables['houdini_vars']=hou_vars
 
+class DotenvData(ConfigObject):
+    def __init__(self,data,file_path) -> None:
+        self.data = data
+        self.file_path = file_path
+    def read_data(self):
+        self.data = self.read_dotenv(self.file_path)
+    def write_data(self):
+        self.write_dotenv(self.data,self.file_path)
 
-class ShotData(object):
-    def __init__(self,project_data=None) -> None:
+
+@yaml_object(yaml)
+class ShotConfig(object):
+    yaml_tag = u'!project'
+    def __init__(self) -> None:
+        self.initialized = None
+        self.name = None
+        self.index = None
+        self.users = None
+        self.init_date = None
+        self.project_root = None
+        self.parent_path = None
+        self.env = None
+        self.path = None
+        self.config = None
+        self.project_config = None
+        self.env_file = None
+        self.description = None
+    def main_config_list_data(self):
+        result = {}
+        result['name']=self.name
+        result['path']=self.path
+        result['config']=pathlib.Path(self.config)/'shot_data.yml'
+        return result
+    def has_attr(self,attr:str):
+        return hasattr(self, attr)
+    def update_paths(self,config_data):
+        self.path = config_data['path']
+        self.parent_path = pathlib.Path(config_data['path']).parents[0]
+        self.config = config_data['config']
+        self.project_root = config_data['path']
+        self.shots = config_data['shots']
+    def load_from_file(self,path):
+        yaml = YAML()
+        new_path = None
+        if isinstance(path,str):
+            new_path = pathlib.Path(path)
+        else:
+            new_path = path
+        result = {}
+        with new_path.open('r') as f:
+            try:
+                conf = yaml.load_all(f)
+                result = ParseYamlLoad(conf).return_data
+
+            except yaml.YAMLError as exc:
+                print(exc)
+        self.update_from_dict(result)
+    def update_from_dict(self, my_dict):
+        #print('updating obj')
+        #pprint(my_dict)
+        for key, value in my_dict.items():
+            if self.has_attr(key):
+                for a in dir(self):
+                    if not a.startswith('__') and not callable(a) and a == key:
+                        setattr(self,a,value)
+                        #print(getattr(self,a))
+    @classmethod
+    def to_yaml(cls,representer,node):
+        return representer.represent_scalar(cls.yaml_tag,u'{.initialized}-{.name}-{.users}-{.init_date}'.format(node,node))
+    @classmethod
+    def from_yaml(cls,constructor,node):
+        return cls(*node.value.split('-'))
+
+class ShotData(ConfigObject):
+    '''
+    Initialize with project data or no data
+    '''
+    def __init__(self,project_data: ConfigData=None) -> None:
         self.yaml = ruamel.yaml.YAML()
         self.project_data = project_data
-        self.project_temp_file = pathlib.Path(application_path)/'project_template_master.yml'
-        self.config = ConfigData(self.project_temp_file)
-        self.data = self.config.data['None']['shot_subdir_data']
-        self.last_opened = None
-        self.choose_temp_file()
-    def choose_temp_file(self):
-        if self.project_data is None:
+        #self.choose_temp_file(project_data)
+        if project_data is None:
             self.project_temp_file = pathlib.Path(application_path)/'project_template_master.yml'
+            self.config = ConfigData(self.project_temp_file)
+            self.data = self.config.data['None']['shot_subdir_data']
+            self.shots_dir = None
+            self.shots_list = None
         else:
-            if isinstance(self.project_data, ProjectData):
-                self.project_temp_file = pathlib.Path(self.project_data.config)/'shot_template.yml'
-            elif isinstance(self.project_data, ProjectSetup):
-                self.project_temp_file = self.project_data.config_path
-    def open_shot(self):
+            self.project_temp_file = pathlib.Path(self.project_data.data['None']['config'])/'shot_template.yml'
+            self.config = ConfigData(self.project_temp_file)
+            self.data = self.config.data['None']
+            self.shots_dir = self.project_data.data['None']['shots']
+            self.shots_list = None
+            self.shot_dir_list()
+        self.last_opened = None
+        self.enviornment_variables = {}
+        self.shot_config = ShotConfig()
+        self.env_data = None
+    def open_shot(self,choice):
         pass
-    def update_last_opened(self):
+    def update_last_opened(self,choice):
         pass
-    def create_shot(self,data):
+    def write_file(self,data,file_path):
+        # pprint(data)
+        converted_data = self.convert_paths(data)
+        #pprint(converted_data)
+        # monkey patch:
+        ruamel.yaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+        # pprint(self.data)
+        with file_path.open('w') as f:
+            self.yaml.default_flow_style = False
+            self.yaml.dump(dict(converted_data),f)
+    def read_file(self,file_path):
+        result = {}
+        with file_path.open('r') as f:
+            try:
+                conf = self.yaml.load_all(f)
+                cd = ParseYamlLoad(conf).return_data
+                return cd
+            except yaml.YAMLError as exc:
+                print(exc)
+        return result
+
+    def shot_dir_list(self):
+        '''
+        Scans Shot directory and returns a sorted list of shots
+        '''
+        shots_only=[]
+        sorted_shots=[]
+        sorted_shot_names=[]
+        shot_name_list=[]
+        #print(self.data['shots'])
+        if any(Path(self.shots_dir).iterdir()):
+            for p in Path(self.shots_dir).iterdir():
+                if p.is_dir():
+                    shot_name_list.append(p.name)
+            shots_only = [x for x in shot_name_list if re.match(r"^shot_\d+$", x)]
+            sorted_shot_names = sorted(shots_only,key=lambda x: x.split('_')[1])
+            #print(f'sorted shots::: {sorted_shot_names}')
+            for p in sorted_shot_names:
+                np = pathlib.Path(self.shots_dir)/p
+                sorted_shots.append(np)
+        #print(sorted_shots)
+        self.shots_list = sorted_shots
+    def create_shot_config(self):
+        self.shot_dir_list()
+        self.shot_config.env = self.enviornment_variables
+        self.shot_config.project_root = self.project_data.data['None']['path']
+        self.shot_config.config = pathlib.Path(self.shot_config.path)/'.config/shot_data.yml'
+        self.shot_config.env_file = pathlib.Path(self.shot_config.path)/'.config/shot.env'
+        self.shot_config.initialized = True
+        self.shot_config.project_config = self.project_data.config
+        config_data = {}
+        config_data['None']=vars(self.shot_config)
+        self.write_file(config_data,self.shot_config.config)
+        string_shots_list = []
+        for item in self.shots_list:
+            string_shots_list.append(str(item))
+        self.project_data.data['None']['shot_list']=string_shots_list
+        self.project_data.write_file()
+        #pprint(vars(self.shot_config))
+    def create_env_file(self):
+        pass
+    def create_shot(self,amount=None):
+        '''
+        Check if first shot folder exists, if not, create it. If folders exists count them and create a new one incremented
+        '''
+        self.shot_config = ShotConfig()
+        #ensure top-level 'shots' exists
+        #top_level_shot = Path(Path(Path.cwd().parent)) / "Main_Project/shots"
+        #TODO fix this
+        top_level_shot = pathlib.Path(self.shots_dir)
+        self.shot_config.parent_path = top_level_shot
+
+        # if not Path.is_dir(top_level_shot):
+        #     Path.mkdir(top_level_shot)
+        
+        # print(top_level_shot)
+        #case 1 - creating first shot directory
+        first_shot_n = Path(top_level_shot)/'shot_1'
+        #print(first_shot_n)
+        #print(first_shot_n.is_dir())
+        if not first_shot_n.is_dir():
+            # Path.mkdir(first_shot_n)
+            # shot_subfolders = self.create_shot_subfolders(first_shot_n)
+            # print(f'{first_shot_n.name} created...')
+            # #shot_env_var_init(first_shot_n,shot_subfolders)
+            self.shot_config.path = first_shot_n
+            self.create_shot_subfolders(first_shot_n)
+            self.shot_config.index = 1
+            self.shot_config.name = first_shot_n.name
+            print(f"\'{first_shot_n}\' created along with resource dirs.")
+            self.create_shot_config()
+        #case 2 - creating any subsequent shot directory
+        else:
+            shot_n = first_shot_n
+            #skip existing shot directories...
+            while Path.is_dir(shot_n):
+
+                shot_name = shot_n.name
+                #incremented_number = int(shot_n.name.parts[1].split('_')[1])+1
+                incremented_number = int(shot_name.split('_')[1])+1
+                self.shot_config.index = incremented_number
+                updated_shot_n = shot_name.replace(shot_name.split('_')[1],str(incremented_number))
+                shot_n = Path(top_level_shot)/updated_shot_n
+                
+            #make the new shot directory...
+
+            #create resources for the new shot directory
+
+            self.shot_config.path = shot_n
+            self.shot_config.name = shot_n.name
+            self.create_shot_subfolders(shot_n)
+            print(f"\'{shot_n}\' created along with resource dirs.")
+            self.create_shot_config()
+
+
+    def create_shot_subfolders(self,shot_n):
+        #pprint(self.shot_data.data)
         env_vars = {}
         hou_vars = {}
+        
+        #pprint(self.data)
+        #self.new_template = config_data
+        new_template = dict(self.data)
+        new_shot_path = pathlib.Path(self.shots_dir)/shot_n
         def create_dir_if_not_present(dirpath):
             if not dirpath.exists():
                 #print(f'+D/..........................Creating new {dirpath.name} Directory in {dirpath.parent}...')
@@ -452,15 +735,12 @@ class ShotData(object):
             fp = pathlib.Path(path)/f
             fp.open("w",encoding="utf-8")
 
-        test_root = pathlib.Path(application_path)
-        
-        def process_dirs(data,path):
+        def process_dirs(data: dict,path: pathlib):
             nonlocal env_vars
             nonlocal hou_vars
             current_path = pathlib.Path(path).joinpath(data['name'])
             data['path']=current_path
             create_dir_if_not_present(current_path)
-            
 
             if data['gitkeep']:
                 add_gitkeep(current_path)
@@ -469,18 +749,52 @@ class ShotData(object):
             if data['env'] is not None:
                 env_vars[data['env']]=current_path
             if data['h_env'] is not None:
-                hou_vars[data['h_env']]=current_path
+                if data['h_env'] in hou_vars:
+                    print('item exists')
+                    print(hou_vars[data['h_env']])
+                    #print(f'{data["h_env"]} + {hou_vars[data["h_env"]]}')
+                else:
+                    hou_vars[data['h_env']]=current_path
+            if data['name']=='.config':
+                self.config_path = pathlib.Path(current_path)
+            # if config is not None and data['name']=='.config':
+            #     create_project_config(current_path,config)
             if data['children'] is not None:
                 for obj in data['children']:
                     # pprint(obj)
                     process_dirs(obj,current_path)
-        
-        # if config_data is not None:
-        #     data['name']=config_data['name']
-        #     process_dirs(self.project_data,config_data['parent_path'])
-        # else:
-        #     process_dirs(self.project_data,test_root)
+        #print(new_template['name'])
+        new_template['name']=shot_n.name
+        print(f"folder name: {new_template['name']}")
 
+        process_dirs(new_template,self.shots_dir)
+        #pprint(new_template)
+        #pprint(f'{new_template=}')
+
+
+        #self.project_data.update_dict(new_template)
+        self.enviornment_variables['env_vars']=env_vars
+        self.enviornment_variables['houdini_vars']=hou_vars
+
+class HouData(ConfigData):
+    def __init__(self,shot_data: ShotData) -> None:
+        self.shot_data = shot_data
+        self.data = None
+        self.gather_env_vars()
+    def gather_env_vars(self):
+        shot_config = self.shot_data.shot_config
+        project_config = self.shot_data.config
+        project_data = ProjectData()
+        # project_data_config = ConfigData(pathlib.Path(self.shot_data.data['None']['project_config']))
+        # project_data.update_from_dict(project_data_config.data)
+        # project_vars = project_data_config.env
+        # pprint(project_vars)
+        shot_vars = shot_config.env
+        pprint(project_config.data)
+
+        pprint(shot_vars)
+    def prepare_env_vars(self,data):
+        pass
 
 class MainConfig(object):
     def __init__(self) -> None:
@@ -574,7 +888,10 @@ class ProjectData:
         self.env = None
         self.path = None
         self.config = None
-
+        self.shots = None
+        self.shot_list = None
+        self.open_last_shot = None
+        self.last_opened_shot = None
     def main_config_list_data(self):
         result = {}
         result['name']=self.name
@@ -583,8 +900,13 @@ class ProjectData:
         return result
     def has_attr(self,attr:str):
         return hasattr(self, attr)
+    def update_paths(self,config_data):
+        self.path = config_data['path']
+        self.parent_path = pathlib.Path(config_data['path']).parents[0]
+        self.config = config_data['config']
+        self.project_root = config_data['path']
+        self.shots = config_data['shots']
     def load_from_file(self,path):
-        
         yaml = YAML()
         new_path = None
         if isinstance(path,str):
@@ -596,12 +918,7 @@ class ProjectData:
             try:
                 conf = yaml.load_all(f)
                 result = ParseYamlLoad(conf).return_data
-                #print(type(result))
-                # print('dictionary stuff::: ')
-                # json_string = json.dumps(cd)
-                # from_json = json.loads(json_string)
-                # pprint(from_json)
-                #return cd
+
             except yaml.YAMLError as exc:
                 print(exc)
         self.update_from_dict(result)
@@ -609,7 +926,7 @@ class ProjectData:
     def update_from_dict(self, my_dict):
         #print('updating obj')
         #pprint(my_dict)
-        for key, value in my_dict.items():
+        for key, value in my_dict['None'].items():
             if self.has_attr(key):
                 for a in dir(self):
                     if not a.startswith('__') and not callable(a) and a == key:
@@ -1072,7 +1389,7 @@ def indie_check():
         sys.exit()
 
 
-def load_from_config():
+def load_from_config(dotenv_file):
     from lib.dotenv import load_dotenv
     load_dotenv("./.config/config.env")
 
@@ -1164,7 +1481,6 @@ def houdini_main():
 #endregion
 #endregion
 #endregion
-
 #region Projects Main
 #region Project name
 
@@ -1206,39 +1522,39 @@ def set_project_name():
 
 #region Choose Project Dir
 # Project stuff
-def choose_proj_dir():
-    global env_dict
-    proj_name = env_dict['PROJECT_NAME']
-    print(proj_name)
-    #global PROJECT_ROOT
-    if(y_n_q('Do you want to use the current directory?')):
-        #PROJECT_ROOT = pathlib.Path(__file__)
-        new_path = pathlib.Path(application_path)/proj_name
-        PROJECT_ROOT = new_path
-        add_var_to_dict('PROJECT_ROOT',new_path)
+# def choose_proj_dir():
+#     global env_dict
+#     proj_name = env_dict['PROJECT_NAME']
+#     print(proj_name)
+#     #global PROJECT_ROOT
+#     if(y_n_q('Do you want to use the current directory?')):
+#         #PROJECT_ROOT = pathlib.Path(__file__)
+#         new_path = pathlib.Path(application_path)/proj_name
+#         PROJECT_ROOT = new_path
+#         add_var_to_dict('PROJECT_ROOT',new_path)
 
-    else:
-        while True:
-            try:
-                user_input = input('Please type in desired path: ').lower()
-                input('Please note the name you chose will be appended to end of the path you set...')
-                new_path = pathlib.Path(user_input)/proj_name
-                print(new_path.is_dir())
-                if new_path.is_dir():
-                    if(y_n_q(f'Is {str(new_path)} the correct path?')):
-                        add_var_to_dict('PROJECT_ROOT',new_path)
-                        print(env_dict['PROJECT_ROOT'])
-                        #PROJECT_ROOT = new_path
-                        break
-                    else:
-                        continue
-                else:
-                    raise FileNotFoundError
-            except FileNotFoundError:
-                print('Directory is not valid! Please try again...')
-                continue
-    print(f'You have chosen {PROJECT_ROOT} as your main project directory')
-    input('Press Enter to continue...')
+#     else:
+#         while True:
+#             try:
+#                 user_input = input('Please type in desired path: ').lower()
+#                 input('Please note the name you chose will be appended to end of the path you set...')
+#                 new_path = pathlib.Path(user_input)/proj_name
+#                 print(new_path.is_dir())
+#                 if new_path.is_dir():
+#                     if(y_n_q(f'Is {str(new_path)} the correct path?')):
+#                         add_var_to_dict('PROJECT_ROOT',new_path)
+#                         print(env_dict['PROJECT_ROOT'])
+#                         #PROJECT_ROOT = new_path
+#                         break
+#                     else:
+#                         continue
+#                 else:
+#                     raise FileNotFoundError
+#             except FileNotFoundError:
+#                 print('Directory is not valid! Please try again...')
+#                 continue
+#     print(f'You have chosen {PROJECT_ROOT} as your main project directory')
+#     input('Press Enter to continue...')
 
 
 #region check for projects
@@ -1365,9 +1681,6 @@ def check_for_projects_in_folder(path):
     # TODO: Fix directory scanning
     
     result = {}
-
-
-
 
     for p in path.iterdir():
         # print(p)
@@ -1633,32 +1946,53 @@ def choose_project_from_list(l: list):
 
 
 # TODO: replace all list choices with this generalized list choice funtion
-def user_choice_from_list(prompts_and_choices:dict):
+def user_choice_from_list(prompts_and_choices):
     '''
     Generalized list choice funtion.
     The input dictionary should have the strings as prompts for each key,
     and the values should be whatever you want to return for each choice
     '''
-    counter = 1
-    choices_items = list(prompts_and_choices)
-    choices_keys = list(prompts_and_choices.keys())
-    choices_values = list(prompts_and_choices.values())
-    print(type(choices_items))
-    for k,v in prompts_and_choices.items():
-        print(f'{counter} : {k}')
-        counter += 1
-    print('-------------------')
-    while True:
-        try:
-            choice = int(input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: '))
-            if check_if_num_in_list(choice,choices_items):
+    try:
+        if isinstance(prompts_and_choices, dict):
+            counter = 1
+            choices_items = list(prompts_and_choices)
+            choices_keys = list(prompts_and_choices.keys())
+            choices_values = list(prompts_and_choices.values())
+            #print(type(choices_items))
+            for k,v in prompts_and_choices.items():
+                print(f'{counter} : {k}')
+                counter += 1
+            print('-------------------')
+            while True:
+                try:
+                    choice = int(input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: '))
+                    if check_if_num_in_list(choice,choices_items):
 
-                if y_n_q(f'Is <{choice}> correct?'):
-                    return choices_values[choice-1]
-                else:
-                    continue
-        except ValueError:
-            print('Invalid response, try again...')
+                        if y_n_q(f'Is <{choice}> correct?'):
+                            return choices_values[choice-1]
+                        else:
+                            continue
+                except ValueError:
+                    print('Invalid response, try again...')
+        elif isinstance(prompts_and_choices, list):
+            choices_list = list(prompts_and_choices)
+            counter = 1
+            for i,item in enumerate(prompts_and_choices):
+                print(f'{i+1} : {item}')
+                counter = i+1
+            print('-------------------')
+            while True:
+                try:
+                    choice = int(input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: '))
+                    if check_if_num_in_list(choice,choices_list):
+                        if y_n_q(f'Is <{choice}> correct?'):
+                            return choices_list[choice-1]
+                        else:
+                            continue
+                except ValueError:
+                    print('Invalid response, try again...')
+    except ValueError:
+        exit('Incorrect argument type')
 
 
 #endregion
@@ -1777,7 +2111,7 @@ add_project_parser = subparsers.add_parser(
 add_project_group = add_project_parser.add_argument_group('Add Project(s)')
 add_project_args_group = add_project_group.add_mutually_exclusive_group()
 add_project_args_group.add_argument('-p','--path',dest='path_project',action="extend",nargs='+',help='add project at input path(s)')
-add_project_args_group.add_argument('-un','--add_gui-project',dest='gui_project',action='store_true',help='create new project at location with gui ')
+add_project_args_group.add_argument('-ui','--add_gui-project',dest='gui_project',action='store_true',help='create new project at location with gui ')
 add_project_args_group.add_argument('-cn','--add_current-dir-project',dest='current_dir_project',action='store_true',help='create new project at current path')
 
 
@@ -1790,25 +2124,23 @@ open_project_parser = subparsers.add_parser(
     epilog=double_line
     )
 open_project_group = open_project_parser.add_argument_group('Open Project')
-open_project_args_group = add_project_group.add_mutually_exclusive_group()
-open_project_args_group.add_argument('-n','--by-name',dest='open_project', nargs=1, help='opens project by name')
+open_project_args_group = open_project_group.add_mutually_exclusive_group()
+open_project_args_group.add_argument('-n','--by-name',dest='by_name', nargs=1, help='opens project by name')
 open_project_args_group.add_argument('-l','--load-last',dest='load_last', action='store_true', help='Load last opened file')
-open_project_args_group.add_argument('-dp','--default-project', dest='default_project', action='store_true',help='sets the default project to open')
-open_project_args_group.add_argument('-opn','--open-project-name',dest='open_project', nargs=1 ,help='opens project by name')
-open_project_args_group.add_argument('-opl','--open-project-list', dest='open_project_list', action='store_true',help='load project from list of projects')
+open_project_args_group.add_argument('-pl','--open-project-list', dest='open_project_list', action='store_true',help='load project from list of projects')
 
 
 # shot parser
 shot_parser = subparsers.add_parser(
-    'shot',
+    'shots',
     help='open or create shot folders',
     description='--------------------Open Or create shots in a project--------------------',
     epilog=double_line
 )
 shot_group = shot_parser.add_argument_group('shot')
 shot_args_group = shot_group.add_mutually_exclusive_group()
-shot_args_group.add_argument('-os','--open-shot',dest='open_shot', action='store_true',help='open shot for project')
-shot_args_group.add_argument('-cs','--create-n-shots',dest='open_shot',nargs=1, type=int,help='create any number of shots')
+shot_args_group.add_argument('-os','--open-shot',dest='open_shot', nargs='?',help='open shot for project')
+shot_args_group.add_argument('-cs','--create-n-shots',dest='create_shots',nargs=1, type=int,help='create any number of shots')
 
 
 
@@ -1829,7 +2161,7 @@ args = parser.parse_args()
 # default behavior -> once initialized open last project
 main_config = MainConfig()
 # TODO:convert to yaml from config
-def projects_init_main() -> ConfigData:
+def projects_init_main() -> tuple:
     # args
 
     def create_project(name=None,root_path=None) -> ConfigData:
@@ -1861,21 +2193,24 @@ def projects_init_main() -> ConfigData:
         project_data.config = new_project.config_path
         
         project_data.env = new_project.enviornment_variables
-        project_data.initialized = True
+        # not fully initialized until shot decision
+        project_data.initialized = False
         project_data.project_root = project_path
         project_data.name = project_name
         # set houdini version
 
         project_data.houdini_major_version = '18.5'
         project_data.houdini_minor_version = '759'
-        
+        project_data.shots = pathlib.Path(project_path)/'shots'
 
         project_data.houdini_install_path = main_config.get_hou_path(project_data)
         simple_project_data = project_data.main_config_list_data()
         main_config.add_project(simple_project_data)
         
         #pprint(main_config.data)
-        new_project.create_configs(vars(project_data))
+        new_project_config_data = {}
+        new_project_config_data['None']=vars(project_data)
+        new_project.create_configs(new_project_config_data)
         new_project.save_templates()
         #pprint(main_config.data)
         #pprint(main_config.config.data)
@@ -1884,10 +2219,10 @@ def projects_init_main() -> ConfigData:
         if name is None and root_path is None:
             new_project_config = ConfigData(project_data.config)
 
-            return new_project_config
+            return new_project_config, project_data
         # pprint(vars(project_data))
 
-    def add_existing_project(project_path=None) -> ConfigData:
+    def add_existing_project(project_path=None) -> tuple:
 
         while True:
             
@@ -1902,7 +2237,8 @@ def projects_init_main() -> ConfigData:
                     continue
             try:
                 if config_path.exists():
-                    return ConfigData(config_path)
+                    project_data = ProjectData()
+                    return ConfigData(config_path), project_data.update_from_dict(ConfigData(config_path).data['config'])
 
                 
             except:
@@ -1910,7 +2246,7 @@ def projects_init_main() -> ConfigData:
                 continue
         #return new_project_config
 
-    def choose_existing_project() -> ConfigData:
+    def choose_existing_project() -> tuple:
 
         print('The following projects exist...')
         for i, item in enumerate(main_config.project_list):
@@ -1928,22 +2264,23 @@ def projects_init_main() -> ConfigData:
         new_project_config = ConfigData(chosen_project['config'])
         #pprint(new_project_config.data)
         #project_data.from_yaml(new_project_config.data)
-        #project_data.load_from_file(chosen_project['config'])
+        project_data.load_from_file(chosen_project['config'])
         #pprint(vars(project_data))
-        return new_project_config
+
+        return new_project_config, project_data
         # pprint(main_config.data)
         # pprint(project_data.data)
 
-    def open_project(project_data: ConfigData) -> ConfigData:
+    def open_project(project_data: ProjectData) -> tuple:
         #pprint(project_data.data)
         #pprint(main_config.data)
-        print(f'Opening project <{project_data.data["name"]}> .......')
+        print(f'Opening project <{project_data.data["None"]["name"]}> .......')
         project_data_obj = ProjectData()
         project_data_obj.update_from_dict(project_data.data)
         main_config.update_last_opened(project_data_obj.main_config_list_data())
         main_config.update_and_write_config()
         #pprint(vars(project_data_obj))
-        return project_data
+        return project_data, project_data_obj
 
     def user_choice_list(choice_dict:dict) -> ConfigData:
         while True:
@@ -1956,8 +2293,8 @@ def projects_init_main() -> ConfigData:
                 continue
         return project_choice_data
 
-    def get_last_opened() -> ConfigData:
-
+    def get_last_opened():
+`gi`
         last_opened_data = main_config.data['None']['appdata']['last_opened']
         project_config_data = ConfigData(last_opened_data['config'])
         project_data = ProjectData()
@@ -1969,294 +2306,387 @@ def projects_init_main() -> ConfigData:
     ################ CLI args #################
     ###########################################
     chosen_project = None
-    
-    # use shlex?
-    if args.command == 'info':
-        if args.documentation:
-            print('TODO - open documentation website')
-            exit()
-        elif args.config:
-            str_app_path = str(application_path)
-            print(f'config path={str_app_path}')
-            exit()
-        else:
-            print('short version of help, use -h or --help for long version')
-            parser.print_help()
-    elif args.command == 'config':
-
-        if args.list_projects:
-            if args.list_projects == 'more':
-                print('Currently saved projects...')
-                for i, item in enumerate(main_config.project_list):
-                    print(f'{i+1} : <{item["name"]}>')
-                    for k,v in item.items():
-                        if not k == 'name':
-                            print(f'          {k} : {v}')
+    #print(args.command)
+    if args.command is not None:
+        # use shlex?
+        if args.command == 'info':
+            if args.documentation:
+                print('TODO - open documentation website')
                 exit()
-            elif args.list_projects == 'name':
-                print('Currently saved projects...')
-                for i, item in enumerate(main_config.project_list):
-                    print(f'{i+1} : <{item["name"]}>')
+            elif args.config:
+                str_app_path = str(application_path)
+                print(f'config path={str_app_path}')
                 exit()
-            elif args.list_projects == 'path':
-                print('Currently saved projects...')
-                for i, item in enumerate(main_config.project_list):
-                    print(f'{i+1} : <{item["path"]}>')
+            else:
+                print('short version of help, use -h or --help for long version')
+                parser.print_help()
+        elif args.command == 'config':
+
+            if args.list_projects:
+                if args.list_projects == 'more':
+                    print('Currently saved projects...')
+                    for i, item in enumerate(main_config.project_list):
+                        print(f'{i+1} : <{item["name"]}>')
+                        for k,v in item.items():
+                            if not k == 'name':
+                                print(f'          {k} : {v}')
+                    exit()
+                elif args.list_projects == 'name':
+                    print('Currently saved projects...')
+                    for i, item in enumerate(main_config.project_list):
+                        print(f'{i+1} : <{item["name"]}>')
+                    exit()
+                elif args.list_projects == 'path':
+                    print('Currently saved projects...')
+                    for i, item in enumerate(main_config.project_list):
+                        print(f'{i+1} : <{item["path"]}>')
+                    exit()
+
+
+
+            elif args.rescan_dirs:
+                print('TODO - rescanning dirs')
+
+            elif args.clear_cache:
+                main_config.project_list = None
+                main_config.update_projects()
+                main_config.data['None']['appdata']['initialized']=False
+                main_config.data['None']['appdata']['open_last']=False
+                main_config.update_last_opened(None)
+                main_config.update_and_write_config()
                 exit()
 
+            elif args.toggle_load_last:
+                print('load last toggled....')
+                main_config.data['None']['appdata']['open_last'] = not main_config.data['None']['appdata']['open_last']
+                main_config.update_and_write_config()
+                print(f"load last set to: {main_config.data['None']['appdata']['open_last']}")
+                exit()
+
+            elif args.init:
+                if y_n_q('Do you want to always open the last opened project by default?'):
+                    main_config.config.data['None']['appdata']['open_last']=True
+                else:
+                    main_config.config.data['None']['appdata']['open_last']=False
+                
+                main_config.config.data['None']['appdata']['initialized']=True
+                main_config.update_and_write_config()
+
+            elif args.init_only:
+                main_config.config.data['None']['appdata']['open_last']=False
+                main_config.config.data['None']['appdata']['initialized']=False
+                main_config.update_and_write_config()
+                exit()
+
+            elif args.default_project:
+                if main_config.data['None']['projects'] is not None:
+                    proj_list = {}
+                    for project in main_config.project_list:
+                        print(project)
+                else:
+                    print('There are no projects saved to config!')
+                    exit()
+
+            elif args.prune_projects:
+                new_project_list = []
+                print('the following projects no longer exist...')
+                for pr in main_config.project_list:
+                    if not pathlib.Path(pr['path']).is_dir():
+                        print(f"removed <{pr['name']}> from project list...")
+                    else:
+                        new_project_list.append(pr)
+                main_config.project_list = new_project_list
+                main_config.update_projects()
+                main_config.update_and_write_config()
+                exit()
+
+            elif args.move_projects:
+                '''
+                Move projects to a new location and update config
+                '''
+                if len(args.move_projects) <= 1:
+                    print('You must specify which projects to move...')
+                    exit()
+                
+                move_project_args = args.move_projects
+                root_path = pathlib.Path(move_project_args.pop(0)).resolve()
+                projects = move_project_args
+                project_list = list(main_config.project_list)
+                old_parent_path = pathlib.Path(project_list[0]['path']).parent
+                old_project_list = []
+                
+                # valid_project_names = True
+                
+                # # check for valid project names
+                # # if project names valid - continue
+                # for p in project_list:
+                #     for n in projects:
+                #         if not p['name']==n:
+                #             valid_project_names = False
+                # if not valid_project_names:
+                #     print('no valid projects')
+                #     exit()
+                
+                for i in project_list:
+                    old_project_list.append(i)
+
+                if len(project_list) == 0:
+                    print('No projects saved')  
+                    exit()
+
+                original_project_paths = {}
+                updated_project_list = []
+
+                changed_projects = []
+
+                # Update current project list
+                for index, item in enumerate(project_list):
+
+                    if item['name'] in projects:
+                        item['path']=pathlib.Path(root_path)/item['name']
+                        item['config']=pathlib.Path(root_path).joinpath(item['name'])/'.config/project_data.yml'
+                        changed_projects.append(project_list[index])
+
+                # pprint(project_list)
+                main_config.project_list = project_list
+
+                # pprint(main_config.project_list)
+                main_config.update_projects()
+                main_config.update_and_write_config()
+                new_parent_path = pathlib.Path(changed_projects[0]['path']).parent
+
+                project_paths_dict = {}
+                def move_project(new_project_item):
+                    old_path = str(pathlib.Path(old_parent_path)/new_project_item['name'])
+                    new_path = str(new_project_item['path'])
+                    if not pathlib.Path(new_path).exists():
+                        try:
+                            if new_parent_path.is_dir() and new_parent_path.exists():
+                                pass
+                            else:
+                                raise FileNotFoundError
+                        except FileNotFoundError:
+                            print('Parent Folder doesn\'t exist, creating folder...')
+                            os.makedirs(str(new_parent_path.resolve()))
+                            # item['path'].mkdir()
+                            # shutil.move(str(oldpath),str(item['path']))
+                        finally:
+                            print('moving project')
+                            shutil.move(old_path,new_path)
+                    else:
+                        pass
+                for item in changed_projects:
+                    pprint(item)
+                    move_project(item)
+                    update_config = ProjectParse(item)
+                    update_config.refresh_project_data()
+                exit()
+
+        elif args.command == 'create-projects':
+            if args.path_project:
+                path_project_args = args.path_project
+                root_path = pathlib.Path(path_project_args.pop(0))
+                print(f'Creating projects in {root_path.absolute()}')
+                project_name_list = []
+                for pr in main_config.project_list:
+                    project_name_list.append(pr['name'])
+                
+                for i, item in enumerate(path_project_args):
+                    p = pathlib.Path(root_path).joinpath(item).resolve()
+                    if not p.is_dir():
+                        print(f'Creating project <{p.name}> at: {p.absolute()}')
+                        create_project(p.name,root_path.absolute())
+                    else:
+                        print(f'{p.name} is already a directory!')
+                        # TODO impliment check for valid projects
+                        config_path = pathlib.Path(p)/'.config/project_data.yml'
+                        if config_path.is_file():
+                            print('and a Valid Project')
+                            if item not in project_name_list:
+                                print('project not in config')
+                                if y_n_q('Do you wish to add it?'):
+                                    existing_project_config = ConfigData(config_path)
+                                    existing_project_data = ProjectData()
+                                    existing_project_data.update_from_dict(existing_project_config.data)
+                                    main_config.add_project(existing_project_data.main_config_list_data())
+                                    main_config.update_and_write_config()
+                        else:
+                            if y_n_q('Do you want to create project in folder anyway?'):
+                                create_project(p.name,root_path.absolute())
+                exit()
+            elif args.gui_project:
+                project_name = set_project_name()
+                path = choose_dir_gui()
+                create_project(project_name,path)
+                exit()
+            elif args.cwd_project:
+                path_project_args = args.cwd_project
+                root_path = pathlib.Path(application_path)
+                print(f'Creating projects in {root_path}')
+                project_name_list = []
+                for pr in main_config.project_list:
+                    project_name_list.append(pr['name'])
+                
+                for i, item in enumerate(path_project_args):
+                    p = pathlib.Path(root_path).joinpath(item).resolve()
+                    if not p.is_dir():
+                        print(f'Creating project <{p.name}> at: {p.absolute()}')
+                        create_project(p.name,root_path.absolute())
+                    else:
+                        print(f'{p.name} is already a directory!')
+                        # TODO impliment check for valid projects
+                        config_path = pathlib.Path(p)/'.config/project_data.yml'
+                        if config_path.is_file():
+                            print('and a Valid Project')
+                            if item not in project_name_list:
+                                print('project not in config')
+                                if y_n_q('Do you wish to add it?'):
+                                    existing_project_config = ConfigData(config_path)
+                                    existing_project_data = ProjectData()
+                                    existing_project_data.update_from_dict(existing_project_config.data)
+                                    main_config.add_project(existing_project_data.main_config_list_data())
+                                    main_config.update_and_write_config()
+                        else:
+                            if y_n_q('Do you want to create project in folder anyway?'):
+                                create_project(p.name,root_path.absolute())
 
 
-        elif args.rescan_dirs:
-            print('TODO - rescanning dirs')
+        elif args.command == 'add-projects':
+            if args.path_project:
+                for p in args.path_project:
+                    while True:
+                        try:
+                            if p.is_dir():
+                                print(f'<{p}> is a directory!')
+                                break
+                            else:
+                                raise NotADirectoryError
+                        except NotADirectoryError:
+                            print(f'<{p}> is not a directory...')
+                            continue
+                    #print(args.path_project)
+                    
+                    add_existing_project(p)
+                    # /home/ben/dev/Aces_Stuff/Pysoma/app/tt /home/ben/dev/Aces_Stuff/Pysoma/app/ff
 
-        elif args.clear_cache:
-            main_config.project_list = None
-            main_config.update_projects()
-            main_config.data['None']['appdata']['initialized']=False
-            main_config.data['None']['appdata']['open_last']=False
-            main_config.update_last_opened(None)
-            main_config.update_and_write_config()
-            exit()
+                exit()
+            elif args.gui_project:
+                print('gui')
+                pp = choose_dir_gui()
+                add_existing_project(pp)
+                exit()
+            elif args.current_dir_project:
+                print('TODO ---')
+                exit()
+            else:
+                print('please check help and use a correct flag')
+                exit()
+        elif args.command == 'open-project':
+            if args.by_name:
+                name = args.by_name[0]
+                exists = False
+                project_config_data = None
+                for project in main_config.project_list:
+                    #print(project['name'])
+                    #print(f'input name: {name}')
+                    if project['name']==str(name):
+                        print(f'Project <{name}> exists!')
+                        exists = True
+                        project_config_data = ConfigData(project['config'])
 
-        elif args.toggle_load_last:
-            print('load last toggled....')
-            main_config.data['None']['appdata']['open_last'] = not main_config.data['None']['appdata']['open_last']
-            main_config.update_and_write_config()
-            print(f"load last set to: {main_config.data['None']['appdata']['open_last']}")
-            exit()
+                if exists:
+                    chosen_project=open_project(project_config_data)
+                else:
+                    print('Project name not recognized...')
+                    exit()
 
-        elif args.init:
+            elif args.load_last:
+                if main_config.data['None']['appdata']['last_opened'] is not None:
+                    project_config_data = ConfigData(main_config.data['None']['appdata']['last_opened']['config'])
+                    chosen_project=open_project(project_config_data)
+                else:
+                    print('No project loaded last...')
+                    exit()
+
+            elif args.open_project_list:
+                choice = choose_existing_project()
+                chosen_project=open_project(choice)
+
+            else:
+                exit('please check help and use a correct flag')
+        elif args.command == 'shots':
+            # pass data to shots
+            if main_config.data['None']['appdata']['last_opened'] is not None:
+                project_config_data = ConfigData(main_config.data['None']['appdata']['last_opened']['config'])
+                chosen_project=open_project(project_config_data)
+            else:
+                choice = choose_existing_project()
+                chosen_project = open_project(choice)
+
+        
+            print('open shots')
+            return chosen_project
+    else:
+        print('no-args')
+
+
+        ###########################################
+        ############## No CLI args ################
+        ###########################################
+
+
+
+        project_choices = {
+            'Would you like to open an existing project?':choose_existing_project,
+            'Would you like to add an existing project?':add_existing_project,
+            'Would you like to create a new project?':create_project,
+        }
+
+        initial_project_choices = {
+            'Would you like to add an existing project?':add_existing_project,
+            'Would you like to create a new project?':create_project,
+        }
+        
+        if not (main_config.config.data['None']['appdata']['initialized']):
+            print('First time setup')
+            # ask about defaults
             if y_n_q('Do you want to always open the last opened project by default?'):
                 main_config.config.data['None']['appdata']['open_last']=True
             else:
                 main_config.config.data['None']['appdata']['open_last']=False
-            
+
             main_config.config.data['None']['appdata']['initialized']=True
             main_config.update_and_write_config()
 
-        elif args.init_only:
-            main_config.config.data['None']['appdata']['open_last']=False
-            main_config.config.data['None']['appdata']['initialized']=False
-            main_config.update_and_write_config()
-            exit()
-
-        elif args.default_project:
-            if main_config.data['None']['projects'] is not None:
-                proj_list = {}
-                for project in main_config.project_list:
-                    print(project)
-            else:
-                print('There are no projects saved to config!')
-                exit()
-
-        elif args.prune_projects:
-            new_project_list = []
-            print('the following projects no longer exist...')
-            for pr in main_config.project_list:
-                if not pathlib.Path(pr['path']).is_dir():
-                    print(f"removed <{pr['name']}> from project list...")
-                else:
-                    new_project_list.append(pr)
-            main_config.project_list = new_project_list
-            main_config.update_projects()
-            main_config.update_and_write_config()
-            exit()
-
-        elif args.move_projects:
-            '''
-            Move projects to a new location and update config
-            '''
-            move_project_args = args.move_projects
-            root_path = pathlib.Path(move_project_args.pop(0)).resolve()
-            projects = move_project_args
-            project_list = main_config.project_list
-            if len(project_list) == 0:
-                print('No projects saved')
-                exit()
-
-            # print(root_path.resolve())
-            # print(projects)
-            # pprint(project_list)
-            # print(projects)
-
-            original_project_paths = {}
-            updated_project_list = []
-            old_project_list = project_list
-            changed_projects = []
-
-            # Update current project list
-            for index, item in enumerate(project_list):
-                changed_project = {}
-                if item['name'] in projects:
-                    item['path']=pathlib.Path(root_path)/item['name']
-                    item['config']=pathlib.Path(root_path)/'.config/project_data.yml'
-                    changed_projects.append(project_list[index])
-            pprint(changed_projects)
-            main_config.project_list = project_list
-            main_config.update_projects()
-            #main_config.update_and_write_config()
-
-            for index, item in enumerate(changed_projects):
-                # print(item['path'])
-                # oldpath = None
-
-                for olditem in old_project_list:
-                    if olditem['name']==item['name']:
-                        oldpath = olditem['path']
-                        if item['path'].is_dir():
-                            print(item['path'])
-                            # shutil.move(str(oldpath),str(item['path']))
-                        else:
-                            print('make dir')
-                            print(item['path'])
-                            item['path'].mkdir()
-                            # shutil.move(str(oldpath),str(item['path']))
-                project_data = ProjectSetup()
-
-            exit()
-    elif args.command == 'create-projects':
-        if args.path_project:
-            path_project_args = args.path_project
-            root_path = pathlib.Path(path_project_args.pop(0))
-            print(f'Creating projects in {root_path.absolute()}')
-            project_name_list = []
-            for pr in main_config.project_list:
-                project_name_list.append(pr['name'])
-            
-            for i, item in enumerate(path_project_args):
-                p = pathlib.Path(root_path).joinpath(item).resolve()
-                if not p.is_dir():
-                    print(f'Creating project <{p.name}> at: {p.absolute()}')
-                    create_project(p.name,root_path.absolute())
-                else:
-                    print(f'{p.name} is already a directory!')
-                    # TODO impliment check for valid projects
-                    config_path = pathlib.Path(p)/'.config/project_data.yml'
-                    if config_path.is_file():
-                        print('and a Valid Project')
-                        if item not in project_name_list:
-                            print('project not in config')
-                            if y_n_q('Do you wish to add it?'):
-                                existing_project_config = ConfigData(config_path)
-                                existing_project_data = ProjectData()
-                                existing_project_data.update_from_dict(existing_project_config.data)
-                                main_config.add_project(existing_project_data.main_config_list_data())
-                                main_config.update_and_write_config()
-                    else:
-                        if y_n_q('Do you want to create project in folder anyway?'):
-                            create_project(p.name,root_path.absolute())
-
-            exit()
-        elif args.gui_project:
-            project_name = set_project_name()
-            path = choose_dir_gui()
-            create_project(project_name,path)
-            exit()
-        elif args.cwd_project:
-            path_project_args = args.cwd_project
-            root_path = pathlib.Path(application_path)
-            print(f'Creating projects in {root_path}')
-            project_name_list = []
-            for pr in main_config.project_list:
-                project_name_list.append(pr['name'])
-            
-            for i, item in enumerate(path_project_args):
-                p = pathlib.Path(root_path).joinpath(item).resolve()
-                if not p.is_dir():
-                    print(f'Creating project <{p.name}> at: {p.absolute()}')
-                    create_project(p.name,root_path.absolute())
-                else:
-                    print(f'{p.name} is already a directory!')
-                    # TODO impliment check for valid projects
-                    config_path = pathlib.Path(p)/'.config/project_data.yml'
-                    if config_path.is_file():
-                        print('and a Valid Project')
-                        if item not in project_name_list:
-                            print('project not in config')
-                            if y_n_q('Do you wish to add it?'):
-                                existing_project_config = ConfigData(config_path)
-                                existing_project_data = ProjectData()
-                                existing_project_data.update_from_dict(existing_project_config.data)
-                                main_config.add_project(existing_project_data.main_config_list_data())
-                                main_config.update_and_write_config()
-                    else:
-                        if y_n_q('Do you want to create project in folder anyway?'):
-                            create_project(p.name,root_path.absolute())
-
-
-    elif args.command == 'add-projects':
-            # while True:
-            #     try:
-            #         if p.is_dir():
-            #             print(f'<{p}> is a directory!')
-            #             break
-            #         else:
-            #             raise NotADirectoryError
-            #     except NotADirectoryError:
-            #         print(f'<{p}> is not a directory...')
-            #         continue
-
-        pass
-    elif args.command == 'open-project':
-        pass
-    elif args.command == 'shots':
-        pass
-    
-    
-    print(args)
-    
-
-            
-            
-    #         add_existing_project(p)
-    # # /home/ben/dev/Aces_Stuff/Pysoma/app/tt /home/ben/dev/Aces_Stuff/Pysoma/app/ff
-    # if args.gui_project:
-    #     print('gui')
-    #     pp = choose_dir_gui()
-    #     add_existing_project(pp)
-    
-    ###########################################
-    ############## No CLI args ################
-    ###########################################
-
-
-    
-    project_choices = {
-        'Would you like to open an existing project?':choose_existing_project,
-        'Would you like to add an existing project?':add_existing_project,
-        'Would you like to create a new project?':create_project,
-    }
-
-    initial_project_choices = {
-        'Would you like to add an existing project?':add_existing_project,
-        'Would you like to create a new project?':create_project,
-    }
-    
-    if not (main_config.config.data['None']['appdata']['initialized']):
-        print('First time setup')
-        # ask about defaults
-        if y_n_q('Do you want to always open the last opened project by default?'):
-            main_config.config.data['None']['appdata']['open_last']=True
-        else:
-            main_config.config.data['None']['appdata']['open_last']=False
-        
-        main_config.config.data['None']['appdata']['initialized']=True
-        main_config.update_and_write_config()
-        
-        # first project stuff
-        chosen_project = open_project(user_choice_list(initial_project_choices))
-
-    elif main_config.config.data['None']['appdata']['last_opened'] is not None and main_config.config.data['None']['appdata']['open_last']:
-        print('opening last opened project')
-        chosen_project=open_project(get_last_opened())
-    else:
-        if main_config.config.data['None']['projects'] is None:
-            print('There are no projects saved')
+            # first project stuff
             chosen_project = open_project(user_choice_list(initial_project_choices))
+
+        elif main_config.config.data['None']['appdata']['last_opened'] is not None and main_config.config.data['None']['appdata']['open_last']:
+
+            #print('the following projects no longer exist...')
+
+            if not pathlib.Path(main_config.last_opened['path']).is_dir():
+                print('the saved last opened project no longer exists...')
+                print(f"removed <{main_config.last_opened['name']}> from project list...")
+                main_config.update_last_opened(None)
+                if main_config.config.data['None']['projects'] is None:
+                    print('There are no projects saved')
+                    chosen_project = open_project(user_choice_list(initial_project_choices))
+                else:
+                    print('There are projects saved in your config')
+                    chosen_project = open_project(user_choice_list(project_choices))
+                return chosen_project
+            else:
+                print('opening last opened project')
+                chosen_project=open_project(get_last_opened())
         else:
-            print('There are projects saved in your config')
-            chosen_project = open_project(user_choice_list(project_choices))
-    return chosen_project
+            if main_config.config.data['None']['projects'] is None:
+                print('There are no projects saved')
+                chosen_project = open_project(user_choice_list(initial_project_choices))
+            else:
+                print('There are projects saved in your config')
+                chosen_project = open_project(user_choice_list(project_choices))
+        return chosen_project
 
 
 
@@ -2279,65 +2709,6 @@ def projects_init_main() -> ConfigData:
 shots_list = []
 shot_env_dict = {}
 
-def create_shot():
-    '''
-    Check if first shot folder exists, if not, create it. If folders exists count them and create a new one incremented
-    '''
-
-    #ensure top-level 'shots' exists
-    #top_level_shot = Path(Path(Path.cwd().parent)) / "Main_Project/shots"
-    #TODO fix this
-    top_level_shot = Path(env_dict['PROJECT_ROOT']) / "Shots"
-    if not Path.is_dir(top_level_shot):
-        Path.mkdir(top_level_shot)
-
-    #case 1 - creating first shot directory
-    first_shot_n = Path(top_level_shot)/'shot_1'
-    if not Path.is_dir(first_shot_n):
-        Path.mkdir(first_shot_n)
-        shot_subfolders = create_shot_subfolders(first_shot_n)
-
-
-        print(f'{first_shot_n.name} created...')
-        
-        add_to_dict_and_arr('SHOT_ROOT',first_shot_n)
-        
-        #shot_env_var_init(first_shot_n,shot_subfolders)
-        print(f"\'{first_shot_n}\' created along with resource dirs.")
-        return shot_subfolders, first_shot_n
-    #case 2 - creating any subsequent shot directory
-    else:
-        shot_n = first_shot_n
-        #skip existing shot directories...
-        while Path.is_dir(shot_n):
-            try:
-                shot_name = shot_n.name
-                #incremented_number = int(shot_n.name.parts[1].split('_')[1])+1
-                incremented_number = int(shot_name.split('_')[1])+1
-                updated_shot_n = shot_n.parts[2].replace(shot_n.parts[2].split('_')[1],str(incremented_number))
-                shot_n = Path.joinpath(Path(shot_n.parts[1]), Path(updated_shot_n))
-                shot_n = Path("./Main_Project")/shot_n
-            except:
-                raise Exception("!! couldn't increment appended folder number")
-
-        #make the new shot directory...
-        Path.mkdir(shot_n)
-        shots_list.append(shot_n)
-        #create resources for the new shot directory
-        shot_subfolders = create_shot_subfolders(shot_n)
-        
-        add_to_dict_and_arr('SHOT_ROOT',shot_n)
-
-        
-
-        # if y_n_q("would you like to open newly created shot?"):
-        #     open_shot(shot_n)
-        # else:
-        #     shotlist = subdir_list(top_level_shot)
-        #     print(shotlist)
-        
-        print(f"\'{shot_n}\' created along with resource dirs.")
-        return shot_subfolders, shot_n
 
 #endregion
 #region Open Shot
@@ -2358,24 +2729,6 @@ def get_resource_paths(curr_path):
 
 #endregion
 
-def subdir_list(path):
-
-    shots_only=[]
-    sorted_shots=[]
-    sorted_shot_names=[]
-    shot_name_list=[]
-    if any(Path(path).iterdir()):
-
-        for p in Path(path).iterdir():
-            if p.is_dir():
-                shot_name_list.append(p.name)
-        shots_only = [x for x in shot_name_list if re.match(r"^shot_\d+$", x)]
-        sorted_shot_names = sorted(shots_only,key=lambda x: x.split('_')[1])
-        #print(f'sorted shots::: {sorted_shot_names}')
-        for p in sorted_shot_names:
-            np = pathlib.Path(path)/p
-            sorted_shots.append(np)
-    return sorted_shots
 
 def choose_shot(pathlist):
     '''
@@ -2558,18 +2911,108 @@ def open_shot(path):
     #add_dirlist_to_dict(reslist,'')
     
     for i in reslist:
-        
+
         sublist = []
         print(i.name)
         for k in i.iterdir():
             if k.is_dir():
                 print(f'...........{k.name}')
                 sublist.append(k)
-    
-    
+
     # shot_env_dict(path,subdir_list)
     #shot_env_var_init(path,reslist)
+#region SHOT MAIN
+def shot_main(project_data: tuple):
+    # helper funcs
+    print(project_data)
+    def open_shot(shot_actions):
+        print('open_shot')
+        action = shot_actions
+        shot_data = action()
+        houdini_data = HouData(shot_data)
+        #pprint(vars(shot_data.shot_config))
 
+
+    def choose_shot() -> ShotData:
+        print('choose shot')
+        shot_name_list = [x for x in project_data.data['None']['shot_list'].name]
+        print(shot_name_list)
+        #choice = user_choice_from_list(project_data.data['None']['shot_list'])
+        pass
+    
+
+    def create_new_shot() -> ShotData:
+        shot_data = ShotData(project_data[0])
+        while True:
+            shot_data.create_shot()
+            if y_n_q('Would you like to open newly created shot?'):
+                break
+            else:
+                continue
+
+        return shot_data
+
+    
+
+    opened_shot_data = None
+    # ARGS
+    if args.command is not None:
+        if args.command == 'shots':
+            if args.open_shot:
+                print(args.open_shot)
+            elif args.create_shot:
+                print(args.create_shot)
+        else:
+            pass
+    else:
+        ###################################################
+        #################     NO ARGS    ##################
+        ###################################################
+        shot_choices = {
+            'Would you like to create a new shot?':create_new_shot,
+            'Would you like to open an existing shot?':choose_shot,
+        }
+        #print('no commands')
+        #pprint(project_data.data)
+        if project_data.data['None']['shot_list'] is not None:
+            # create new shot or open existing shot
+            print('shots exist')
+
+            shot_decision = open_shot(user_choice_from_list(shot_choices))
+
+
+        else:
+            # create new shot
+            print('no shots exist')
+            
+            # initialize
+            if project_data.data['None']['initialized'] is None or project_data.data['None']['initialized'] is False:
+                if y_n_q('Do you want to always open the last opened shot by default?'):
+                    project_data.data['None']['open_last_shot']=True
+                else:
+                    main_config.config.data['None']['open_last_shot']=False
+                project_data.data['None']['initialized']=True
+                project_data.write_file()
+                project_data.refresh()
+            else:
+                if project_data.data['None']['open_last_shot'] is True:
+                    # if shot list is null
+                    if project_data.data['None']['shot_list'] is None:
+                        opened_shot_data = create_new_shot()
+
+                    # choose shot
+                    # if shot doesn't exist
+                else:
+                    # if shot list is null
+                    if project_data.data['None']['shot_list'] is None:
+                        pass
+                    else:
+                        pass
+                    # create new shot or pick one
+
+
+
+#endregion
 #region Houdini file
 
 hip_file_ext = [
@@ -2694,128 +3137,13 @@ def houdini_file_main():
 
 
 
-def main(project_data):
-    # global env_dict
-    global parser
-
-    #projects_init_main()
-    # fix app dir for compile
-    #env_path = pathlib.Path()/'.config/config.env'
-    # CLI stuff
-    # switches = [i for i in sys.argv if re.match(r'^-[A-Za-z]+$',i)]
-    # args_kwargs = [i for i in sys.argv if not re.match(r'^-[A-Za-z]+$', i)]
-    # cli_check(switches,args_kwargs)
-    #print(f'root dir:: {pathlib.Path.root}')
-    # get the arguments value
-    if args.init:
-
-        print('Forcing Initialization')
-        # 3rd party software
-        #project_name_setup()
-        choose_proj_dir()
-
-        indie_check()
-        redshift_main()
-        # initialize
-
-        # Shot stuff
-        shot_decision()
-        #houdini setup
-        houdini_file_main()
-        # config files
-        
-        create_config_files(env_dict)
-        # open houdini
-        houdini_main()
-    elif args.init_only:
-
-        print('Forcing Initialization, not opening Houdini...')
-        #project_name_setup()
-        choose_proj_dir()
-        # 3rd party software
-        indie_check()
-        redshift_main()
-        # initialize
-
-        # Shot stuff
-        shot_decision()
-        #houdini setup
-        houdini_file_main()
-        # config files
-        create_config_files(env_dict)
-
-    elif args.load_last:
-
-        print('Loading last opened file')
-        env_vars = env_from_file(env_path)
-        #result = [list(unpack(x)) for x in env_vars]
-        #result = depth(env_vars,1)
-        #TODO use flatdict in houdini setup
-        result = dict(unpack_dotenv(env_vars))
-        
-
-        
-        #pprint(result)
-        houdini_main()
-    elif args.info:
-    
-        # from rich.console import Console
-        # from rich.markdown import Markdown
-        # print('man page')
-        f = pathlib.Path(pathlib.Path.cwd())/'app/doc/info.md'
-        with open(str(f), "r+") as help_file:
-            #Console.print(help_file,soft_wrap=True)
-            contents = help_file.read()
-            print(contents)
-            # Console.push_render_hook(Console,RENDER)
-            # Console.print(contents,soft_wrap=True)
-            # Console.pop_render_hook()
-        help_file.close()
-        quit()
-    else:
-        if not (check_init(env_path)):
-
-            choose_proj_dir()
-            # 3rd party software
-            indie_check()
-            redshift_main()
-            # initialize
-
-            # Shot stuff
-            shot_decision()
-            #houdini setup
-            houdini_file_main()
-            # config files
-            create_config_files(env_dict)
-            # open houdini
-            houdini_main()
-
-        else:
-            
-            env_vars = env_from_file(env_path)
-            #result = [list(unpack(x)) for x in env_vars]
-            #result = depth(env_vars,1)
-            #TODO use flatdict in houdini setup
-            dotenvdict = dict(unpack_dotenv(env_vars))
-            
-
-            
-            #pprint(env_dict)
-
-            # Shot stuff
-            shot_decision()
-            #houdini setup
-            houdini_file_main()
-            # config files
-            create_config_files(env_dict)
-            # open houdini
-            houdini_main()
-
+def main():
+    opened_project = projects_init_main()
+    shot_data = shot_main(opened_project)
 
 if __name__ == "__main__":
-    projects_init_main()
-    #main()
-    #pass
+    main()
+
 
 #endregion
 #endregion

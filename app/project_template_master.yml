@@ -811,8 +811,8 @@ None:
   shot_subdir_data:
     name: shot_n
     path:
-    env:
-    h_env:
+    env: 
+    h_env: JOB
     files: README.md
     gitkeep: True
     parent: shots
@@ -820,26 +820,17 @@ None:
     - shot_config_dir:
       name: .config
       path:
-      env:
+      env: 
       h_env:
       files: README.md
       gitkeep: True
       parent:
-      children: *geo_subdir_data
-    - shot_maya_dir:
-      name: maya
-      path:
-      env:
-      h_env:
-      files: README.md
-      gitkeep: True
-      parent:
-      children: 
+      children:
     - geo_dir:
       name: geo
       path:
-      env:
-      h_env:
+      env: GEO
+      h_env: 
       files:
       gitkeep: True
       parent:
@@ -856,8 +847,8 @@ None:
     - hip_dir:
       name: hip
       path:
-      env:
-      h_env:
+      env: 
+      h_env: HIP
       files:
       gitkeep: True
       parent:
@@ -865,8 +856,8 @@ None:
     - render_dir:
       name: render
       path:
-      env:
-      h_env:
+      env: RENDER
+      h_env: 
       files:
       gitkeep: True
       parent:
@@ -874,7 +865,7 @@ None:
     - texture_dir:
       name: texture
       path:
-      env:
+      env: TEXTURE
       h_env:
       files:
       gitkeep: True
@@ -883,7 +874,7 @@ None:
     - blend_dir:
       name: blend
       path:
-      env:
+      env: BLEND
       h_env:
       files:
       gitkeep: True
@@ -892,7 +883,7 @@ None:
     - assets_dir:
       name: assets
       path:
-      env:
+      env: ASSETS
       h_env:
       files:
       gitkeep: True
@@ -928,7 +919,7 @@ None:
     - lookdev_dir:
       name: lookdev
       path:
-      env:
+      env: LD
       h_env:
       files:
       gitkeep: True
