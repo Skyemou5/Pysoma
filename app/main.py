@@ -2219,7 +2219,7 @@ def projects_init_main() -> tuple:
         if name is None and root_path is None:
             new_project_config = ConfigData(project_data.config)
 
-            return new_project_config, project_data
+            return new_project_config
         # pprint(vars(project_data))
 
     def add_existing_project(project_path=None) -> tuple:
@@ -2280,7 +2280,7 @@ def projects_init_main() -> tuple:
         main_config.update_last_opened(project_data_obj.main_config_list_data())
         main_config.update_and_write_config()
         #pprint(vars(project_data_obj))
-        return project_data, project_data_obj
+        return project_data
 
     def user_choice_list(choice_dict:dict) -> ConfigData:
         while True:
@@ -2294,17 +2294,18 @@ def projects_init_main() -> tuple:
         return project_choice_data
 
     def get_last_opened():
-`gi`
+
         last_opened_data = main_config.data['None']['appdata']['last_opened']
         project_config_data = ConfigData(last_opened_data['config'])
         project_data = ProjectData()
         project_data.update_from_dict(project_config_data.data)
         #pprint(vars(project_data))
         return project_config_data
-    
+
     ###########################################
     ################ CLI args #################
     ###########################################
+
     chosen_project = None
     #print(args.command)
     if args.command is not None:
@@ -2341,7 +2342,6 @@ def projects_init_main() -> tuple:
                     for i, item in enumerate(main_config.project_list):
                         print(f'{i+1} : <{item["path"]}>')
                     exit()
-
 
 
             elif args.rescan_dirs:
@@ -2922,7 +2922,7 @@ def open_shot(path):
     # shot_env_dict(path,subdir_list)
     #shot_env_var_init(path,reslist)
 #region SHOT MAIN
-def shot_main(project_data: tuple):
+def shot_main(project_data):
     # helper funcs
     print(project_data)
     def open_shot(shot_actions):
@@ -2942,7 +2942,7 @@ def shot_main(project_data: tuple):
     
 
     def create_new_shot() -> ShotData:
-        shot_data = ShotData(project_data[0])
+        shot_data = ShotData(project_data)
         while True:
             shot_data.create_shot()
             if y_n_q('Would you like to open newly created shot?'):

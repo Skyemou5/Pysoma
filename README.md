@@ -14,28 +14,35 @@ This was developed for my needs during my senior project using Houdini with a sm
 
 # TODO
 
-- Refactor main file into a library to clean up code
-- Build standalone app for each platform
-- add support for choosing houdini versions - currently 18.5.759 is hardcoded in for my project
-- refactor to properly serialize data with yaml and only use env files for enviornments
-- Implement unit testing
-- Implement project scanning
-- refactor print statements for an actual logging system
-- impliment CLI tool that lets you specify a YAML file to use a project template
+- [ ] Refactor main file into a library to clean up code
+- [ ] Build standalone app for each platform
+- [ ] add support for choosing houdini versions - currently 18.5.759 is hardcoded in for my project
+- [ ] refactor to properly serialize data with yaml and only use env files for enviornments
+- [ ] Implement unit testing
+- [ ] Implement project scanning
+- [ ] refactor print statements for an actual logging system
+- [ ] impliment CLI tool that lets you specify a YAML file to use a project template
+- [ ] create better documentation
+
 
 # Roadmap
-- add support for game projects with unity and unreal and possibly godot
-- add support for houdini engine and respective game engines
-- add hou.py configuration for opening houdini projects
-  - new file
-  - default node setup
-- possible branch project name pyrasoma?
-- possibly rewrite in rust
-- add support for houdini package management
-- refactor data to json
-- add data manager to edit json defaults
-- use yaml for configuration
-- Add database for viewing assets in project and dependencies
+- [ ] add support for game projects with unity and unreal and possibly godot
+- [ ] add support for houdini engine and respective game engines
+- [ ] add hou.py configuration for opening houdini projects
+  - [ ] new file
+  - [ ] default node setup
+- [ ] possible branch project name pyrasoma?
+- [ ] possibly rewrite in rust
+- [ ] add support for houdini package management
+- [x] use yaml for configuration
+- [ ] Add database for viewing assets in project and dependencies
+- [ ] add tool for setting up project templates
+- [ ] add integration with version control
+- [ ] tightly integrate USD
+- [ ] network support
+- [ ] support renderfarm setups
+- [ ] tool for documenting project
+- [ ] project report generator
 
 
 
