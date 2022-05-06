@@ -2899,7 +2899,7 @@ def open_shot(path):
     '''
     after user has confirmed shot folder do this...
     '''
-    env_dict['SHOT_ROOT']=path
+    # env_dict['SHOT_ROOT']=path
     reslist = []
     #print(path)
     subdir_list = get_resource_paths(path)
@@ -2935,7 +2935,7 @@ def shot_main(project_data):
 
     def choose_shot() -> ShotData:
         print('choose shot')
-        shot_name_list = [x for x in project_data.data['None']['shot_list'].name]
+        shot_name_list = [x for x in project_data.data['None']['shot_list']]
         print(shot_name_list)
         #choice = user_choice_from_list(project_data.data['None']['shot_list'])
         pass
@@ -2984,7 +2984,7 @@ def shot_main(project_data):
         else:
             # create new shot
             print('no shots exist')
-            
+
             # initialize
             if project_data.data['None']['initialized'] is None or project_data.data['None']['initialized'] is False:
                 if y_n_q('Do you want to always open the last opened shot by default?'):
