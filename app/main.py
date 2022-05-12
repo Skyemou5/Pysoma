@@ -3140,6 +3140,7 @@ def houdini_file_main():
 def main():
     opened_project = projects_init_main()
     shot_data = shot_main(opened_project)
+    # houdini main
 
 if __name__ == "__main__":
     main()
