@@ -1,0 +1,28 @@
+None:
+  appdata:
+    initialized: true
+    open_last: true
+    last_opened: null
+  houdini_versions:
+  - '18.5':
+    - '759':
+        linux: /opt/hfs18.5.759
+        mac: /Applications/Houdini18.5.759
+        win: C:\\Program\ Files\\Side\ Effects\ Software\\Houdini\ 18.5.75
+  renderers:
+  - name: 3Delight
+    ACES: null
+    env: null
+    path: null
+  - name: redshift
+    ACES: null
+    env:
+      HOUDINI_DSO_ERROR: 2
+    paths:
+      linux: /usr/redshift/bin
+      mac: /Applications/redshift/redshift4houdini/
+      win: C:\\ProgramData\\Redshift\\bin
+  projects:
+  - name: test
+    path: /home/ben/dev/Pysoma/testprojects/test
+    config: /home/ben/dev/Pysoma/testprojects/test/.config/project_data.yml

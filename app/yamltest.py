@@ -38,11 +38,6 @@ template_file = pathlib.Path(application_path)/'project_template.yml'
 def read_yaml(path):
     """ A function to read YAML file"""
     result = {}
-    with path.open() as f:
-        config = yaml.load_all(f,Loader=yaml.FullLoader)
-        for d in config:
-            for k, v in d.items():
-                result[k]=v
     return result
 
 

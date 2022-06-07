@@ -57,11 +57,11 @@ def unpack_dotenv(env_d):
     result = flatdict.FlatDict(env_d,delimiter=':')
     return result
 
-def env_from_file(path):
-    #env_file = pathlib.Path(pathlib.Path.cwd())/'.config/config.env'
-    dict_var = dotenv_values(path)
-    #print(dict_var)
-    return dict_var
+# def env_from_file(path):
+#     #env_file = pathlib.Path(pathlib.Path.cwd())/'.config/config.env'
+#     dict_var = dotenv_values(path)
+#     #print(dict_var)
+#     return dict_var
 
 def houdini_env_setup(d):
     os.environ['JOB']=d['SHOT_ROOT']
