@@ -817,6 +817,15 @@ None:
     gitkeep: True
     parent: shots
     children:
+    - audio_dir:
+      name: audio
+      path:
+      env: 
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children:
     - shot_config_dir:
       name: .config
       path:

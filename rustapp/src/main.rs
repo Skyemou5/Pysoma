@@ -1,8 +1,8 @@
 // use std::path::PathBuf;
 use std::io;
 // use std::env;
-
-
+extern crate yaml_rust;
+use yaml_rust::{YamlLoader, YamlEmitter};
 
 
 
@@ -15,6 +15,6 @@ fn yes_no_question(question: &str) {
 
 
 fn main() {
-    yes_no_question("this is a question")
+    //yes_no_question("this is a question")
     //println!("{:?}", std::env::current_exe());
 }

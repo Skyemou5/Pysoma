@@ -3,37 +3,23 @@
 #region HEADER
 
 import argparse
-import array
-import collections
-import contextlib
-import fnmatch
-import functools
 import glob
 import json
-import operator
 import os
 import pathlib
 import pprint
-
 import re
 import shutil
-from sqlite3 import DataError
-
 import sys
-
+import sqlite3
 import tkinter as tk
-from array import ArrayType
-from curses import nonl
-from dataclasses import asdict, astuple, dataclass
-from functools import lru_cache, reduce
-from importlib.resources import path
-from itertools import chain, repeat
 from pathlib import Path, PurePath
 #########################################
 #########################################
 #########################################
 from pprint import pprint
 from pydoc import resolve
+from sqlite3 import DataError
 from sys import platform, stderr, stdout
 from telnetlib import EXOPL
 from textwrap import indent
@@ -46,8 +32,8 @@ import dump_env
 import ruamel.yaml
 from ruamel.yaml import YAML, yaml_object
 from yamlize import Object
-import lib.flatdict as flatdict
 
+import lib.flatdict as flatdict
 
 ##########################################
 ##########################################
