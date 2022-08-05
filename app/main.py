@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 #region HEADER
 
 import argparse
@@ -14,9 +13,11 @@ import sys
 import sqlite3
 import tkinter as tk
 from pathlib import Path, PurePath
-#########################################
-#########################################
-#########################################
+
+#####################################################
+#####################################################
+#####################################################
+
 from pprint import pprint
 from pydoc import resolve
 from sqlite3 import DataError
@@ -34,16 +35,16 @@ from ruamel.yaml import YAML, yaml_object
 from yamlize import Object
 
 import lib.flatdict as flatdict
-
-##########################################
-##########################################
-##########################################
+import pysoma_lib as pys
+##############################################
+##############################################
+##############################################
 #endregion
 #region VARIABLES
 
-##############################
-############ VARS ############
-##############################
+#######################################
+################ VARS #################
+#######################################
 
 ######## Default Hou paths #########
 # Linux houdini_setup_bash         #
@@ -2257,7 +2258,7 @@ def projects_init_main() -> tuple:
         # pprint(main_config.data)
         # pprint(project_data.data)
 
-    def open_project(project_data: ProjectData) -> tuple:
+    def open_project(project_data: ProjectData):
         #pprint(project_data.data)
         #pprint(main_config.data)
         print(f'Opening project <{project_data.data["None"]["name"]}> .......')
@@ -2265,14 +2266,16 @@ def projects_init_main() -> tuple:
         project_data_obj.update_from_dict(project_data.data)
         main_config.update_last_opened(project_data_obj.main_config_list_data())
         main_config.update_and_write_config()
-        #pprint(vars(project_data_obj))
+        # pprint(vars(project_data_obj))
         return project_data
 
     def user_choice_list(choice_dict:dict) -> ConfigData:
+        print(f'choice dict: {choice_dict}')
         while True:
             project_choice_action = user_choice_from_list(choice_dict)
+            print(project_choice_action)
             project_choice_data = project_choice_action()
-            #pprint(project_choice_data.data)
+            # pprint(project_choice_data.data)
             if y_n_q(f'Do you want to open <{project_choice_data.data["name"]}>'):
                 break
             else:
@@ -2671,6 +2674,7 @@ def projects_init_main() -> tuple:
                 chosen_project = open_project(user_choice_list(initial_project_choices))
             else:
                 print('There are projects saved in your config')
+                #TODO: fix this open project thing
                 chosen_project = open_project(user_choice_list(project_choices))
         return chosen_project
 
@@ -2782,12 +2786,14 @@ def user_choose_shot(list):
 
 def shot_decision():
     #TODO refactor into while lop with try except
+
     '''
     Asks user if they want to create a new shot or open an existing shot
     if they want to open an existing shot and no shot exists it is created and automatically opened
     if they created a new shot, the shot folder number is automatically incrimented
     then they are asked which shot to open
     '''
+
     shots_root = pathlib.Path(env_dict['PROJECT_ROOT'])/'Shots'
     shot_root_empty = no_subdirs(shots_root)
     shot_choice_path = ''
@@ -2861,7 +2867,6 @@ def shot_decision():
                             shot_choice = choose_shot(shotlist)
                             if (shot_choice[1] == False):
                                 print(shot_choice[1])
-                                
                                 continue
                             elif (shot_choice[1] == True):
                                 print(f'shot choice:: {shot_choice[0]} ')
@@ -2938,7 +2943,7 @@ def shot_main(project_data):
 
         return shot_data
 
-    
+
 
     opened_shot_data = None
     # ARGS
@@ -3125,7 +3130,8 @@ def houdini_file_main():
 
 def main():
     opened_project = projects_init_main()
-    shot_data = shot_main(opened_project)
+    print(opened_project)
+    # shot_data = shot_main(opened_project)
     # houdini main
 
 if __name__ == "__main__":
