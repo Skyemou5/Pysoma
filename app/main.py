@@ -2914,6 +2914,7 @@ def open_shot(path):
     #shot_env_var_init(path,reslist)
 #region SHOT MAIN
 def shot_main(project_data):
+    # change
     # helper funcs
     print(project_data)
     def open_shot(shot_actions):
