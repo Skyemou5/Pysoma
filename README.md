@@ -1,3 +1,7 @@
+# Update
+I'm not currently working on this, however I am working on new version with a new name with someone else entirely in Rust. I will post an update once it's usable.
+
+
 # Pysoma
 A crossplatform Houdini project management and pipeline tool for smaller teams, students, and classrooms.
 
