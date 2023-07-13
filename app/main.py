@@ -22,7 +22,7 @@ from pprint import pprint
 from pydoc import resolve
 from sqlite3 import DataError
 from sys import platform, stderr, stdout
-from telnetlib import EXOPL
+# from telnetlib import EXOPL
 from textwrap import indent
 from turtle import up
 from typing import OrderedDict
