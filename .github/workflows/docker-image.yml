@@ -7,12 +7,25 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
+
+    - name: Build and push the Docker image
       run: docker build . --file Dockerfile --tag pysoma:$(date +%s)
+
+    - name: Create release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: release-$(date +%s)
+        release_name: Release $(date +%s)
+        body: |
+          Description of the release.
+          You can include release notes here.
+        draft: false
+        prerelease: false
