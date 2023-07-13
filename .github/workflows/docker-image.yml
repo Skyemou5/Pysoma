@@ -1,78 +1,42 @@
-name: Docker Image CI
+name: Build and Deploy
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-env:
-  IMAGE_NAME: pysoma
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Convert repository name to lowercase
-        id: lowercase_name
-        run: echo "NAME=$(echo ${GITHUB_REPOSITORY#*/} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
-      - name: Build and push the Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.NAME }}-${{ github.sha }}
-
-      - name: Save Docker image as tarball
-        run: docker save ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.NAME }}-${{ github.sha }} -o docker-image.tar
+          tags: your-image-tag
 
       - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
+        uses: actions/github-script@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: release-${{ github.sha }}
-          release_name: Release ${{ github.sha }}
-          body: |
-            Description of the release.
-            You can include release notes here.
-          draft: false
-          prerelease: false
+          script: |
+            const createRelease = async () => {
+              const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+              const { owner, repo } = github.context.repo;
+              const release = await octokit.repos.createRelease({
+                owner,
+                repo,
+                tag_name: 'v1.0',  # Replace with the desired release tag
+                name: 'Release 1.0',  # Replace with the desired release name
+                body: 'Release notes here'  # Replace with the desired release notes
+              });
+              console.log(`Created release: ${release.data.html_url}`);
+            };
 
-      - name: Upload Docker image as a release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./docker-image.tar
-          asset_name: docker-image.tar
-          asset_content_type: application/x-tar
-
-      - name: Zip source code
-        run: zip -r source-code.zip .
-      
-      - name: Upload source code as a release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./source-code.zip
-          asset_name: source-code.zip
-          asset_content_type: application/zip
+            createRelease();
