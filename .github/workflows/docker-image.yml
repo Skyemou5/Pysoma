@@ -21,6 +21,7 @@ jobs:
       run: echo "RELEASE_TAG=release-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
 
     - name: Create release
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,3 +33,13 @@ jobs:
           You can include release notes here.
         draft: false
         prerelease: false
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./path/to/your/docker_image.tar.gz
+        asset_name: docker_image.tar.gz
+        asset_content_type: application/gzip
