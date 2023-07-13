@@ -1958,7 +1958,8 @@ def user_choice_from_list(prompts_and_choices):
             print('-------------------')
             while True:
                 try:
-                    choice = int(input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: '))
+                    choice_first = input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: ')
+                    choice = int(choice_first)
                     if check_if_num_in_list(choice,choices_items):
 
                         if y_n_q(f'Is <{choice}> correct?'):

@@ -3,16 +3,18 @@
 FROM python:3.11.4
 
 #add files
+
+
 ADD requirements.txt .
-ADD main.py .
-ADD fix_compiled_path.py .
-ADD houdini_setup_linux.py .
-ADD houdini_setup_mac.py .
-ADD houdini_setup_shared.py .
-ADD houdini_setup_windows.py .
-ADD pysoma_lib.py .
-ADD main_config.yml .
-ADD project_template_master.yml .
+ADD /app/main.py ./app/
+ADD /app/fix_compiled_path.py ./app/
+ADD /app/houdini_setup_linux.py ./app/
+ADD /app/houdini_setup_mac.py ./app/
+ADD /app/houdini_setup_shared.py ./app/
+ADD /app/houdini_setup_windows.py ./app/
+ADD /app/pysoma_lib.py ./app/
+ADD /app/main_config.yml ./app/
+ADD /app/project_template_master.yml ./app/
 
 
 #install like from terminal  dependencies
@@ -31,7 +33,7 @@ VOLUME /host_files
 COPY main.py .
 
 
-
+CMD ls .
 #run as if in terminal
 CMD . /opt/venv/bin/activate && exec python main.py
 # CMD ["python", "./main.py"]

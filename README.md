@@ -92,6 +92,7 @@ optional arguments:
 # Setup
 
 easiest to set up with docker/podman
+creat requirements text `pip3 freeze > requirements.txt`
 run `podman build -t pysoma ./app/`
 
 or
