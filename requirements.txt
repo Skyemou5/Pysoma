@@ -21,6 +21,7 @@ requests==2.31.0
 ruamel.yaml==0.17.32
 ruamel.yaml.clib==0.2.7
 subx==2023.2.0
+telnetlib3==2.0.3
 urllib3==2.0.3
 yamlize==0.7.1
 yarg==0.1.9

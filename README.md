@@ -91,14 +91,25 @@ optional arguments:
 ---
 # Setup
 
+If you want to use source code and not the docker image make sure you create a virtual enviornment and then use the 
+`requirements.txt` to install the dependencies.
+
 easiest to set up with docker/podman
 creat requirements text `pip3 freeze > requirements.txt`
-run `podman build -t pysoma ./app/`
+run `podman build -t pysoma .`
+
+
 
 or
 
 download the image
 
+When running the docker image make sure you enable user input with the right flag
+
+`podman run -it pysoma`
+
+
+>[!NOTE] I recommend creating an alias for the docker container so you can run pysoma without typing out all the docker commands.
 
 # How it works
 
