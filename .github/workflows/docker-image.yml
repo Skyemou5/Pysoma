@@ -40,6 +40,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./path/to/your/docker_image.tar.gz
-        asset_name: docker_image.tar.gz
-        asset_content_type: application/gzip
+        asset_path: Dockerfile  # Reference the Dockerfile used to build the image
+        asset_name: Dockerfile
+        asset_content_type: application/octet-stream
