@@ -37,6 +37,9 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.NAME }}-${{ github.sha }}
 
+      - name: Save Docker image as tarball
+        run: docker save ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.NAME }}-${{ github.sha }} -o docker-image.tar
+
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -57,9 +60,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./docker-image.tar.gz
-          asset_name: docker-image.tar.gz
-          asset_content_type: application/gzip
+          asset_path: ./docker-image.tar
+          asset_name: docker-image.tar
+          asset_content_type: application/x-tar
 
       - name: Zip source code
         run: zip -r source-code.zip .
