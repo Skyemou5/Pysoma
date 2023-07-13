@@ -2,51 +2,34 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: set lower case owner name
-      run: |
-          echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
-        env:
-          OWNER: '${{ github.repository_owner }}'
-    - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Build and push the Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.sha }}
 
-    - name: Build and push the Docker image
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        push: true
-        tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+      - name: Convert image name to lowercase
+        id: lowercase_image_name
+        run: echo "::set-output name=image_name::$(echo ${{ github.event.repository.name }} | tr '[:upper:]' '[:lower:]')"
 
-    - name: Create release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: release-$(date +'%Y%m%d-%H%M%S')
-        release_name: Release ${{ github.sha }}
-        body: |
-          Description of the release.
-          You can include release notes here.
-        draft: false
-        prerelease: false
-
-    - name: Upload Docker image as a release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./docker-image.tar.gz
-        asset_name: docker-image.tar.gz
-        asset_content_type: application/gzip
+      - name: Build and push the Docker image with lowercase name
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ steps.lowercase_image_name.outputs.image_name }}:${{ github.sha }}
