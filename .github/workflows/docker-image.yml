@@ -18,18 +18,18 @@ jobs:
 
       - name: Convert repository owner to lowercase
         id: lowercase_owner
-        run: echo "::set-output name=owner::$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
+        run: echo "OWNER=$(echo ${GITHUB_REPOSITORY_OWNER} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Convert repository name to lowercase
         id: lowercase_name
-        run: echo "::set-output name=name::$(echo "${{ github.repository }}" | cut -d'/' -f2 | tr '[:upper:]' '[:lower:]')"
+        run: echo "NAME=$(echo ${GITHUB_REPOSITORY#*/} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Build and push the Docker image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ steps.lowercase_owner.outputs.owner }}/${{ steps.lowercase_name.outputs.name }}:${{ github.sha }}
+          tags: ghcr.io/${{ env.OWNER }}/${{ env.NAME }}:${{ github.sha }}
 
       - name: Create release
         uses: actions/create-release@v1
