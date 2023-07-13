@@ -6,3 +6,6 @@ env
 .vscode
 Release
 .temp.env
+/main.build
+main.bin
+/testprojects

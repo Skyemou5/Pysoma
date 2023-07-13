@@ -34,7 +34,8 @@ import ruamel.yaml
 from ruamel.yaml import YAML, yaml_object
 from yamlize import Object
 
-import lib.flatdict as flatdict
+#import lib.flatdict as flatdict
+import flatdict
 import pysoma_lib as pys
 ##############################################
 ##############################################
@@ -66,6 +67,11 @@ if getattr(sys, 'frozen', False):
     application_path = sys._MEIPASS
 else:
     application_path = os.path.dirname(os.path.abspath(__file__))
+
+def myfunc(argument, fish):
+    result = argument + 2
+    return result
+
 
 
 #endregion
@@ -2747,7 +2753,8 @@ def user_choose_shot(list):
     #result = ''
     while True:
         try:
-            choice = int(input('Please type the corresponding number of the shot you wish to open: '))
+            choice_one = input('Please type the corresponding number of the shot you wish to open: ')
+            choice = int(choice_one)
             result = check_if_num_in_list(choice,list)
             if (result == True):
                 print(f'You chose shot_{choice}')

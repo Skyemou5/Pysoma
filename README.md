@@ -89,6 +89,15 @@ optional arguments:
 ```
 
 ---
+# Setup
+
+easiest to set up with docker/podman
+run `podman build -t pysoma ./app/`
+
+or
+
+download the image
+
 
 # How it works
 
