@@ -1,42 +1,34 @@
-name: Build and Deploy
+name: Docker Image CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: your-image-tag
+    - name: Build and push the Docker image
+      run: docker build . --file Dockerfile --tag pysoma:$(date +%s)
 
-      - name: Create release
-        uses: actions/github-script@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          script: |
-            const createRelease = async () => {
-              const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-              const { owner, repo } = github.context.repo;
-              const release = await octokit.repos.createRelease({
-                owner,
-                repo,
-                tag_name: 'v1.0',  # Replace with the desired release tag
-                name: 'Release 1.0',  # Replace with the desired release name
-                body: 'Release notes here'  # Replace with the desired release notes
-              });
-              console.log(`Created release: ${release.data.html_url}`);
-            };
+    - name: Set up release tag
+      id: release_tag
+      run: echo "RELEASE_TAG=release-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
 
-            createRelease();
+    - name: Create release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.RELEASE_TAG }}
+        release_name: Release ${{ env.RELEASE_TAG }}
+        body: |
+          Description of the release.
+          You can include release notes here.
+        draft: false
+        prerelease: false
