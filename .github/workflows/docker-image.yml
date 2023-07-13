@@ -8,27 +8,27 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
     - name: Build and push the Docker image
-      run: |
-        docker build -t pysoma:$(date +%s) - <<EOF
-        FROM python:3.11.4
-        # Add your Dockerfile instructions here
-        EOF
+      run: docker build . --file Dockerfile --tag pysoma:$(date +%s)
+
+    - name: Set up release tag
+      id: release_tag
+      run: echo "RELEASE_TAG=release-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
 
     - name: Create release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: release-$(date +%s)
-        release_name: Release $(date +%s)
+        tag_name: ${{ env.RELEASE_TAG }}
+        release_name: Release ${{ env.RELEASE_TAG }}
         body: |
-          Pysoma docker image
+          Description of the release.
+          You can include release notes here.
         draft: false
         prerelease: false
