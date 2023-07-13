@@ -15,7 +15,11 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Build and push the Docker image
-      run: docker build . --file Dockerfile --tag pysoma:$(date +%s)
+      run: |
+        docker build -t pysoma:$(date +%s) - <<EOF
+        FROM python:3.11.4
+        # Add your Dockerfile instructions here
+        EOF
 
     - name: Create release
       uses: actions/create-release@v1
@@ -25,7 +29,6 @@ jobs:
         tag_name: release-$(date +%s)
         release_name: Release $(date +%s)
         body: |
-          Description of the release.
-          You can include release notes here.
+          Pysoma docker image
         draft: false
         prerelease: false
