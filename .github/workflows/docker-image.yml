@@ -21,7 +21,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.sha }}
+        tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
 
     - name: Create release
       uses: actions/create-release@v1
@@ -45,16 +45,3 @@ jobs:
         asset_path: ./docker-image.tar.gz
         asset_name: docker-image.tar.gz
         asset_content_type: application/gzip
-
-    - name: Zip source code
-      run: zip -r source-code.zip .
-      
-    - name: Upload source code as a release asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./source-code.zip
-        asset_name: source-code.zip
-        asset_content_type: application/zip
