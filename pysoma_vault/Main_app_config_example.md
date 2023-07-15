@@ -1,3 +1,8 @@
+
+#data
+---
+
+```yaml
 None:
   appdata:
     initialized: true
@@ -32,3 +37,5 @@ None:
   - name: test4
     path: /home/ben/dev/Pysoma/testprojects/test4
     config: /home/ben/dev/Pysoma/testprojects/test4/.config/project_data.yml
+
+```

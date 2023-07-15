@@ -56,6 +56,7 @@ import pysoma_lib as plib
 yaml = YAML()
 
 
+
 #endregion
 #region fix compile issues
 if getattr(sys, 'frozen', False):
@@ -68,10 +69,6 @@ if getattr(sys, 'frozen', False):
     application_path = sys._MEIPASS
 else:
     application_path = os.path.dirname(os.path.abspath(__file__))
-
-def myfunc(argument, fish):
-    result = argument + 2
-    return result
 
 
 
@@ -86,6 +83,11 @@ class NonAliasingRTRepresenter(ruamel.yaml.representer.RoundTripRepresenter):
 
 #yaml.representer = NonAliasingRTRepresenter
 
+hip_file_ext = [
+    'hip',
+    'hipnc',
+    'hiplc',
+]
 
 #region Check 3rd party software
 #region Redshift setup
@@ -517,13 +519,23 @@ def projects_init_main() -> tuple:
         project_data.initialized = False
         project_data.project_root = project_path
         project_data.name = project_name
-        # set houdini version
-        #print("Please type in the major houdini version. Ex: 18.5")
-        houdini_major = input("Please type in the major houdini version. Ex: 18.5: ")
-        houdini_minor = input("now the minor version: ex: 759: ")
+        
+        #region Set houdini version
+
+
+        project_data.houdini_major_version = "19.5"
+        project_data.houdini_minor_version = "605"
+        print(f'The houdini version is set to {project_data.houdini_major_version}.{project_data.houdini_minor_version}......')
+        if plib.y_n_q("Would you like to change the houdini version to use for this project?"):
+            houdini_major = input("Please type in the major houdini version. Ex: 18.5: ")
+            houdini_minor = input("now the minor version: ex: 759: ")
+            project_data.houdini_major_version = houdini_major
+            project_data.houdini_minor_version = houdini_minor
+
+        #endregion
+
+
         #print("now the minor version: ex: 759")
-        project_data.houdini_major_version = houdini_major
-        project_data.houdini_minor_version = houdini_minor
         project_data.shots = pathlib.Path(project_path)/'shots'
 
         project_data.houdini_install_path = main_config.get_hou_path(project_data)
@@ -546,7 +558,7 @@ def projects_init_main() -> tuple:
 
             return new_project_config
         # pprint(vars(project_data))
-
+    #TODO add houdini versions and paths if they don't exist. allow user to configure
     def add_existing_project(project_path=None) -> tuple:
 
         while True:
@@ -610,11 +622,15 @@ def projects_init_main() -> tuple:
     # def project_choice_action():
     #     print("project choice action")
 
+
+    #TODO fix project choice
     def user_choice_list(choice_dict:dict) -> plib.ConfigData:
+        #
+        
         print(f'choice dict: {choice_dict}')
         while True:
             project_choice_action = plib.user_choice_from_list(choice_dict)
-            print(project_choice_action)
+            # print(project_choice_action)
             project_choice_data = project_choice_action()
             # pprint(project_choice_data.data)
             if plib.y_n_q(f'Do you want to open <{project_choice_data.data["name"]}>'):
@@ -1021,6 +1037,7 @@ def projects_init_main() -> tuple:
         return chosen_project
 
 
+#TODO implement cleaning project list in config
 
 #endregion
 #endregion
@@ -1029,115 +1046,10 @@ def projects_init_main() -> tuple:
 #region Shot Main
 #region Houdini file
 
-hip_file_ext = [
-    'hip',
-    'hipnc',
-    'hiplc',
-]
 
 
-def list_proj_files(directory):
-    p = directory
-    file_list = []
-    choice_list = []
-    # for f in os.listdir(p):
-    #     print(f)
-    try:
-        for f in os.listdir(p):
-            if not f.startswith('.'):
-                
-                file_list.append(f)
-    except FileNotFoundError: 
-        print('No hip files found')
-    
-    for i in range(len(file_list)):
-        print(f'{i+1}:: {file_list[i]}')
-        choice_list.append(i+1)
-    print(choice_list)
-    return file_list           
-
-def choose_file(flist):
-    '''
-    displays number of choices user and input
-    '''
-    choices = []
-    choice = ''
-    for i in range(len(flist)):
-        print(f'{i+1} = {flist[i]}')
-        choices.append(i+1)
-    print(f'Choices:: {choices}')
-    choice = user_choose_file(choices)
-    return choice
-
-def user_choose_file(choices):
-    inner_confirm = True
-    confirm = False
-    choice = 0
-    while True:
-        try:
-            user_choice = int(input('Please select a corresponding number for the file you wish to open: ').lower())
-            #print(proj_list[user_choice])
-            result = check_if_num_in_list(user_choice,choices)
-            if(result == True):
-                print(f'You chose: {choices[user_choice-1]}')
-                while inner_confirm:
-                    try:
-                        #accepted_input = ['y','n']
-                        user_confirm = input(
-                            'Is this correct? y/n: '
-                        ).lower()
-                        if (user_confirm == 'y' or 'n'):
-                            if(user_confirm == 'y'):
-                                confirm = True
-                                inner_confirm = False
-                            elif(user_confirm == 'n'):
-                                confirm = False
-                                inner_confirm = False
-                            else:
-                                print('Invalid response, try again...')
-                                raise ValueError                          
-                        else:
-                            raise ValueError
-                    except ValueError:
-                        print('Invalid response, try again...')
-                        continue
-                if(confirm == True):
-                    break
-                elif(confirm == False):
-                    break
-            else:
-                print('Invalid response, try again...')
-                continue
-        except ValueError:
-            print('Invalid response, try again...')
-            continue
-    return choice, confirm
 
 
-def houdini_file_main():
-    hip_root = pathlib.Path(env_dict['HIP'])
-    proj_list = list_proj_files(hip_root)
-
-    if not (len(proj_list) == 0):
-        print(proj_list)
-        if(y_n_q('Do you want to open an existing file?')):
-            choice = choose_file(proj_list)
-            add_var_to_dict('OPEN_FILE',1)
-            #print(choice)
-            file_choice = proj_list[choice[0]]
-            print(f'You chose {file_choice} to open....')
-            add_var_to_dict('FILE_TO_OPEN',file_choice)
-            #choice = choose_file()
-        else:
-                add_var_to_dict('OPEN_FILE',0)
-                print('Create a new file after Houdini launches...')
-                add_var_to_dict('FILE_TO_OPEN','')
-                input('Press Enter to continue....')
-    else:
-        print('There are no project files in HIP directory, create one after houdini launches... \n')
-        add_var_to_dict('OPEN_FILE',0)
-        add_var_to_dict('FILE_TO_O/app/main.pyPEN','')
-        input('Press Enter to continue....')
 
 
 

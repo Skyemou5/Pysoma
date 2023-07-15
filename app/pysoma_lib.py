@@ -837,7 +837,9 @@ class ParseYamlLoad(object):
 class ConfigObject(object):
     def __init__(self) -> None:
         pass
+
     def convert_paths(self,data):
+        ### converts paths to strings
         temp_obj = data.copy()
         def traverse_data(data):
             for k,v in data.items():
@@ -851,6 +853,7 @@ class ConfigObject(object):
         traverse_data(temp_obj)
         return temp_obj
     def write_dotenv(self,data,path):
+        ### writes out enviornment file
         fp = Path(path)
         converted_data = self.convert_paths(data)
         flattened_data = flatten_dict(converted_data)
@@ -952,6 +955,7 @@ class ProjectParse(object):
         hou_vars = {}
         new_template = dict(self.project_template_config.data['None'])
         def process_dirs(data,path):
+            ### This method processes 
             nonlocal env_vars
             nonlocal hou_vars
             current_path = pathlib.Path(path).joinpath(data['name'])
@@ -1495,11 +1499,11 @@ class MainConfig(object):
                                     else:
                                         raise ValueError
                                 except ValueError:
-                                    exit('config likely has incorrect houdini versions')
+                                    exit('config likely has incorrect houdini versions, failed creating configs. Please delete and redo')
                     else:
                         raise ValueError
                 except ValueError:
-                    exit('config likely has incorrect houdini versions')
+                    exit('config likely has incorrect houdini versions, failed creating configs. Please delete and redo')
         return result
 
 
@@ -1919,5 +1923,110 @@ def shot_main(project_data):
 
 
 #endregion
+#region houdini helper funcs
 
+def list_proj_files(directory):
+    p = directory
+    file_list = []
+    choice_list = []
+    # for f in os.listdir(p):
+    #     print(f)
+    try:
+        for f in os.listdir(p):
+            if not f.startswith('.'):
+                
+                file_list.append(f)
+    except FileNotFoundError: 
+        print('No hip files found')
+    
+    for i in range(len(file_list)):
+        print(f'{i+1}:: {file_list[i]}')
+        choice_list.append(i+1)
+    print(choice_list)
+    return file_list           
+
+def choose_file(flist):
+    '''
+    displays number of choices user and input
+    '''
+    choices = []
+    choice = ''
+    for i in range(len(flist)):
+        print(f'{i+1} = {flist[i]}')
+        choices.append(i+1)
+    print(f'Choices:: {choices}')
+    choice = user_choose_file(choices)
+    return choice
+
+def user_choose_file(choices):
+    inner_confirm = True
+    confirm = False
+    choice = 0
+    while True:
+        try:
+            user_choice = int(input('Please select a corresponding number for the file you wish to open: ').lower())
+            #print(proj_list[user_choice])
+            result = check_if_num_in_list(user_choice,choices)
+            if(result == True):
+                print(f'You chose: {choices[user_choice-1]}')
+                while inner_confirm:
+                    try:
+                        #accepted_input = ['y','n']
+                        user_confirm = input(
+                            'Is this correct? y/n: '
+                        ).lower()
+                        if (user_confirm == 'y' or 'n'):
+                            if(user_confirm == 'y'):
+                                confirm = True
+                                inner_confirm = False
+                            elif(user_confirm == 'n'):
+                                confirm = False
+                                inner_confirm = False
+                            else:
+                                print('Invalid response, try again...')
+                                raise ValueError                          
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        print('Invalid response, try again...')
+                        continue
+                if(confirm == True):
+                    break
+                elif(confirm == False):
+                    break
+            else:
+                print('Invalid response, try again...')
+                continue
+        except ValueError:
+            print('Invalid response, try again...')
+            continue
+    return choice, confirm
+
+
+def houdini_file_main():
+    hip_root = pathlib.Path(env_dict['HIP'])
+    proj_list = list_proj_files(hip_root)
+
+    if not (len(proj_list) == 0):
+        print(proj_list)
+        if(y_n_q('Do you want to open an existing file?')):
+            choice = choose_file(proj_list)
+            add_var_to_dict('OPEN_FILE',1)
+            #print(choice)
+            file_choice = proj_list[choice[0]]
+            print(f'You chose {file_choice} to open....')
+            add_var_to_dict('FILE_TO_OPEN',file_choice)
+            #choice = choose_file()
+        else:
+                add_var_to_dict('OPEN_FILE',0)
+                print('Create a new file after Houdini launches...')
+                add_var_to_dict('FILE_TO_OPEN','')
+                input('Press Enter to continue....')
+    else:
+        print('There are no project files in HIP directory, create one after houdini launches... \n')
+        add_var_to_dict('OPEN_FILE',0)
+        add_var_to_dict('FILE_TO_O/app/main.pyPEN','')
+        input('Press Enter to continue....')
+
+#endregion
 

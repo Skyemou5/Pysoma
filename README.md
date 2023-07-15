@@ -1,5 +1,5 @@
 # Update
-I'm not currently working on this, however I am working on new version with a new name with someone else entirely in Rust. I will post an update once it's usable.
+I decided to come back to this to get it working then keep working on the other tool
 
 
 # Pysoma

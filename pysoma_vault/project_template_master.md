@@ -1,0 +1,1094 @@
+
+#data
+---
+```yaml
+# project dirs
+None:
+  post_app_subdir_data: &post_app_subdir_data
+    - fusion_dir:
+      name: Fusion
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - nuke_dir:
+      name: Nuke
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - resolve_dir:
+      name: Resolve
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - adobe_dir:
+      name: Adobe
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  tex_app_subdir_data: &tex_app_subdir_data
+    - affinity_dir:
+      name: Affinity
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - adobe_dir:
+      name: Adobe
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - krita_dir:
+      name: krita
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - gimp_dir:
+      name: Gimp
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - substance_dir:
+      name: Substance
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  audio_app_subdir_data: &audio_app_subdir_data
+    - pro_tools_dir:
+      name: Pro_Tools
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - ableton_dir:
+      name: Ableton
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - bitwig_dir:
+      name: Bitwig
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - reaper_dir:
+      name: Reaper
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - reason_dir:
+      name: Reason
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  comp_app_subdir_data: &comp_app_subdir_data
+    - fusion_dir:
+      name: Fusion
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - resolve_dir:
+      name: Resolve
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - nuke_dir:
+      name: Nuke
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - adobe_dir:
+      name: Adobe
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  edit_app_data: &edit_app_data
+    - resolve_dir:
+      name: resolve
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - adobe_dir:
+      name: adobe
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  audio_subdir_data: &audio_subdir_data
+    - sfx_dir:
+      name: SFX
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - music_dir:
+      name: Music
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - reference_dir:
+      name: reference
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - project_files_dir:
+      name: SFX
+      path:
+      env:
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children: *audio_app_subdir_data
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  post_tex_subdir_data: &post_tex_subdir_data
+    - data_tex_dir:
+      name: Data_Textures
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - alphas_dir:
+      name: Alphas
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - masks_dir:
+      name: Masks
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - pbr_dir:
+      name: PBR
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - pbr_dir:
+      name: PBR
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - grunge_dir:
+      name: Grunge
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - substance_dir:
+      name: Substance
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+      - sbr_dir:
+        name: sbr
+
+        path:
+        env:
+        h_env:
+        files:
+        gitkeep: True
+        parent:
+        children:
+    - project_files_dir:
+      name: Project_Files
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children: *post_app_subdir_data
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  src_subdir_data: &src_subdir_data
+    - blender_dir:
+      name: Blender
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - maya_dir:
+      name: Maya
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - zbrush_dir:
+      name: ZBrush
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - substance_dir:
+      name: Substance
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  geo_subdir_data: &geo_subdir_data
+    - fbx_dir:
+      name: FBX
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - obj_dir:
+      name: OBJ
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - houdini_dir:
+      name: Houdini
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - usd_dir:
+      name: USD
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - cache_dir:
+      name: cache
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  tex_subdir_data: &tex_subdir_data
+    - hdri_dir:
+      name: HDRI
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - imperfections_dir:
+      name: Imperfections
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - pbr_dir:
+      name: PBR
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - data_tex_dir:
+      name: Data_Textures
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - decals_dir:
+      name: Decals
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - substance_dir:
+      name: Substance
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - alphas_dir:
+      name: Alphas
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - masks_dir:
+      name: Masks
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - grunge_dir:
+      name: Grunge
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  assets_subdir_data: &assets_subdir_data
+    - src_dir:
+      name: SRC
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - geo_dir:
+      name: GEO
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - blend_dir:
+      name: Blend
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - texture_dir:
+      name: Texture
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - hda_dir:
+      name: HDA
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - pdg_dir:
+      name: PDG
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - usd_dir:
+      name: USD
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  comp_subdir_data: &comp_subdir_data
+    - luts_dir:
+      name: LUTS
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - color_scripts_dir:
+      name: Color_Scripts
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - project_files_dir:
+      name: Project_Files
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - export_dir:
+      name: export
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  edit_subdir_data: &edit_subdir_data
+    - project_files_dir:
+      name: Project_Files
+      path:
+      env:
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children: *edit_app_data
+    - export_dir:
+      name: export
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  post_pro_subdir_data: &post_pro_subdir_data
+    - audio_dir:
+      name: Audio
+      path:
+      env:
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children: *audio_subdir_data
+    - comp_dir:
+      name: Compositing
+      path:
+      env:
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children: *comp_subdir_data
+    - editing_dir:
+      name: Editing
+      path:
+      env:
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children: *edit_subdir_data
+    - ref_dir:
+      name: Reference
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - proj_files_dir:
+      name: Project_Files
+      path:
+      env:
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children: *post_app_subdir_data
+    - nuke_dir:
+      name: Nuke
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - export_dir:
+      name: Export
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  pre_pro_subdir_data: &pre_pro_subdir_data
+    - concept_art_dir:
+      name: Concept_Art
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - storyboard_dir:
+      name: Storyboard
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - color_scripts_dir:
+      name: Color_Scripts
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - animatic_dir:
+      name: Animatic
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - reference_dir:
+      name: Reference
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - Other_dir:
+      name: Other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  shot_subdir_data:
+    name: shot_n
+    path:
+    env: 
+    h_env: JOB
+    files: README.md
+    gitkeep: True
+    parent: shots
+    children:
+    - audio_dir:
+      name: audio
+      path:
+      env: 
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children:
+    - shot_config_dir:
+      name: .config
+      path:
+      env: 
+      h_env:
+      files: README.md
+      gitkeep: True
+      parent:
+      children:
+    - geo_dir:
+      name: geo
+      path:
+      env: GEO
+      h_env: 
+      files:
+      gitkeep: True
+      parent:
+      children: *geo_subdir_data
+    - src_dir:
+      name: src
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children: *src_subdir_data
+    - hip_dir:
+      name: hip
+      path:
+      env: 
+      h_env: HIP
+      files:
+      gitkeep: True
+      parent:
+      children: 
+    - render_dir:
+      name: render
+      path:
+      env: RENDER
+      h_env: 
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - texture_dir:
+      name: texture
+      path:
+      env: TEXTURE
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children: *tex_subdir_data
+    - blend_dir:
+      name: blend
+      path:
+      env: BLEND
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - assets_dir:
+      name: assets
+      path:
+      env: ASSETS
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children: *assets_subdir_data
+    - hda_dir:
+      name: HDA
+      path:
+      env:
+      h_env: HDA
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - reference_dir:
+      name: reference
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - research_and_development_dir:
+      name: reserach_and_development
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children: 
+    - lookdev_dir:
+      name: lookdev
+      path:
+      env: LD
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - post_production_dir:
+      name: post_production
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children: *post_pro_subdir_data
+    - pre_production_dir:
+      name: pre_production
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children: *pre_pro_subdir_data
+    - final_dir:
+      name: final
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - scripts_dir:
+      name: scripts
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - clips_dir:
+      name: clips
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - vex_dir:
+      name: vex
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+    - other_dir:
+      name: other
+      path:
+      env:
+      h_env:
+      files:
+      gitkeep: True
+      parent:
+      children:
+  project_root:
+    name: test_projec
+    path:
+    env: PROJECT_ROOT
+    h_env:
+    files: README.md
+    gitkeep: True
+    parent:
+    children:
+      - assets_dir:
+        name: assets
+        path:
+        env: GLOBAL_ASSETS_ROOT
+        h_env:
+        files: README.md
+        gitkeep: True
+        parent:
+        children: *assets_subdir_data
+      - hsite_dir:
+        name: hsite
+        path:
+        env: HSITE_ROOT
+        h_env: HSITE
+        files: README.md
+        gitkeep: True
+        parent:
+        children:
+      - packages_dir:
+        name: packages
+        path:
+        env: GLOBAL_PACKAGES
+        h_env: HOUDINI_PACKAGE_DIR
+        files: README.md
+        gitkeep: True
+        parent:
+        children:
+      - pre_pro_dir:
+        name: pre_production
+        path:
+        env: PRE_PRO
+        h_env:
+        files: README.md
+        gitkeep: True
+        parent:
+        children: *pre_pro_subdir_data
+      - post_pro_dir:
+        name: post_production
+        path:
+        env: POST_PRODUCTION
+        h_env:
+        files: README.md
+        gitkeep: True
+        parent:
+        children: *post_pro_subdir_data
+      - shots_dir:
+        name: shots
+        path:
+        env: SHOTS_ROOT
+        h_env:
+        files: README.md
+        gitkeep: True
+        parent:
+        children:
+      - delivery_dir:
+        name: deliverables
+        path:
+        env: DELIVER
+        h_env:
+        files: README.md
+        gitkeep: True
+        parent:
+        children: 
+      - hda_dir:
+        name: HDA
+        path:
+        env: HDA
+        h_env: 
+        files: README.md
+        gitkeep: True
+        parent:
+        children:
+      - config_dir:
+        name: .config
+        path:
+        env:
+        h_env:
+        files: README.md
+        gitkeep: True
+        parent:
+        children:
+```
