@@ -16,4 +16,9 @@ COPY ./app .
 VOLUME /host_files
 
 # Set the entrypoint to run the main.py file
-ENTRYPOINT . /opt/venv/bin/activate && python main.py
+#ENTRYPOINT . /opt/venv/bin/activate && python main.py
+#ENTRYPOINT [". /opt/venv/bin/activate","python","main.py"]
+ENTRYPOINT ["/opt/venv/bin/python", "main.py"]
+
+# in order to be able to pass arguments to app you need the following
+CMD [""]

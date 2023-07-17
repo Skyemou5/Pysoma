@@ -981,7 +981,6 @@ def projects_init_main() -> tuple:
         ###########################################
 
 
-
         project_choices = {
             'Would you like to open an existing project?':choose_existing_project,
             'Would you like to add an existing project?':add_existing_project,

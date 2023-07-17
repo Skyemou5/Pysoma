@@ -134,26 +134,38 @@ def count_subdirs(rootdir):
 #region User Input Helper funcs
 
 # question stuff
+# def y_n_q(q) -> bool:
+#     '''
+#     give question
+#     keep asking question with invalid input
+#     if the input is yes return true
+#     if the input is no return false
+#     '''
+#     result=''
+#     while True:
+#         try:
+#             user_choice = input(f'{q} y/n: ').lower()
+#             if(user_choice == 'y'):
+#                 return True
+#             elif(user_choice == 'n'):
+#                 return False
+#             else:
+#                 raise ValueError
+#         except ValueError:
+#             print('Invalid input. Please try again...')
+#             continue
 def y_n_q(q) -> bool:
-    '''
-    give question
-    keep asking question with invalid input
-    if the input is yes return true
-    if the input is no return false
-    '''
-    result=''
+    """
+    Ask a yes/no question and return True for 'yes' and False for 'no'.
+    """
     while True:
-        try:
-            user_choice = input(f'{q} y/n: ').lower()
-            if(user_choice == 'y'):
-                return True
-            elif(user_choice == 'n'):
-                return False
-            else:
-                raise ValueError
-        except ValueError:
-            print('Invalid input. Please try again...')
-            continue
+        user_choice = input(f'{q} (y/n): ').lower()
+        if user_choice in ['y', 'yes']:
+            return True
+        elif user_choice in ['n', 'no']:
+            return False
+        else:
+            print('Invalid input. Please enter "y" or "n".')
 
 #endregion
 
@@ -352,8 +364,9 @@ def add_line_to_temp(content):
         with path.open("w") as f:
             f.write(content)
 
-def should_remove_line(line,stop_words):
-    return any([word in line for word in stop_words])
+def should_remove_line(line, stop_words):
+    return any(word in line for word in stop_words)
+
 
 def overwrite_line(key,content):
     stop_words = key
@@ -365,7 +378,7 @@ def overwrite_line(key,content):
                     if not should_remove_line(line,stop_words):
                         f2.write(line)
     add_line_to_temp(content)
-
+#region temp env
 def check_if_temp_empty():
     result = ''
     path = pathlib.Path(application_path)/'.temp.env'
@@ -376,25 +389,47 @@ def check_if_temp_empty():
     print(f'Temp file is empty: {result}')
     return result
 
+
 def check_if_temp_exists():
     path = pathlib.Path(application_path)/'.temp.env'
     if not path.is_file():
         path.open('a').close()
 
+# def write_temp(d):
+#     check_if_temp_exists()
+#     '''
+#     incomming dict must be converted from pathlib to string first
+#     '''
+#     for k, v in d.items():
+#         l = str('%s="%s"\n' % (k, v))
+#         add_line_to_temp(l)
+
 def write_temp(d):
-    check_if_temp_exists()
     '''
     incomming dict must be converted from pathlib to string first
     '''
-    for k, v in d.items():
-        l = str('%s="%s"\n' % (k, v))
-        add_line_to_temp(l)
+    check_if_temp_exists()
+    with open(str(pathlib.Path(application_path) / '.temp.env'), 'a') as f:
+        for k, v in d.items():
+            line = '{}="{}"\n'.format(k, v)
+            add_line_to_temp(line)
 
+
+#endregion
+# def get_level(dct, level):
+#     if level == 0:
+#         yield from ((k, v) for k, v in dct.items() if not isinstance(v, dict))
+#     else:
+#         yield from ((kk, vv) for v in dct.values() if isinstance(v, dict) for kk, vv in get_level(v, level-1))
 def get_level(dct, level):
     if level == 0:
-        yield from ((k, v) for k, v in dct.items() if not isinstance(v, dict))
+        yield from ((k, v) for k, v in dct.items())
     else:
-        yield from ((kk, vv) for v in dct.values() if isinstance(v, dict) for kk, vv in get_level(v, level-1))
+        for v in dct.values():
+            if isinstance(v, dict):
+                yield from get_level(v, level - 1)
+
+
 
 def parse_nested_dict(data):
     result = {}
@@ -422,6 +457,25 @@ def flatten_dict(data):
 
 def add_project_to_list(path):
     pass
+
+
+#TODO implement this
+# def check_for_projects_in_folder(path, inner_proj_dirs):
+#     result = []
+
+#     for project_dir in path.iterdir():
+#         if project_dir.is_dir():
+#             subdirs = [subdir.name for subdir in project_dir.iterdir() if subdir.is_dir()]
+#             if set(subdirs) == set(inner_proj_dirs):
+#                 result.append(project_dir)
+
+#     if len(result) == 0:
+#         print('No projects in directory...')
+#     else:
+#         pprint(f'Project folders: {result}')
+
+#     return result
+
 
 def check_for_projects_in_folder(path):
     # TODO: Fix directory scanning
@@ -493,76 +547,121 @@ def type_path_of_dir():
 #TODO scan or open existing projects
 # if no temp or temp is empty bring up below options
 # otherwise ask to open currently cached projects or do the below
+# def user_choose_folder_methods_noscan() -> int:
+#     options = {
+#         1:'default: Open gui to choose path',
+#         2:'type in path to scan',
+#         3:'Current application directory',
+#     }
+#     op_nums = []
+#     choice = 0
+#     for k, v in options.items():
+#         print(f'{k} : {v}')
+#         op_nums.append(k)
+
+#     while True:
+#         try:
+#             user_input = int(input('select a number to choose one of the options: '))
+
+#             if user_input in op_nums:
+#                 print(f'You chose: {options[user_input]}')
+#                 if user_input == 1:
+#                     choice = user_input
+#                 elif user_input == 2:
+#                     choice = user_input
+#                 elif user_input == 3:
+#                     choice = user_input
+#                 else:
+#                     raise ValueError
+#                 break
+#             else:
+#                 raise ValueError
+#         except ValueError:
+#             print('Please enter a valid choice...')
+#             continue
+#     #print(choice)
+#     return choice
 def user_choose_folder_methods_noscan() -> int:
     options = {
-        1:'default: Open gui to choose path',
-        2:'type in path to scan',
-        3:'Current application directory',
+        1: 'Default: Open GUI to choose path',
+        2: 'Type in a path to scan',
+        3: 'Use the current application directory',
     }
-    op_nums = []
-    choice = 0
-    for k, v in options.items():
-        print(f'{k} : {v}')
-        op_nums.append(k)
 
     while True:
         try:
-            user_input = int(input('select a number to choose one of the options: '))
+            for key, value in options.items():
+                print(f'{key}: {value}')
 
-            if user_input in op_nums:
+            user_input = int(input('Select a number to choose one of the options: '))
+
+            if user_input in options:
                 print(f'You chose: {options[user_input]}')
-                if user_input == 1:
-                    choice = user_input
-                elif user_input == 2:
-                    choice = user_input
-                elif user_input == 3:
-                    choice = user_input
-                else:
-                    raise ValueError
-                break
-            else:
-                raise ValueError
+                return user_input
+
+            print('Please enter a valid choice...')
         except ValueError:
             print('Please enter a valid choice...')
-            continue
-    #print(choice)
-    return choice
 
 
+# def user_choose_folder_methods():
+#     '''
+    
+#     '''
+#     options = {
+#         1:'default: Scan current directory',
+#         2:'type in path to scan',
+#         3:'open gui choose path to scan'
+#     }
+#     op_nums = []
+#     choice = 0
+#     for k, v in options.items():
+#         print(f'{k} : {v}')
+#         op_nums.append(k)
+
+#     while True:
+#         try:
+#             user_input = int(input('select a number to choose one of the options: '))
+
+#             if user_input in op_nums:
+#                 print(f'You chose: {options[user_input]}')
+#                 if user_input == 1:
+#                     choice = user_input
+#                 elif user_input == 2:
+#                     choice = user_input
+#                 elif user_input == 3:
+#                     choice = user_input
+#                 else:
+#                     raise ValueError
+#                 break
+#             else:
+#                 raise ValueError
+#         except ValueError:
+#             print('Please enter a valid choice...')
+#             continue
+#     #print(choice)
+#     return choice
 def user_choose_folder_methods():
     options = {
-        1:'default: Scan current directory',
-        2:'type in path to scan',
-        3:'open gui choose path to scan'
+        1: 'default: Scan current directory',
+        2: 'type in path to scan',
+        3: 'open GUI choose path to scan'
     }
-    op_nums = []
-    choice = 0
-    for k, v in options.items():
-        print(f'{k} : {v}')
-        op_nums.append(k)
 
     while True:
         try:
-            user_input = int(input('select a number to choose one of the options: '))
+            for key, value in options.items():
+                print(f'{key}: {value}')
 
-            if user_input in op_nums:
+            user_input = int(input('Select a number to choose one of the options: '))
+
+            if user_input in options:
                 print(f'You chose: {options[user_input]}')
-                if user_input == 1:
-                    choice = user_input
-                elif user_input == 2:
-                    choice = user_input
-                elif user_input == 3:
-                    choice = user_input
-                else:
-                    raise ValueError
-                break
+                return user_input
             else:
-                raise ValueError
+                print('Please enter a valid choice...')
         except ValueError:
             print('Please enter a valid choice...')
-            continue
-    #print(choice)
-    return choice
 
 
 
@@ -640,111 +739,171 @@ def write_to_second_temp(d_content):
 #endregion
 #region project setup helpers
 
+# def choose_project_from_list(l: list):
+#     #print(len(l))
+#     '''
+#     Takes a list
+#     Returns the index chosen by user if valid
+#     also returns user confirmation
+#     '''
+#     # returns
+#     choice = 0
+#     confirm = False
+#     # other
+#     inner_confirm = True
+#     #result = ''
+#     while True:
+#         try:
+#             choice = int(input('Please type the corresponding number of the shot you wish to open: '))
+#             result = check_if_num_in_list(choice,l)
+#             if (result == True):
+#                 proj = l[choice-1]
+#                 proj_name = proj['name']
+#                 print(f'You chose <{proj_name}>')
+#                 while inner_confirm:
+#                     try:
+#                         #accepted_input = ['y','n']
+#                         user_confirm = input(
+#                             'Is this correct? y/n: '
+#                         ).lower()
+#                         if (user_confirm == 'y' or 'n'):
+#                             if(user_confirm == 'y'):
+#                                 confirm = True
+#                                 inner_confirm = False
+#                             elif(user_confirm == 'n'):
+#                                 confirm = False
+#                                 inner_confirm = False
+#                             else:
+#                                 print('Invalid response, try again...')
+#                                 raise ValueError                          
+#                         else:
+#                             raise ValueError
+#                     except ValueError:
+#                         print('Invalid response, try again...')
+#                         continue
+#                 if(confirm == True):
+#                     break
+#                 elif(confirm == False):
+#                     break
+#             else:
+#                 print('Invalid response, try again...')
+#                 continue
+#         except ValueError:
+#             print('Invalid response, try again...')
+#             continue
+#     return choice, confirm
+
 def choose_project_from_list(l: list):
-    #print(len(l))
     '''
     Takes a list
-    Returns the index chosen by user if valid
+    Returns the index chosen by the user if valid
     also returns user confirmation
     '''
-    # returns
     choice = 0
     confirm = False
-    # other
-    inner_confirm = True
-    #result = ''
+
     while True:
         try:
-            choice = int(input('Please type the corresponding number of the shot you wish to open: '))
-            result = check_if_num_in_list(choice,l)
-            if (result == True):
+            choice = int(input('Please enter the corresponding number of the project you wish to open: '))
+            if 1 <= choice <= len(l):
                 proj = l[choice-1]
                 proj_name = proj['name']
                 print(f'You chose <{proj_name}>')
-                while inner_confirm:
+                while True:
                     try:
-                        #accepted_input = ['y','n']
-                        user_confirm = input(
-                            'Is this correct? y/n: '
-                        ).lower()
-                        if (user_confirm == 'y' or 'n'):
-                            if(user_confirm == 'y'):
-                                confirm = True
-                                inner_confirm = False
-                            elif(user_confirm == 'n'):
-                                confirm = False
-                                inner_confirm = False
-                            else:
-                                print('Invalid response, try again...')
-                                raise ValueError                          
+                        user_confirm = input('Is this correct? (y/n): ').lower()
+                        if user_confirm == 'y':
+                            confirm = True
+                            break
+                        elif user_confirm == 'n':
+                            confirm = False
+                            break
                         else:
                             raise ValueError
                     except ValueError:
-                        print('Invalid response, try again...')
-                        continue
-                if(confirm == True):
-                    break
-                elif(confirm == False):
-                    break
+                        print('Invalid response, please enter "y" for yes or "n" for no.')
+                break
             else:
-                print('Invalid response, try again...')
-                continue
+                print('Invalid choice, please try again...')
         except ValueError:
-            print('Invalid response, try again...')
-            continue
+            print('Invalid response, please enter a valid integer...')
+
     return choice, confirm
 
 
 # TODO: replace all list choices with this generalized list choice funtion
+# def user_choice_from_list(prompts_and_choices):
+#     '''
+#     Generalized list choice funtion.
+#     The input dictionary should have the strings as prompts for each key,
+#     and the values should be whatever you want to return for each choice
+#     '''
+#     try:
+#         if isinstance(prompts_and_choices, dict):
+#             counter = 1
+#             choices_items = list(prompts_and_choices)
+#             choices_keys = list(prompts_and_choices.keys())
+#             choices_values = list(prompts_and_choices.values())
+#             #print(type(choices_items))
+#             for k,v in prompts_and_choices.items():
+#                 print(f'{counter} : {k}')
+#                 counter += 1
+#             print('-------------------')
+#             while True:
+#                 try:
+#                     choice_first = input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: ')
+#                     choice = int(choice_first)
+#                     if check_if_num_in_list(choice,choices_items):
+
+#                         if y_n_q(f'Is <{choice}> correct?'):
+#                             return choices_values[choice-1]
+#                         else:
+#                             continue
+#                 except ValueError:
+#                     print('Invalid response, try again...')
+#         elif isinstance(prompts_and_choices, list):
+#             choices_list = list(prompts_and_choices)
+#             counter = 1
+#             for i,item in enumerate(prompts_and_choices):
+#                 print(f'{i+1} : {item}')
+#                 counter = i+1
+#             print('-------------------')
+#             while True:
+#                 try:
+#                     choice = int(input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: '))
+#                     if check_if_num_in_list(choice,choices_list):
+#                         if y_n_q(f'Is <{choice}> correct?'):
+#                             return choices_list[choice-1]
+#                         else:
+#                             continue
+#                 except ValueError:
+#                     print('Invalid response, try again...')
+#     except ValueError:
+#         exit('Incorrect argument type')
+
 def user_choice_from_list(prompts_and_choices):
     '''
-    Generalized list choice funtion.
+    Generalized list choice function.
     The input dictionary should have the strings as prompts for each key,
     and the values should be whatever you want to return for each choice
     '''
-    try:
-        if isinstance(prompts_and_choices, dict):
-            counter = 1
-            choices_items = list(prompts_and_choices)
-            choices_keys = list(prompts_and_choices.keys())
-            choices_values = list(prompts_and_choices.values())
-            #print(type(choices_items))
-            for k,v in prompts_and_choices.items():
-                print(f'{counter} : {k}')
-                counter += 1
-            print('-------------------')
-            while True:
-                try:
-                    choice_first = input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: ')
-                    choice = int(choice_first)
-                    if check_if_num_in_list(choice,choices_items):
-
-                        if y_n_q(f'Is <{choice}> correct?'):
-                            return choices_values[choice-1]
-                        else:
-                            continue
-                except ValueError:
-                    print('Invalid response, try again...')
-        elif isinstance(prompts_and_choices, list):
-            choices_list = list(prompts_and_choices)
-            counter = 1
-            for i,item in enumerate(prompts_and_choices):
-                print(f'{i+1} : {item}')
-                counter = i+1
-            print('-------------------')
-            while True:
-                try:
-                    choice = int(input(f'Please type a corresponding number for one of the {len(prompts_and_choices)} choices: '))
-                    if check_if_num_in_list(choice,choices_list):
-                        if y_n_q(f'Is <{choice}> correct?'):
-                            return choices_list[choice-1]
-                        else:
-                            continue
-                except ValueError:
-                    print('Invalid response, try again...')
-    except ValueError:
+    if isinstance(prompts_and_choices, (dict, list)):
+        choices_list = list(prompts_and_choices)
+        for counter, item in enumerate(prompts_and_choices, start=1):
+            print(f'{counter}: {item}')
+        print('-------------------')
+        while True:
+            try:
+                choice = int(input(f'Please enter the corresponding number for one of the {len(prompts_and_choices)} choices: '))
+                if choice in range(1, len(prompts_and_choices) + 1):
+                    if y_n_q(f'Is <{choice}> correct?'):
+                        return choices_list[choice-1]
+                else:
+                    print('Invalid choice, please try again...')
+            except ValueError:
+                print('Invalid response, please enter a valid integer...')
+    else:
         exit('Incorrect argument type')
-
 
 #endregion
 #region dictionary
@@ -1533,7 +1692,6 @@ class ProjectData:
         self.houdini_major_version = None
         self.houdini_minor_version = None
         self.houdini_install_path = None
-        self.name = None
         self.project_root = None
         self.parent_path = None
         self.env = None

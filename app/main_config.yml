@@ -32,3 +32,6 @@ None:
   - name: test4
     path: /home/ben/dev/Pysoma/testprojects/test4
     config: /home/ben/dev/Pysoma/testprojects/test4/.config/project_data.yml
+  - name: test6
+    path: /home/ben/dev/Pysoma/testprojects/test6
+    config: /home/ben/dev/Pysoma/testprojects/test6/.config/project_data.yml
