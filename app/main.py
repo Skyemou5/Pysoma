@@ -11,12 +11,14 @@ import re
 import shutil
 import sys
 import sqlite3
+#import tk
 import tkinter as tk
 from pathlib import Path, PurePath
 
 #####################################################
 #####################################################
 #####################################################
+
 
 from pprint import pprint
 from pydoc import resolve
@@ -54,6 +56,7 @@ import pysoma_lib as plib
 # win houdini command line tools   #
 ####################################
 yaml = YAML()
+
 
 
 

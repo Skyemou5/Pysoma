@@ -9,3 +9,5 @@ Release
 /main.build
 main.bin
 /testprojects
+*/venv/
+*/venv

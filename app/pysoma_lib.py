@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 import sqlite3
+#import tk
 import tkinter as tk
 
 from pathlib import Path, PurePath
@@ -22,6 +23,7 @@ from sqlite3 import DataError
 from sys import platform, stderr, stdout
 # from telnetlib3 import EXOPL
 from textwrap import indent
+import turtle
 from turtle import up
 from typing import OrderedDict
 from unicodedata import name
@@ -897,7 +899,7 @@ def user_choice_from_list(prompts_and_choices):
                 choice = int(input(f'Please enter the corresponding number for one of the {len(prompts_and_choices)} choices: '))
                 if choice in range(1, len(prompts_and_choices) + 1):
                     if y_n_q(f'Is <{choice}> correct?'):
-                        return choices_list[choice-1]
+                        return prompts_and_choices[choices_list[choice-1]]
                 else:
                     print('Invalid choice, please try again...')
             except ValueError:

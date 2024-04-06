@@ -16,8 +16,8 @@
               "state": {
                 "file": "pysoma.canvas",
                 "viewState": {
-                  "x": -4103.296189352031,
-                  "y": -2989.558517790709,
+                  "x": -4905.91746162849,
+                  "y": 296.4923209097446,
                   "zoom": -0.8000000000000002
                 }
               },
@@ -31,6 +31,18 @@
               "type": "markdown",
               "state": {
                 "file": "index.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "f89c643796b231f9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "project_template.md",
                 "mode": "source",
                 "source": false
               }
@@ -82,13 +94,11 @@
               "state": {}
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "f445169373323f1f",
@@ -167,13 +177,13 @@
   },
   "active": "5a77c286747f19fc",
   "lastOpenFiles": [
-    "index.md",
+    "project_template.md",
+    "Project_data.md",
     "pysoma.canvas",
+    "index.md",
     "temp_list_subdirs.md",
     "project_template_master.md",
     "Main_app_config_example.md",
-    "shot_data_template.md",
-    "project_template.md",
-    "Project_data.md"
+    "shot_data_template.md"
   ]
 }

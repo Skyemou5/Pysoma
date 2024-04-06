@@ -1,0 +1,35 @@
+Metadata-Version: 2.1
+Name: yamlize
+Version: 0.7.1
+Summary: yamlize, a package for Python object serialization and data validation.
+Home-page: https://github.com/SimplyKnownAsG/yamlize
+Author: g
+Author-email: gtmalmgren@gmail.com
+License: Apache
+Keywords: yaml serialization type checking validation
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+License-File: LICENSE
+Requires-Dist: ruamel.yaml
+Provides-Extra: dev
+Requires-Dist: yaml ; extra == 'dev'
+Requires-Dist: pytest ; extra == 'dev'
+Requires-Dist: pycodestyle ; extra == 'dev'
+Requires-Dist: sphinx ; extra == 'dev'
+Requires-Dist: aenum ; extra == 'dev'
+Requires-Dist: numpy ; extra == 'dev'
+
+see https://github.com/SimplyKnownAsG/yamlize/blob/master/README.rst
+

@@ -1,0 +1,3 @@
+[console_scripts]
+dump-env=dump_env.cli:main
+
