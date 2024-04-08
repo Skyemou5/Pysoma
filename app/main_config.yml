@@ -2,7 +2,10 @@ None:
   appdata:
     initialized: true
     open_last: true
-    last_opened: null
+    last_opened:
+      name: test
+      path: /home/skye/dev/Pysoma/testprojects/test
+      config: /home/skye/dev/Pysoma/testprojects/test/.config/project_data.yml
   houdini_versions:
   - '20.0':
     - '547':
