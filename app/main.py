@@ -168,10 +168,12 @@ def aces_check():
 
 #endregion
 #endregion
-#region HOUDINI 
+#region HOUDINI MAIN
+
 ##############################
 ####### Houdini Stuff ########
 ##############################
+
 #region HOUDINI setup
 
 def indie_check():
