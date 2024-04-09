@@ -6,7 +6,8 @@ I decided to come back to this to get it working then keep working on the other 
 A crossplatform Houdini project management and pipeline tool for smaller teams, students, and classrooms.
 
 ---
-![Pyrosome](./pysomaicon.png?raw=true "Pyrosome")
+
+<img src="./pysomaicon.png width="100" height="100">
 
 Pyrsomes are actually colonies of small jellyfish creating a whole. I thought that was a fun way to think about group creative projects. In a way this tool helps multiple people be part of a whole, and because it's houdini, life, mathematics and growth are common insterests of houdini artists.
 
@@ -19,7 +20,6 @@ This was developed for my needs during my senior project using Houdini with a sm
 # TODO
 
 - [ ] Refactor main file into a library to clean up code
-- [ ] Build standalone app for each platform
 - [ ] add support for choosing houdini versions - currently 18.5.759 is hardcoded in for my project
 - [ ] refactor to properly serialize data with yaml and only use env files for enviornments
 - [ ] Implement unit testing
@@ -60,6 +60,8 @@ This was developed for my needs during my senior project using Houdini with a sm
 
 
 ## There are command line arguments
+
+
 ```bash
 usage: main.py [-h] [-pn PATH_PROJECT] [-un [GUI_PROJECT]] [-cn [CURRENT_DIR_PROJECT]] [-pl [LIST_PROJECTS]] [-rs [RESCAN_DIRS]]
                [-cp [CLEAR_CACHE]] [-i [INIT]] [-I [INIT_ONLY]] [-l [LOAD_LAST]] [-? [INFO]]

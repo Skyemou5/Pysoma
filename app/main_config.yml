@@ -12,6 +12,12 @@ None:
         linux: /opt/hfs20.0.547
         mac: /Applications/Houdini20.0.547
         win: C:\\Program\ Files\\Side\ Effects\ Software\\Houdini\ 20.0.547
+  Unreal_Engine:
+  - '5':
+    - '3':
+      linux:
+      mac:
+      win:
   renderers:
   - name: 3Delight
     ACES: null
@@ -26,6 +32,3 @@ None:
       mac: /Applications/redshift/redshift4houdini/
       win: C:\\ProgramData\\Redshift\\bin
   projects:
-  - name: test
-    path: /home/skye/dev/Pysoma/testprojects/test
-    config: /home/skye/dev/Pysoma/testprojects/test/.config/project_data.yml
