@@ -254,7 +254,7 @@ def init_houdini():
     #compat = "export LD_PRELOAD=/lib/x86_64-linux-gnu/libc_malloc_debug.so.0 ; "
     cmd = []
     #cmd.append(compat)
-    cmd.append("export JOB=\"%s\" ; " % SHOT)
+    # cmd.append("export JOB=\"%s\" ; " % SHOT)
     # Create env vars for project sub-directories
     # for dir in DIRS:
     #     cmd.append("export %s=\"%s/%s\" ; " % (dir,SHOT,dir))
@@ -458,17 +458,17 @@ open_project_args_group.add_argument('-l','--load-last',dest='load_last', action
 open_project_args_group.add_argument('-pl','--open-project-list', dest='open_project_list', action='store_true',help='load project from list of projects')
 
 
-# shot parser
-shot_parser = subparsers.add_parser(
-    'shots',
-    help='open or create shot folders',
-    description='--------------------Open Or create shots in a project--------------------',
-    epilog=double_line
-)
-shot_group = shot_parser.add_argument_group('shot')
-shot_args_group = shot_group.add_mutually_exclusive_group()
-shot_args_group.add_argument('-os','--open-shot',dest='open_shot', nargs='?',help='open shot for project')
-shot_args_group.add_argument('-cs','--create-n-shots',dest='create_shots',nargs=1, type=int,help='create any number of shots')
+# # shot parser
+# shot_parser = subparsers.add_parser(
+#     'shots',
+#     help='open or create shot folders',
+#     description='--------------------Open Or create shots in a project--------------------',
+#     epilog=double_line
+# )
+# shot_group = shot_parser.add_argument_group('shot')
+# shot_args_group = shot_group.add_mutually_exclusive_group()
+# shot_args_group.add_argument('-os','--open-shot',dest='open_shot', nargs='?',help='open shot for project')
+# shot_args_group.add_argument('-cs','--create-n-shots',dest='create_shots',nargs=1, type=int,help='create any number of shots')
 
 
 
@@ -542,7 +542,7 @@ def projects_init_main() -> tuple:
 
 
         #print("now the minor version: ex: 759")
-        project_data.shots = pathlib.Path(project_path)/'shots'
+        # project_data.shots = pathlib.Path(project_path)/'shots'
 
         project_data.houdini_install_path = main_config.get_hou_path(project_data)
         simple_project_data = project_data.main_config_list_data()
@@ -966,18 +966,18 @@ def projects_init_main() -> tuple:
 
             else:
                 exit('please check help and use a correct flag')
-        elif args.command == 'shots':
-            # pass data to shots
-            if main_config.data['None']['appdata']['last_opened'] is not None:
-                project_config_data = pl;ib.ConfigData(main_config.data['None']['appdata']['last_opened']['config'])
-                chosen_project = open_project(project_config_data)
-            else:
-                choice = plib.choose_existing_project()
-                chosen_project = open_project(choice)
+        # elif args.command == 'shots':
+        #     # pass data to shots
+        #     if main_config.data['None']['appdata']['last_opened'] is not None:
+        #         project_config_data = pl;ib.ConfigData(main_config.data['None']['appdata']['last_opened']['config'])
+        #         chosen_project = open_project(project_config_data)
+        #     else:
+        #         choice = plib.choose_existing_project()
+        #         chosen_project = open_project(choice)
 
         
-            print('open shots')
-            return chosen_project
+        #     print('open shots')
+        #     return chosen_project
     else:
         print('no-args')
 
