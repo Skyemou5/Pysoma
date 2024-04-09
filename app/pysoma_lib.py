@@ -531,20 +531,17 @@ def read_text_list_of_dirs():
     pass
 
 def type_path_of_dir():
-    result = input('Please type path of directory to scan: ')
-    p = pathlib.Path(result)
-    #2print(type(p))
     while True:
+        result = input('Please type path of directory to scan: ')
+        p = pathlib.Path(result)
         try:
             if p.is_dir():
                 print(f'{p} is a directory!')
-                break
+                return p
             else:
                 raise NotADirectoryError
         except NotADirectoryError:
-            print(f'{p} is not a directory...')
-            continue
-    return p
+            print(f'{p} is not a directory. Please try again...')
 
 #TODO scan or open existing projects
 # if no temp or temp is empty bring up below options

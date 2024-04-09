@@ -1,19 +1,16 @@
-# Update
-I decided to come back to this to get it working then keep working on the other tool
+<div align="center">
+  <img src="./pysomaicon.png" width="200" height="200">
+</div>
 
+
+
+>Pyrsomes are actually colonies of small jellyfish creating a whole. I thought that was a fun way to think about group creative projects. In a way this tool helps multiple people be part of a whole, and because it's houdini, life, mathematics and growth are common insterests of houdini artists.
+
+---
 
 # Pysoma
+
 A crossplatform Houdini project management and pipeline tool for smaller teams, students, and classrooms.
-
----
-
-<img src="./pysomaicon.png width="100" height="100">
-
-Pyrsomes are actually colonies of small jellyfish creating a whole. I thought that was a fun way to think about group creative projects. In a way this tool helps multiple people be part of a whole, and because it's houdini, life, mathematics and growth are common insterests of houdini artists.
-
----
-
-# Houdini Pipeline Tool
 
 This was developed for my needs during my senior project using Houdini with a small team. I needed to ensure the project enviornment was the same accross computers and platforms. Additionally I needed a way to run the tool on it's own without needing to configure each computers python enviornment.
 
@@ -30,6 +27,7 @@ This was developed for my needs during my senior project using Houdini with a sm
 
 
 # Roadmap
+- [ ] make a docker image so users need less setup
 - [ ] add support for game projects with unity and unreal and possibly godot
 - [ ] add support for houdini engine and respective game engines
 - [ ] add hou.py configuration for opening houdini projects
@@ -62,88 +60,80 @@ This was developed for my needs during my senior project using Houdini with a sm
 ## There are command line arguments
 
 
-```bash
-usage: main.py [-h] [-pn PATH_PROJECT] [-un [GUI_PROJECT]] [-cn [CURRENT_DIR_PROJECT]] [-pl [LIST_PROJECTS]] [-rs [RESCAN_DIRS]]
-               [-cp [CLEAR_CACHE]] [-i [INIT]] [-I [INIT_ONLY]] [-l [LOAD_LAST]] [-? [INFO]]
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -pn PATH_PROJECT, --path-project PATH_PROJECT
-                        create new project at input path
-  -un [GUI_PROJECT], --gui-project [GUI_PROJECT]
-                        create new project at location with gui
-  -cn [CURRENT_DIR_PROJECT], --current-dir-project [CURRENT_DIR_PROJECT]
-                        create new project at current path
-  -pl [LIST_PROJECTS], --list-projects [LIST_PROJECTS]
-                        List currently cached projects
-  -rs [RESCAN_DIRS], --rescan-folders [RESCAN_DIRS]
-                        rescan cached directories
-  -cp [CLEAR_CACHE], --clear-project-cache [CLEAR_CACHE]
-                        clear project cache
-  -i [INIT], --init [INIT]
-                        Forces initialization
-  -I [INIT_ONLY], --init-only [INIT_ONLY]
-                        Forces ONLY the initialization step
-  -l [LOAD_LAST], --load-last [LOAD_LAST]
-                        Load last opened file
-  -? [INFO], --info [INFO]
-                        Shows another help file
-```
 
 ---
 # Setup
 
-If you want to use source code and not the docker image make sure you create a virtual enviornment and then use the 
-`requirements.txt` to install the dependencies.
+If you want to use the GUI option to select file paths on linux you need to have the `python3-tk` package installed on your system. You may need something similar on mac as well.
 
-easiest to set up with docker/podman
-creat requirements text `pip3 freeze > requirements.txt`
-run `podman build -t pysoma .`
+example (fedora: RHEL):
 
+```bash
+sudo dnf install python3-tk -y
+```
 
-
-or
-
-download the image
-
-When running the docker image make sure you enable user input with the right flag
-
-`podman run -it pysoma`
+On widows you may need to install python with `tkinter` or use `Anaconda` to manage all the dependencies for that.
 
 
->[!NOTE] I recommend creating an alias for the docker container so you can run pysoma without typing out all the docker commands.
+## Unix
 
-# How it works
+>! make sure you have at least python 3.12 installed
 
-## Default behavior
+Steps:
 
-1. Checks if there are any projects in the current directory of the script/app
-2. If there are none it creates one after asking for a name
-3. Asks user to create or open a shot
-4. sources houdini, sets enviornment variables, opens houdini
+- Clone the repo to your machine.
+- In your terminal navigate to the `/app` folder inside this repo. ex: `cd ./app`
+- I have provided a shell script to quickly get you up in running! All you have to do is `source` a file called `activate_enviornment.sh` which is inside the `/app` folder.
 
-## Things to note
+```bash
+source ./activate_enviornment.sh
+```
 
-You can customize this behavior, for example you can add directories for the tool to scan for existing projects.
+>It's important you `source` is and not execute the script normally with `bash` or dot-syntax. This is because this script will install a python virtual-enviornment then install all the dependencies from the `requirements.txt` then drop into a subshell where that virtual enviornment is sources. Additionally it creates an alias so all you need to do is type `pysoma` and you can run the app!
 
-It saves a list of the existing projects in a hidden temp.env file in the same directory as the script or executable.
+Now that you have the enviornment setup and the subshell running you can start to use the program.
 
-Each project will have an env file that shouldn't be pushed to a project repo as it will hold that users paths.
+running `pysoma` by itself will start the program and use the default entry point.
 
----
+As this is the first time running the application there won't be any projects saved in the `main_config.yaml`. so it will give you the following prompt:
 
-# Contributing
+```
+( bash prommt ) pysoma
+no-args
+1: Would you like to add an existing project?
+2: Would you like to create a new project?
+-------------------
+Please enter the corresponding number for one of the 2 choices: 
+```
 
-Make sure and set up a python virtual env - I used venv - using the requirements.txt
+After this you would likely select the second options by typing `2` and hitting `enter`.
 
+At this point it will ask you to name the project and where it should create the project.
 
----
+>NOTE: As a rule of thumb you should always avoid spaces and special characters in file and folder names with the exceptions of: `-` and `_`.
 
-# Other
+```
+Please enter the corresponding number for one of the 2 choices: 2
+Is <2> correct? (y/n): y
+Creating a new project...
+Please enter the name of the project: project_01
+Is project_01 correct? (y/n): y
+1: Default: Open GUI to choose path
+2: Type in a path to scan
+3: Use the current application directory
+Select a number to choose one of the options:
+```
 
-I'm no python expert and would love input, and fixes, especially in development workflows, and deployment systems and such. I'm still learning, but I hope this is useful.
+>For option `2` you can use *relative* or *absolute* paths. In the example below I used a relative path by typing an existing directory in my project: `../testprojects/`.
 
+```
+Select a number to choose one of the options: 2
+You chose: Type in a path to scan
+your choice:: 2
+Please type path of directory to scan: ../testprojects/
+../testprojects is a directory!
+```
 
----
+This will create the project in that directory with the name you chose. 
 
-Hope this helps someone else, If you have questions send me a message.
